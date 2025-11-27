@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { User, Lock, Settings as SettingsIcon, Save, Eye, EyeOff, Package } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
 
 const Instellingen: React.FC = () => {
   const { user, hasPermission } = useAuth();
   const { t } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [activeTab, setActiveTab] = useState('profiel');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -32,7 +35,7 @@ const Instellingen: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
@@ -197,30 +200,30 @@ const Instellingen: React.FC = () => {
   return (
     <div className="space-y-6">
       {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+        <div className={`px-4 py-3 rounded ${isDark ? 'bg-green-900/50 border border-green-700 text-green-300' : 'bg-green-100 border border-green-400 text-green-700'}`}>
           {successMessage}
         </div>
       )}
 
       {errorMessage && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className={`px-4 py-3 rounded ${isDark ? 'bg-red-900/50 border border-red-700 text-red-300' : 'bg-red-100 border border-red-400 text-red-700'}`}>
           {errorMessage}
         </div>
       )}
 
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">{t('instellingen')}</h1>
+        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('instellingen')}</h1>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('profiel')}
             className={`${
               activeTab === 'profiel'
-                ? 'border-red-600 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-violet-600 text-violet-600'
+                : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
             <User size={18} />
@@ -230,8 +233,8 @@ const Instellingen: React.FC = () => {
             onClick={() => setActiveTab('beveiliging')}
             className={`${
               activeTab === 'beveiliging'
-                ? 'border-red-600 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-violet-600 text-violet-600'
+                : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
             <Lock size={18} />
@@ -242,8 +245,8 @@ const Instellingen: React.FC = () => {
               onClick={() => setActiveTab('systeem')}
               className={`${
                 activeTab === 'systeem'
-                  ? 'border-red-600 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-violet-600 text-violet-600'
+                  : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
             >
               <SettingsIcon size={18} />
@@ -255,34 +258,34 @@ const Instellingen: React.FC = () => {
 
       {/* Profile Tab */}
       {activeTab === 'profiel' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('profielInformatie')}</h2>
+        <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+          <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('profielInformatie')}</h2>
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('naam')}</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('naam')}</label>
               <input
                 type="text"
                 value={profileData.naam}
                 onChange={(e) => setProfileData({ ...profileData, naam: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Email</label>
               <input
                 type="email"
                 value={profileData.email}
                 disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                className={`w-full px-3 py-2 border rounded-md cursor-not-allowed ${isDark ? 'bg-gray-600 border-gray-600 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
               />
-              <p className="text-sm text-gray-500 mt-1">{t('emailKanNietWordenGewijzigd')}</p>
+              <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t('emailKanNietWordenGewijzigd')}</p>
             </div>
 
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
               >
                 <Save size={16} />
                 <span>{t('opslaan')}</span>
@@ -294,23 +297,23 @@ const Instellingen: React.FC = () => {
 
       {/* Security Tab */}
       {activeTab === 'beveiliging' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('wachtwoordWijzigen')}</h2>
+        <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+          <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('wachtwoordWijzigen')}</h2>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('huidigWachtwoord')}</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('huidigWachtwoord')}</label>
               <div className="relative">
                 <input
                   type={showCurrentPassword ? 'text' : 'password'}
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
                 >
                   {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -318,19 +321,19 @@ const Instellingen: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('nieuwWachtwoord')}</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('nieuwWachtwoord')}</label>
               <div className="relative">
                 <input
                   type={showNewPassword ? 'text' : 'password'}
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
                 >
                   {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -338,19 +341,19 @@ const Instellingen: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('bevestigNieuwWachtwoord')}</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('bevestigNieuwWachtwoord')}</label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
                 >
                   {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -360,7 +363,7 @@ const Instellingen: React.FC = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
               >
                 <Save size={16} />
                 <span>{t('wachtwoordWijzigen')}</span>
@@ -373,20 +376,20 @@ const Instellingen: React.FC = () => {
       {/* System Settings Tab (Admin only) */}
       {activeTab === 'systeem' && hasPermission('manage_settings') && (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center gap-2 mb-4">
-              <Package size={20} className="text-red-600" />
-              <h2 className="text-lg font-semibold text-gray-800">Module Beheer</h2>
+              <Package size={20} className="text-violet-600" />
+              <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Module Beheer</h2>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Schakel modules in of uit. Uitgeschakelde modules worden verborgen in de navigatie en zijn niet toegankelijk.
             </p>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Financieel Dashboard</p>
-                  <p className="text-sm text-gray-500">Inzicht in omzet, kosten, winst en statistieken</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Financieel Dashboard</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Inzicht in omzet, kosten, winst en statistieken</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -395,14 +398,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_financial_dashboard: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Urenregistratie</p>
-                  <p className="text-sm text-gray-500">Registreer gewerkte uren op projecten</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Urenregistratie</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Registreer gewerkte uren op projecten</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -411,14 +414,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_time_registration: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Voorraadbeheer</p>
-                  <p className="text-sm text-gray-500">Beheer voorraad en boek materiaal af</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Voorraadbeheer</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beheer voorraad en boek materiaal af</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -427,14 +430,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_inventory: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Schademeldingen</p>
-                  <p className="text-sm text-gray-500">Registreer en beheer schademeldingen</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Schademeldingen</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Registreer en beheer schademeldingen</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -443,14 +446,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_damage_reports: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Speciaal Gereedschap</p>
-                  <p className="text-sm text-gray-500">Beheer speciaal gereedschap en onderhoud</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Speciaal Gereedschap</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beheer speciaal gereedschap en onderhoud</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -459,14 +462,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_special_tools: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Factuur Generatie</p>
-                  <p className="text-sm text-gray-500">Genereer facturen vanuit projecten</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Factuur Generatie</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Genereer facturen vanuit projecten</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -475,14 +478,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_invoicing: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Uurtarieven Instellingen</p>
-                  <p className="text-sm text-gray-500">Beheer uurtarieven voor medewerkers</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Uurtarieven Instellingen</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beheer uurtarieven voor medewerkers</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -491,14 +494,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_hourly_rates: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">Meldingen</p>
-                  <p className="text-sm text-gray-500">Systeem meldingen en beheer</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Meldingen</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Systeem meldingen en beheer</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -507,14 +510,14 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_notifications: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">E-mail Notificaties</p>
-                  <p className="text-sm text-gray-500">Automatische e-mail notificaties</p>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>E-mail Notificaties</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Automatische e-mail notificaties</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -523,26 +526,26 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setModuleSettings({ ...moduleSettings, module_email_notifications: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
                 </label>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center gap-2 mb-4">
-              <SettingsIcon size={20} className="text-red-600" />
-              <h2 className="text-lg font-semibold text-gray-800">CSV Export/Import Instellingen</h2>
+              <SettingsIcon size={20} className="text-violet-600" />
+              <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>CSV Export/Import Instellingen</h2>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Kies het scheidingsteken voor CSV bestanden. Puntkomma (;) werkt het beste voor Excel in Europa.
             </p>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <p className="font-medium text-gray-800">CSV Scheidingsteken</p>
-                  <p className="text-sm text-gray-500">
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>CSV Scheidingsteken</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                     {moduleSettings.csv_separator === ';'
                       ? 'Puntkomma (;) - Aanbevolen voor Excel'
                       : 'Komma (,) - Standaard CSV format'}
@@ -553,8 +556,8 @@ const Instellingen: React.FC = () => {
                     onClick={() => setModuleSettings({ ...moduleSettings, csv_separator: ';' })}
                     className={`px-4 py-2 rounded-md transition-colors ${
                       moduleSettings.csv_separator === ';'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-violet-600 text-white'
+                        : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
                     Puntkomma (;)
@@ -563,8 +566,8 @@ const Instellingen: React.FC = () => {
                     onClick={() => setModuleSettings({ ...moduleSettings, csv_separator: ',' })}
                     className={`px-4 py-2 rounded-md transition-colors ${
                       moduleSettings.csv_separator === ','
-                        ? 'bg-red-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-violet-600 text-white'
+                        : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
                     Komma (,)
@@ -577,7 +580,7 @@ const Instellingen: React.FC = () => {
           <div className="flex justify-end">
             <button
               onClick={saveModuleSettings}
-              className="flex items-center space-x-2 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
             >
               <Save size={16} />
               <span>Instellingen Opslaan</span>

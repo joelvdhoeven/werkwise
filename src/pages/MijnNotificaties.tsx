@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Mail, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useSupabaseQuery } from '../hooks/useSupabase';
 import { formatDate } from '../utils/dateUtils';
 
 const MijnNotificaties: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const { data: notifications = [], loading } = useSupabaseQuery<any>(
     'email_logs',
     'id, to_email, subject, body_html, created_at, status',
@@ -18,7 +21,7 @@ const MijnNotificaties: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
@@ -26,14 +29,14 @@ const MijnNotificaties: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Mijn Notificaties</h1>
-        <p className="text-gray-600">Bekijk alle e-mails die aan jou zijn verzonden</p>
+        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>Mijn Notificaties</h1>
+        <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Bekijk alle e-mails die aan jou zijn verzonden</p>
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <Mail className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500">Je hebt nog geen notificaties ontvangen</p>
+        <div className={`rounded-lg shadow p-8 text-center ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+          <Mail className={`mx-auto h-12 w-12 mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+          <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Je hebt nog geen notificaties ontvangen</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -41,20 +44,22 @@ const MijnNotificaties: React.FC = () => {
             <div
               key={notification.id}
               onClick={() => setSelectedNotification(notification)}
-              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className={`rounded-lg shadow p-6 hover:shadow-md transition-shadow cursor-pointer ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white'}`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-red-600" />
+                  <Mail className="h-5 w-5 text-violet-600" />
                   <div>
-                    <h3 className="font-semibold text-gray-800">{notification.subject}</h3>
-                    <p className="text-sm text-gray-500">{formatDate(notification.created_at)}</p>
+                    <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{notification.subject}</h3>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDate(notification.created_at)}</p>
                   </div>
                 </div>
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  notification.status === 'sent' ? 'bg-green-100 text-green-800' :
-                  notification.status === 'failed' ? 'bg-red-100 text-red-800' :
-                  'bg-yellow-100 text-yellow-800'
+                  notification.status === 'sent'
+                    ? isDark ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800'
+                    : notification.status === 'failed'
+                      ? isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-800'
+                      : isDark ? 'bg-yellow-900/50 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
                 }`}>
                   {notification.status === 'sent' ? (
                     <span className="flex items-center space-x-1">
@@ -74,8 +79,8 @@ const MijnNotificaties: React.FC = () => {
                   )}
                 </span>
               </div>
-              <div className="text-gray-600 text-sm line-clamp-2" dangerouslySetInnerHTML={{ __html: notification.body_html || '' }} />
-              <button className="mt-3 text-sm text-red-600 hover:text-red-700 font-medium">
+              <div className={`text-sm line-clamp-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`} dangerouslySetInnerHTML={{ __html: notification.body_html || '' }} />
+              <button className="mt-3 text-sm text-violet-600 hover:text-violet-700 font-medium">
                 Lees meer →
               </button>
             </div>
@@ -86,18 +91,18 @@ const MijnNotificaties: React.FC = () => {
       {/* Notification Detail Modal */}
       {selectedNotification && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+          <div className={`rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">{selectedNotification.subject}</h2>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{selectedNotification.subject}</h2>
+                  <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                     {formatDate(selectedNotification.created_at)}
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedNotification(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className={`${isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -107,13 +112,13 @@ const MijnNotificaties: React.FC = () => {
             </div>
             <div className="p-6">
               <div className="prose max-w-none">
-                <div className="text-gray-700" dangerouslySetInnerHTML={{ __html: selectedNotification.body_html || '' }} />
+                <div className={isDark ? 'text-gray-300' : 'text-gray-700'} dangerouslySetInnerHTML={{ __html: selectedNotification.body_html || '' }} />
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 flex justify-end">
+            <div className={`p-6 border-t flex justify-end ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <button
                 onClick={() => setSelectedNotification(null)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
               >
                 Sluiten
               </button>

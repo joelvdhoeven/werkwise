@@ -54,7 +54,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [moduleSettings, setModuleSettings] = useState<any>(null);
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['overzicht', 'werk']);
+
+  // Load expanded groups from localStorage, default to overzicht and werk
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+    const saved = localStorage.getItem('sidebar_expanded_groups');
+    return saved ? JSON.parse(saved) : ['overzicht', 'werk'];
+  });
+
+  // Save expanded groups to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('sidebar_expanded_groups', JSON.stringify(expandedGroups));
+  }, [expandedGroups]);
 
   useEffect(() => {
     loadModuleSettings();

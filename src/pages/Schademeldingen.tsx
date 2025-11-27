@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Plus, Upload, X, Download, User, CreditCard as Edit, Trash2, Archive } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useSupabaseQuery, useSupabaseMutation } from '../hooks/useSupabase';
 import { supabase } from '../lib/supabase';
 import { formatDate } from '../utils/dateUtils';
@@ -11,6 +12,8 @@ import DatePickerField from '../components/DatePickerField';
 const Schademeldingen: React.FC = () => {
   const { t } = useLanguage();
   const { user, hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Admins and kantoorpersoneel see all reports, others see only their own
   const canManageAll = hasPermission('manage_damage_reports') && (user?.role === 'admin' || user?.role === 'kantoorpersoneel');
@@ -179,7 +182,7 @@ const Schademeldingen: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
@@ -187,15 +190,15 @@ const Schademeldingen: React.FC = () => {
   return (
     <div>
       {showSuccessMessage && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        <div className={`mb-4 p-4 rounded-md ${isDark ? 'bg-green-900/50 border border-green-700 text-green-300' : 'bg-green-100 border border-green-400 text-green-700'}`}>
           {t('schademeldingOpgeslagen')}
         </div>
       )}
 
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{t('schademeldingen')}</h1>
-          <p className="text-gray-600">
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('schademeldingen')}</h1>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
             {canManageAll
               ? showArchive ? 'Archief - Verwerkte schademeldingen' : 'Overzicht van alle schademeldingen'
               : 'Mijn schademeldingen'}
@@ -205,7 +208,7 @@ const Schademeldingen: React.FC = () => {
           {canManageAll && (
             <button
               onClick={() => setShowArchive(!showArchive)}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-600 text-white hover:bg-gray-700'}`}
             >
               <Archive size={18} />
               <span>{showArchive ? 'Toon Actieve' : 'Archief'}</span>
@@ -223,7 +226,7 @@ const Schademeldingen: React.FC = () => {
               setUploadedPhotos([]);
               setShowModal(true);
             }}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
           >
             <Plus size={18} />
             <span>{t('nieuweSchademelding')}</span>
@@ -285,7 +288,7 @@ const Schademeldingen: React.FC = () => {
                       {canManageAll && (
                         <button
                           onClick={() => handleDownloadPhotos(melding.foto_urls, melding.id)}
-                          className="flex items-center space-x-1 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                          className="flex items-center space-x-1 px-2 py-1 bg-violet-600 text-white rounded text-xs hover:bg-violet-700 transition-colors"
                         >
                           <Download size={12} />
                           <span>Download</span>
@@ -310,7 +313,7 @@ const Schademeldingen: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEditMelding(melding)}
-                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-violet-600 text-white rounded text-sm hover:bg-violet-700 transition-colors"
                       >
                         <Edit size={14} />
                         <span>Bewerk</span>
@@ -371,7 +374,7 @@ const Schademeldingen: React.FC = () => {
               value={formData.typeItem}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             >
               <option value="">{t('selecteerType')}</option>
               <option value="gereedschap">{t('gereedschap')}</option>
@@ -391,7 +394,7 @@ const Schademeldingen: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Bijv. Boormachine, Bedrijfsbus, Hout planken"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
 
@@ -414,7 +417,7 @@ const Schademeldingen: React.FC = () => {
               rows={4}
               placeholder={t('beschrijfSchade')}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
 
@@ -423,7 +426,7 @@ const Schademeldingen: React.FC = () => {
               {t('fotoS')} <span className="text-gray-500">({t('optioneel')})</span>
             </label>
             <div className="mt-1">
-              <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-red-500 transition-colors">
+              <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-violet-500 transition-colors">
                 <div className="space-y-1 text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400" />
                   <div className="text-sm text-gray-600">
@@ -483,7 +486,7 @@ const Schademeldingen: React.FC = () => {
             <button
               type="submit"
               disabled={uploading}
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400"
+              className="px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors disabled:bg-gray-400"
             >
               {editingMelding ? 'Bijwerken' : 'Opslaan'}
             </button>

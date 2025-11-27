@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, AlertCircle, CheckCircle, Clock, XCircle, Paperclip, X, MessageSquare, Send, Archive } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { Ticket, TicketAttachment, TicketComment } from '../types';
 
 const TicketOmgeving: React.FC = () => {
   const { profile } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -312,7 +315,7 @@ const TicketOmgeving: React.FC = () => {
           {(profile?.role === 'admin' || profile?.role === 'kantoorpersoneel') && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700"
             >
               <Plus size={20} />
               Nieuw Ticket
@@ -331,13 +334,13 @@ const TicketOmgeving: React.FC = () => {
                 placeholder="Zoek tickets..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             >
               <option value="all">Alle Statussen</option>
               <option value="open">Open</option>
@@ -348,7 +351,7 @@ const TicketOmgeving: React.FC = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             >
               <option value="all">Alle Prioriteiten</option>
               <option value="urgent">Urgent</option>
@@ -388,7 +391,7 @@ const TicketOmgeving: React.FC = () => {
                       e.stopPropagation();
                       openTicketDetails(ticket);
                     }}
-                    className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-violet-600 hover:bg-violet-50 rounded"
                   >
                     <MessageSquare size={16} />
                     Chat
@@ -416,7 +419,7 @@ const TicketOmgeving: React.FC = () => {
                   type="text"
                   value={newTicket.title}
                   onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                   placeholder="Korte omschrijving van het probleem"
                 />
               </div>
@@ -429,7 +432,7 @@ const TicketOmgeving: React.FC = () => {
                   value={newTicket.description}
                   onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                   rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                   placeholder="Gedetailleerde beschrijving van het probleem"
                 />
               </div>
@@ -441,7 +444,7 @@ const TicketOmgeving: React.FC = () => {
                 <select
                   value={newTicket.category}
                   onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                 >
                   <option value="">Selecteer categorie</option>
                   <option value="bug">Bug / Fout</option>
@@ -459,7 +462,7 @@ const TicketOmgeving: React.FC = () => {
                 <select
                   value={newTicket.priority}
                   onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                 >
                   <option value="">Selecteer prioriteit</option>
                   <option value="low">Laag</option>
@@ -474,7 +477,7 @@ const TicketOmgeving: React.FC = () => {
                   Bijlagen (optioneel)
                 </label>
                 <div className="space-y-2">
-                  <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-md hover:border-red-400 cursor-pointer transition-colors">
+                  <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-md hover:border-violet-400 cursor-pointer transition-colors">
                     <Paperclip size={20} className="text-gray-400 mr-2" />
                     <span className="text-sm text-gray-600">Klik om bestanden of screenshots te uploaden</span>
                     <input
@@ -499,7 +502,7 @@ const TicketOmgeving: React.FC = () => {
                           </div>
                           <button
                             onClick={() => removeAttachment(index)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-violet-600 hover:bg-violet-50 rounded"
                           >
                             <X size={16} />
                           </button>
@@ -525,7 +528,7 @@ const TicketOmgeving: React.FC = () => {
               <button
                 onClick={handleCreateTicket}
                 disabled={uploading}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? 'Uploaden...' : 'Ticket Aanmaken'}
               </button>
@@ -576,7 +579,7 @@ const TicketOmgeving: React.FC = () => {
                       key={comment.id}
                       className={`flex ${isOwnComment ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-[70%] ${isOwnComment ? 'bg-red-600 text-white' : 'bg-white'} rounded-lg p-3 shadow-sm`}>
+                      <div className={`max-w-[70%] ${isOwnComment ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white' : 'bg-white'} rounded-lg p-3 shadow-sm`}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className={`text-xs font-semibold ${isOwnComment ? 'text-red-100' : 'text-gray-900'}`}>
                             {comment.user_name}
@@ -614,13 +617,13 @@ const TicketOmgeving: React.FC = () => {
                   }}
                   placeholder="Typ een bericht..."
                   rows={2}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none"
                   disabled={sendingComment}
                 />
                 <button
                   onClick={sendComment}
                   disabled={sendingComment || !newComment.trim()}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <Send size={18} />
                   Verstuur
