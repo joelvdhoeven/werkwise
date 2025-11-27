@@ -1017,19 +1017,19 @@ const VoorraadbeheerAdmin: React.FC = () => {
       </div>
 
       {canManage && lowStockAlerts.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className={`rounded-lg p-4 ${isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'}`}>
           <div className="flex items-start gap-3">
-            <AlertCircle className="text-yellow-600 mt-0.5" size={20} />
+            <AlertCircle className={`mt-0.5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} size={20} />
             <div className="flex-1">
-              <h3 className="font-semibold text-yellow-900 mb-2">Voorraad Waarschuwingen ({lowStockAlerts.length})</h3>
+              <h3 className={`font-semibold mb-2 ${isDark ? 'text-yellow-300' : 'text-yellow-900'}`}>Voorraad Waarschuwingen ({lowStockAlerts.length})</h3>
               <div className="space-y-1">
                 {lowStockAlerts.slice(0, 5).map((alert, idx) => (
-                  <div key={idx} className="text-sm text-yellow-800">
+                  <div key={idx} className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'}`}>
                     {alert.product_name} bij {alert.location_name}: {alert.current_stock} {products.find(p => p.id === alert.product_id)?.unit} (min: {alert.minimum_stock})
                   </div>
                 ))}
                 {lowStockAlerts.length > 5 && (
-                  <div className="text-sm text-yellow-700 font-medium">+ {lowStockAlerts.length - 5} meer...</div>
+                  <div className={`text-sm font-medium ${isDark ? 'text-yellow-300' : 'text-yellow-700'}`}>+ {lowStockAlerts.length - 5} meer...</div>
                 )}
               </div>
             </div>
