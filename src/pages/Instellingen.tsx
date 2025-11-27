@@ -1,9 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Settings as SettingsIcon, Save, Eye, EyeOff, Package } from 'lucide-react';
+import { User, Lock, Settings as SettingsIcon, Save, Eye, EyeOff, Package, Calendar, Plus, X, Check, Clock, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
+
+interface VacationRequest {
+  id: string;
+  user_id: string;
+  type: 'vakantie' | 'ziekte' | 'verlof' | 'anders';
+  start_date: string;
+  end_date: string;
+  reason: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+  created_at: string;
+  profiles?: { naam: string };
+  reviewer?: { naam: string };
+}
 
 const Instellingen: React.FC = () => {
   const { user, hasPermission } = useAuth();
@@ -21,6 +37,17 @@ const Instellingen: React.FC = () => {
     naam: user?.naam || '',
     email: user?.email || '',
   });
+
+  // Vacation request state
+  const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([]);
+  const [showVacationForm, setShowVacationForm] = useState(false);
+  const [vacationFormData, setVacationFormData] = useState({
+    type: 'vakantie' as 'vakantie' | 'ziekte' | 'verlof' | 'anders',
+    start_date: '',
+    end_date: '',
+    reason: '',
+  });
+  const [loadingVacation, setLoadingVacation] = useState(false);
 
   // Update profile data when user loads
   React.useEffect(() => {
@@ -74,7 +101,153 @@ const Instellingen: React.FC = () => {
     if (activeTab === 'systeem') {
       loadModuleSettings();
     }
+    if (activeTab === 'afwezigheid') {
+      loadVacationRequests();
+    }
   }, [activeTab]);
+
+  const loadVacationRequests = async () => {
+    if (!user) return;
+    setLoadingVacation(true);
+    try {
+      const { data, error } = await supabase
+        .from('vacation_requests')
+        .select(`
+          *,
+          profiles:user_id(naam),
+          reviewer:reviewed_by(naam)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setVacationRequests(data || []);
+    } catch (error) {
+      console.error('Error loading vacation requests:', error);
+    } finally {
+      setLoadingVacation(false);
+    }
+  };
+
+  const handleCreateVacationRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    if (!vacationFormData.start_date || !vacationFormData.end_date) {
+      setErrorMessage('Vul een begin- en einddatum in');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return;
+    }
+
+    if (new Date(vacationFormData.end_date) < new Date(vacationFormData.start_date)) {
+      setErrorMessage('Einddatum moet na begindatum liggen');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('vacation_requests')
+        .insert({
+          user_id: user.id,
+          type: vacationFormData.type,
+          start_date: vacationFormData.start_date,
+          end_date: vacationFormData.end_date,
+          reason: vacationFormData.reason || null,
+        });
+
+      if (error) throw error;
+
+      setSuccessMessage('Afwezigheidsaanvraag ingediend');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      setShowVacationForm(false);
+      setVacationFormData({
+        type: 'vakantie',
+        start_date: '',
+        end_date: '',
+        reason: '',
+      });
+      loadVacationRequests();
+    } catch (error) {
+      console.error('Error creating vacation request:', error);
+      setErrorMessage('Fout bij het indienen van aanvraag');
+      setTimeout(() => setErrorMessage(''), 3000);
+    }
+  };
+
+  const handleDeleteVacationRequest = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('vacation_requests')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSuccessMessage('Aanvraag verwijderd');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      loadVacationRequests();
+    } catch (error) {
+      console.error('Error deleting vacation request:', error);
+      setErrorMessage('Fout bij het verwijderen van aanvraag');
+      setTimeout(() => setErrorMessage(''), 3000);
+    }
+  };
+
+  const handleReviewVacationRequest = async (id: string, status: 'approved' | 'rejected', note?: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('vacation_requests')
+        .update({
+          status,
+          reviewed_by: user.id,
+          reviewed_at: new Date().toISOString(),
+          review_note: note || null,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSuccessMessage(status === 'approved' ? 'Aanvraag goedgekeurd' : 'Aanvraag afgewezen');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      loadVacationRequests();
+    } catch (error) {
+      console.error('Error reviewing vacation request:', error);
+      setErrorMessage('Fout bij het verwerken van aanvraag');
+      setTimeout(() => setErrorMessage(''), 3000);
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'vakantie': return 'Vakantie';
+      case 'ziekte': return 'Ziekte';
+      case 'verlof': return 'Verlof';
+      case 'anders': return 'Anders';
+      default: return type;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return { label: 'In afwachting', className: isDark ? 'bg-yellow-900/50 text-yellow-300' : 'bg-yellow-100 text-yellow-800' };
+      case 'approved':
+        return { label: 'Goedgekeurd', className: isDark ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800' };
+      case 'rejected':
+        return { label: 'Afgewezen', className: isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-800' };
+      default:
+        return { label: status, className: isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800' };
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('nl-NL', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 
   const loadModuleSettings = async () => {
     try {
@@ -240,6 +413,17 @@ const Instellingen: React.FC = () => {
             <Lock size={18} />
             <span>{t('beveiliging')}</span>
           </button>
+          <button
+            onClick={() => setActiveTab('afwezigheid')}
+            className={`${
+              activeTab === 'afwezigheid'
+                ? 'border-violet-600 text-violet-600'
+                : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
+          >
+            <Calendar size={18} />
+            <span>Afwezigheid</span>
+          </button>
           {hasPermission('manage_settings') && (
             <button
               onClick={() => setActiveTab('systeem')}
@@ -370,6 +554,241 @@ const Instellingen: React.FC = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Vacation/Absence Tab */}
+      {activeTab === 'afwezigheid' && (
+        <div className="space-y-6">
+          {/* Request Form */}
+          <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={20} className="text-violet-600" />
+                <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Afwezigheid Aanvragen</h2>
+              </div>
+              {!showVacationForm && (
+                <button
+                  onClick={() => setShowVacationForm(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                >
+                  <Plus size={16} />
+                  <span>Nieuwe Aanvraag</span>
+                </button>
+              )}
+            </div>
+
+            {showVacationForm && (
+              <form onSubmit={handleCreateVacationRequest} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Type</label>
+                    <select
+                      value={vacationFormData.type}
+                      onChange={(e) => setVacationFormData({ ...vacationFormData, type: e.target.value as any })}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                    >
+                      <option value="vakantie">Vakantie</option>
+                      <option value="ziekte">Ziekte</option>
+                      <option value="verlof">Verlof</option>
+                      <option value="anders">Anders</option>
+                    </select>
+                  </div>
+                  <div></div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Begindatum</label>
+                    <input
+                      type="date"
+                      value={vacationFormData.start_date}
+                      onChange={(e) => setVacationFormData({ ...vacationFormData, start_date: e.target.value })}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Einddatum</label>
+                    <input
+                      type="date"
+                      value={vacationFormData.end_date}
+                      onChange={(e) => setVacationFormData({ ...vacationFormData, end_date: e.target.value })}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Reden (optioneel)</label>
+                  <textarea
+                    value={vacationFormData.reason}
+                    onChange={(e) => setVacationFormData({ ...vacationFormData, reason: e.target.value })}
+                    rows={3}
+                    placeholder="Voeg een toelichting toe..."
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'}`}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowVacationForm(false);
+                      setVacationFormData({ type: 'vakantie', start_date: '', end_date: '', reason: '' });
+                    }}
+                    className={`px-4 py-2 rounded-md transition-colors ${isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                  >
+                    Annuleren
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                  >
+                    <Save size={16} />
+                    <span>Indienen</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+
+          {/* My Requests */}
+          <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-800'}`}>Mijn Aanvragen</h2>
+
+            {loadingVacation ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+              </div>
+            ) : vacationRequests.filter(r => r.user_id === user?.id).length === 0 ? (
+              <p className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                Je hebt nog geen afwezigheidsaanvragen ingediend.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {vacationRequests.filter(r => r.user_id === user?.id).map((request) => {
+                  const statusBadge = getStatusBadge(request.status);
+                  return (
+                    <div
+                      key={request.id}
+                      className={`p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                              {getTypeLabel(request.type)}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge.className}`}>
+                              {statusBadge.label}
+                            </span>
+                          </div>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {formatDate(request.start_date)} - {formatDate(request.end_date)}
+                          </p>
+                          {request.reason && (
+                            <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                              {request.reason}
+                            </p>
+                          )}
+                          {request.review_note && (
+                            <p className={`text-sm italic ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                              Opmerking: {request.review_note}
+                            </p>
+                          )}
+                        </div>
+                        {request.status === 'pending' && (
+                          <button
+                            onClick={() => handleDeleteVacationRequest(request.id)}
+                            className={`p-2 rounded-md transition-colors ${isDark ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'}`}
+                            title="Aanvraag verwijderen"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Admin Section - All Requests */}
+          {hasPermission('manage_settings') && (
+            <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="flex items-center gap-2 mb-4">
+                <Clock size={20} className="text-violet-600" />
+                <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Alle Aanvragen (Admin)</h2>
+              </div>
+
+              {loadingVacation ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                </div>
+              ) : vacationRequests.length === 0 ? (
+                <p className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Er zijn geen afwezigheidsaanvragen.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {vacationRequests.map((request) => {
+                    const statusBadge = getStatusBadge(request.status);
+                    return (
+                      <div
+                        key={request.id}
+                        className={`p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-semibold ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                                {request.profiles?.naam || 'Onbekend'}
+                              </span>
+                              <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                                - {getTypeLabel(request.type)}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge.className}`}>
+                                {statusBadge.label}
+                              </span>
+                            </div>
+                            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {formatDate(request.start_date)} - {formatDate(request.end_date)}
+                            </p>
+                            {request.reason && (
+                              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                                {request.reason}
+                              </p>
+                            )}
+                            {request.reviewer?.naam && (
+                              <p className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                                Beoordeeld door: {request.reviewer.naam}
+                              </p>
+                            )}
+                          </div>
+                          {request.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleReviewVacationRequest(request.id, 'approved')}
+                                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                              >
+                                <Check size={14} />
+                                <span>Goedkeuren</span>
+                              </button>
+                              <button
+                                onClick={() => handleReviewVacationRequest(request.id, 'rejected')}
+                                className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+                              >
+                                <X size={14} />
+                                <span>Afwijzen</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
