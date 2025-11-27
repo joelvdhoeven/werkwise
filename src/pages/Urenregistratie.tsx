@@ -1677,7 +1677,8 @@ const Urenregistratie: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
         </>
       )}
 
