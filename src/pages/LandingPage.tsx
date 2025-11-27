@@ -12,7 +12,6 @@ import { Button } from '../components/ui/button';
 import { ThemeToggle } from '../components/ui/theme-toggle';
 
 const LandingPage: React.FC = () => {
-  const { language, setLanguage, t } = useLanguage();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [titleNumber, setTitleNumber] = useState(0);
