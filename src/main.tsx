@@ -1,8 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { registerLocale } from 'react-datepicker';
 import { nl } from 'date-fns/locale';
 import App from './App.tsx';
+import LandingPage from './pages/LandingPage.tsx';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { SystemSettingsProvider } from './contexts/SystemSettingsContext';
@@ -13,12 +15,17 @@ registerLocale('nl', nl);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <LanguageProvider>
-      <AuthProvider>
-        <SystemSettingsProvider>
-          <App />
-        </SystemSettingsProvider>
-      </AuthProvider>
-    </LanguageProvider>
+    <BrowserRouter>
+      <LanguageProvider>
+        <AuthProvider>
+          <SystemSettingsProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/demo/*" element={<App />} />
+            </Routes>
+          </SystemSettingsProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </BrowserRouter>
   </StrictMode>
 );
