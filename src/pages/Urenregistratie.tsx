@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Calendar, X, Trash2, Pencil, Minus, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, FileText, Timer } from 'lucide-react';
+import { Download, Plus, Calendar, X, Trash2, Pencil, Minus, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, FileText, Timer, ListChecks, Play, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
@@ -62,6 +62,32 @@ const Urenregistratie: React.FC = () => {
   const [showOverview, setShowOverview] = useState(false);
   const [activeTab, setActiveTab] = useState<'registreren' | 'timer' | 'overzicht'>('registreren');
   const [isTimerOpen, setIsTimerOpen] = useState(false);
+
+  // For normal users, show selection menu first
+  const isNormalUser = profile?.role === 'medewerker' || profile?.role === 'zzper';
+  const [showSelectionMenu, setShowSelectionMenu] = useState(true);
+
+  // Update showSelectionMenu when profile changes
+  useEffect(() => {
+    if (profile) {
+      setShowSelectionMenu(isNormalUser);
+    }
+  }, [profile, isNormalUser]);
+
+  const handleSelectOption = (option: 'registreren' | 'timer' | 'overzicht') => {
+    setShowSelectionMenu(false);
+    setActiveTab(option);
+    if (option === 'registreren') {
+      setShowNewRegistration(true);
+      setShowOverview(false);
+    } else if (option === 'timer') {
+      setIsTimerOpen(true);
+    } else if (option === 'overzicht') {
+      setShowNewRegistration(false);
+      setShowOverview(true);
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [startDateFilter, setStartDateFilter] = useState(new Date().toISOString().split('T')[0]);
   const [endDateFilter, setEndDateFilter] = useState(new Date().toISOString().split('T')[0]);
@@ -813,8 +839,120 @@ const Urenregistratie: React.FC = () => {
         onToggle={() => setIsTimerOpen(!isTimerOpen)}
       />
 
-      {/* Tab Navigation */}
-      <div className={`mb-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+      {/* Selection Menu for Normal Users */}
+      {showSelectionMenu && isNormalUser && (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center">
+          <div className="text-center mb-10">
+            <h1 className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {t('urenregistratie')}
+            </h1>
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Wat wil je doen?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full px-4">
+            {/* Uren Registreren Card */}
+            <button
+              onClick={() => handleSelectOption('registreren')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-violet-900/50 to-fuchsia-900/50 border-2 border-violet-600/50 hover:border-violet-500'
+                  : 'bg-gradient-to-br from-violet-50 to-fuchsia-50 border-2 border-violet-200 hover:border-violet-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/30'
+                    : 'bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                }`}>
+                  <FileText className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Uren Registreren
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Registreer je gewerkte uren op een project
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                  <span>Start</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Timer Card */}
+            <button
+              onClick={() => handleSelectOption('timer')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-emerald-900/50 to-teal-900/50 border-2 border-emerald-600/50 hover:border-emerald-500'
+                  : 'bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-emerald-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-teal-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg shadow-emerald-500/30'
+                    : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30'
+                }`}>
+                  <Play className="h-10 w-10 text-white ml-1" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Timer
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Start een timer en registreer automatisch
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  <span>Start</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Overzicht Card */}
+            <button
+              onClick={() => handleSelectOption('overzicht')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-amber-900/50 to-orange-900/50 border-2 border-amber-600/50 hover:border-amber-500'
+                  : 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 hover:border-amber-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-amber-600 to-orange-600 shadow-lg shadow-amber-500/30'
+                    : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30'
+                }`}>
+                  <ListChecks className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Overzicht
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Bekijk je geregistreerde uren
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                  <span>Bekijken</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Regular Tab View for Admins or after selection */}
+      {(!showSelectionMenu || !isNormalUser) && (
+        <>
+          {/* Tab Navigation */}
+          <div className={`mb-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <nav className="flex space-x-1" aria-label="Tabs">
           <button
             onClick={() => {
@@ -1540,7 +1678,7 @@ const Urenregistratie: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </>
       )}
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={t('nieuweRegistratie')}>

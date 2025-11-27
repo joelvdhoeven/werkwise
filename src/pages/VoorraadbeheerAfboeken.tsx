@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Scan, X, Plus, Minus, CheckCircle, AlertCircle, Trash2, FileText, Download, Search, Upload, FileSpreadsheet } from 'lucide-react';
+import { Scan, X, Plus, Minus, CheckCircle, AlertCircle, Trash2, FileText, Download, Search, Upload, FileSpreadsheet, Package, ArrowRight, ListChecks } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
 import { exportToCSV } from '../utils/exportUtils';
 import { supabase } from '../lib/supabase';
@@ -102,6 +102,41 @@ const VoorraadbeheerAfboeken: React.FC = () => {
   const [importing, setImporting] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // For normal users, show selection menu first
+  const [profile, setProfile] = useState<any>(null);
+  const isNormalUser = profile?.role === 'medewerker' || profile?.role === 'zzper';
+  const [showSelectionMenu, setShowSelectionMenu] = useState(true);
+
+  // Load user profile to determine role
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        setProfile(data);
+        if (data?.role !== 'medewerker' && data?.role !== 'zzper') {
+          setShowSelectionMenu(false);
+        }
+      }
+    };
+    loadProfile();
+  }, [user?.id]);
+
+  const handleSelectOption = (option: 'scannen' | 'afboeken' | 'overzicht') => {
+    setShowSelectionMenu(false);
+    if (option === 'scannen') {
+      // Start scanning immediately with a new line
+      startScanning(0);
+    } else if (option === 'afboeken') {
+      // Just show the main form
+    } else if (option === 'overzicht') {
+      setShowOverview(true);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -711,19 +746,133 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Afboeken</h1>
-          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Scan of zoek producten en boek ze af op een project</p>
+      {/* Selection Menu for Normal Users */}
+      {showSelectionMenu && isNormalUser && (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center">
+          <div className="text-center mb-10">
+            <h1 className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Voorraad Afboeken
+            </h1>
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Wat wil je doen?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full px-4">
+            {/* Product Scannen Card */}
+            <button
+              onClick={() => handleSelectOption('scannen')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-violet-900/50 to-fuchsia-900/50 border-2 border-violet-600/50 hover:border-violet-500'
+                  : 'bg-gradient-to-br from-violet-50 to-fuchsia-50 border-2 border-violet-200 hover:border-violet-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/30'
+                    : 'bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                }`}>
+                  <Scan className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Product Scannen
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Scan een barcode om een product af te boeken
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                  <span>Start Scanner</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Product Afboeken Card */}
+            <button
+              onClick={() => handleSelectOption('afboeken')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-emerald-900/50 to-teal-900/50 border-2 border-emerald-600/50 hover:border-emerald-500'
+                  : 'bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-emerald-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-teal-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg shadow-emerald-500/30'
+                    : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30'
+                }`}>
+                  <Package className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Product Zoeken
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Zoek een product en voer het aantal in
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  <span>Start</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Overzicht Card */}
+            <button
+              onClick={() => handleSelectOption('overzicht')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-amber-900/50 to-orange-900/50 border-2 border-amber-600/50 hover:border-amber-500'
+                  : 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 hover:border-amber-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-amber-600 to-orange-600 shadow-lg shadow-amber-500/30'
+                    : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30'
+                }`}>
+                  <ListChecks className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Mijn Afboekingen
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Bekijk je afgeboekte producten
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                  <span>Bekijken</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowOverview(true)}
-          className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
-        >
-          <FileText size={20} />
-          Overzicht
-        </button>
-      </div>
+      )}
+
+      {/* Regular View for Admins or after selection */}
+      {(!showSelectionMenu || !isNormalUser) && (
+        <>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Afboeken</h1>
+              <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Scan of zoek producten en boek ze af op een project</p>
+            </div>
+            <button
+              onClick={() => setShowOverview(true)}
+              className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+            >
+              <FileText size={20} />
+              Overzicht
+            </button>
+          </div>
+        </>
+      )}
 
       {successMessage && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
@@ -758,6 +907,9 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         </div>
       )}
 
+      {/* Main Form Content - Hidden when selection menu is shown */}
+      {(!showSelectionMenu || !isNormalUser) && (
+        <>
       <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6 space-y-4`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -924,6 +1076,8 @@ const VoorraadbeheerAfboeken: React.FC = () => {
           </button>
         </div>
       </div>
+        </>
+      )}
 
       {showOverview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
