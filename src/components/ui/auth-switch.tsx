@@ -1,8 +1,9 @@
 import { cn } from "../../lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, User, CheckCircle, ArrowRight, Briefcase } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, CheckCircle, ArrowRight } from "lucide-react";
 import { Button } from "./button";
+import { useTheme } from "../../contexts/ThemeContext";
 
 interface AuthSwitchProps {
   language: 'nl' | 'en' | 'pl';
@@ -37,6 +38,8 @@ export function AuthSwitch({
   success,
   translations: t,
 }: AuthSwitchProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -62,30 +65,24 @@ export function AuthSwitch({
   return (
     <div className={cn("w-full max-w-md mx-auto")}>
       {/* Logo and Title */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-10">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-200"
+          transition={{ duration: 0.4 }}
+          className="mb-3"
         >
-          <Briefcase className="h-10 w-10 text-white" />
+          <span className="text-4xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+            WerkWise
+          </span>
         </motion.div>
-        <motion.h1
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
-        >
-          WerkWise
-        </motion.h1>
         <motion.p
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-gray-500 mt-2"
+          transition={{ delay: 0.15 }}
+          className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
         >
-          {language === 'nl' ? 'Workforce Management Platform' : language === 'pl' ? 'Platforma zarządzania' : 'Workforce Management Platform'}
+          {language === 'nl' ? 'Log in om verder te gaan' : language === 'pl' ? 'Zaloguj się, aby kontynuować' : 'Sign in to continue'}
         </motion.p>
       </div>
 
@@ -93,52 +90,56 @@ export function AuthSwitch({
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white rounded-3xl shadow-2xl shadow-gray-200/60 border border-gray-100 overflow-hidden"
+        transition={{ delay: 0.2 }}
+        className={`rounded-2xl shadow-xl overflow-hidden ${
+          isDark
+            ? 'bg-gray-900 border border-gray-800 shadow-black/30'
+            : 'bg-white border border-gray-100 shadow-gray-200/50'
+        }`}
       >
         {/* Tab Switcher */}
-        <div className="flex border-b border-gray-100">
+        <div className={`flex p-1.5 m-4 rounded-xl ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
           <button
             onClick={() => !isLoading && setIsLogin(true)}
             className={cn(
-              "flex-1 py-4 text-sm font-semibold transition-all relative",
-              isLogin ? "text-indigo-600" : "text-gray-400 hover:text-gray-600"
+              "flex-1 py-2.5 text-sm font-semibold transition-all rounded-lg relative",
+              isLogin
+                ? isDark
+                  ? "bg-gray-700 text-white shadow-sm"
+                  : "bg-white text-gray-900 shadow-sm"
+                : isDark
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
             )}
           >
             {t.login}
-            {isLogin && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"
-              />
-            )}
           </button>
           <button
             onClick={() => !isLoading && setIsLogin(false)}
             className={cn(
-              "flex-1 py-4 text-sm font-semibold transition-all relative",
-              !isLogin ? "text-indigo-600" : "text-gray-400 hover:text-gray-600"
+              "flex-1 py-2.5 text-sm font-semibold transition-all rounded-lg relative",
+              !isLogin
+                ? isDark
+                  ? "bg-gray-700 text-white shadow-sm"
+                  : "bg-white text-gray-900 shadow-sm"
+                : isDark
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
             )}
           >
             {t.register}
-            {!isLogin && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"
-              />
-            )}
           </button>
         </div>
 
         {/* Form */}
-        <div className="p-8">
+        <div className="px-6 pb-6">
           <AnimatePresence mode="wait">
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm"
+                className={`mb-6 p-4 rounded-xl text-sm ${isDark ? 'bg-red-500/10 border border-red-500/30 text-red-400' : 'bg-red-50 border border-red-100 text-red-600'}`}
               >
                 {error}
               </motion.div>
@@ -148,7 +149,7 @@ export function AuthSwitch({
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-6 p-4 bg-green-50 border border-green-100 text-green-600 rounded-xl text-sm flex items-center gap-3"
+                className={`mb-6 p-4 rounded-xl text-sm flex items-center gap-3 ${isDark ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-green-50 border border-green-100 text-green-600'}`}
               >
                 <CheckCircle className="h-5 w-5" />
                 {success}
@@ -156,7 +157,7 @@ export function AuthSwitch({
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.div
@@ -166,17 +167,21 @@ export function AuthSwitch({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     {t.fullName}
                   </label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
                     <input
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder={t.fullNamePlaceholder}
-                      className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                        isDark
+                          ? 'bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500'
+                          : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400'
+                      }`}
                     />
                   </div>
                 </motion.div>
@@ -184,42 +189,50 @@ export function AuthSwitch({
             </AnimatePresence>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.email}
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.emailPlaceholder}
-                  className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                    isDark
+                      ? 'bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500'
+                      : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400'
+                  }`}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.password}
               </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isLogin ? t.passwordPlaceholder : t.choosePassword}
-                  className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className={`w-full pl-10 pr-11 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                    isDark
+                      ? 'bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500'
+                      : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400'
+                  }`}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className={`absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -228,7 +241,7 @@ export function AuthSwitch({
               <div className="text-right">
                 <button
                   type="button"
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  className={`text-xs font-medium ${isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'}`}
                 >
                   {t.forgotPassword}
                 </button>
@@ -238,7 +251,7 @@ export function AuthSwitch({
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full"
+              className="w-full mt-2"
               size="lg"
             >
               {isLoading ? (
@@ -246,32 +259,18 @@ export function AuthSwitch({
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                   />
                   <span>{isLogin ? t.loggingIn : t.registering}</span>
                 </div>
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   {isLogin ? t.login : t.createAccount}
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-4 w-4" />
                 </span>
               )}
             </Button>
           </form>
-
-          {/* Switch prompt */}
-          <p className="text-center text-sm text-gray-500 mt-6">
-            {isLogin
-              ? (language === 'nl' ? 'Nog geen account?' : language === 'pl' ? 'Nie masz konta?' : "Don't have an account?")
-              : (language === 'nl' ? 'Al een account?' : language === 'pl' ? 'Masz już konto?' : 'Already have an account?')}{' '}
-            <button
-              type="button"
-              onClick={switchMode}
-              className="text-indigo-600 hover:text-indigo-700 font-semibold"
-            >
-              {isLogin ? t.register : t.login}
-            </button>
-          </p>
         </div>
       </motion.div>
     </div>
