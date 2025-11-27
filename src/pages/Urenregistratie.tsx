@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Calendar, X, Trash2, Pencil, Minus, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, Plus, Calendar, X, Trash2, Pencil, Minus, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, FileText, Timer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
@@ -11,11 +11,15 @@ import { formatDate } from '../utils/dateUtils';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Modal from '../components/Modal';
 import DatePickerField from '../components/DatePickerField';
+import { useTheme } from '../contexts/ThemeContext';
+import TimerWidget from '../components/TimerWidget';
 
 const Urenregistratie: React.FC = () => {
   const { t } = useLanguage();
   const { hasPermission, user, profile } = useAuth();
   const { settings } = useSystemSettings();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Admin and kantoorpersoneel can see all registrations, others only their own
   const canViewAll = profile?.role === 'admin' || profile?.role === 'kantoorpersoneel' || profile?.role === 'superuser';
@@ -56,6 +60,8 @@ const Urenregistratie: React.FC = () => {
   const [showProjectCreatingModal, setShowProjectCreatingModal] = useState(false);
   const [showNewRegistration, setShowNewRegistration] = useState(true);
   const [showOverview, setShowOverview] = useState(false);
+  const [activeTab, setActiveTab] = useState<'registreren' | 'timer' | 'overzicht'>('registreren');
+  const [isTimerOpen, setIsTimerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [startDateFilter, setStartDateFilter] = useState(new Date().toISOString().split('T')[0]);
   const [endDateFilter, setEndDateFilter] = useState(new Date().toISOString().split('T')[0]);
@@ -739,16 +745,130 @@ const Urenregistratie: React.FC = () => {
     }
   };
 
+  // Handle timer save
+  const handleTimerSave = async (data: {
+    project_id: string;
+    aantal_uren: number;
+    werkomschrijving: string;
+    werktype: string;
+  }) => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+
+      if (!authUser?.id) {
+        setFormError('Gebruiker niet ingelogd');
+        return;
+      }
+
+      const project = projecten.find((p: any) => p.id === data.project_id);
+
+      const registration = {
+        user_id: authUser.id,
+        project_id: data.project_id,
+        project_naam: project?.naam || null,
+        datum: new Date().toISOString().split('T')[0],
+        werktype: data.werktype,
+        aantal_uren: data.aantal_uren,
+        werkomschrijving: data.werkomschrijving || 'Timer registratie',
+        status: 'submitted',
+        materials: []
+      };
+
+      const { error: insertError } = await supabase.from('time_registrations').insert([registration]);
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        setFormError('Er is een fout opgetreden bij het opslaan.');
+        return;
+      }
+
+      setSuccessMessage('Timer uren succesvol geboekt!');
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
+      refetch();
+    } catch (error) {
+      console.error('Error saving timer:', error);
+      setFormError('Er is een fout opgetreden bij het opslaan van de timer.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
 
   return (
     <div>
+      {/* Timer Widget */}
+      <TimerWidget
+        projects={projecten}
+        onSaveTime={handleTimerSave}
+        isOpen={isTimerOpen}
+        onToggle={() => setIsTimerOpen(!isTimerOpen)}
+      />
+
+      {/* Tab Navigation */}
+      <div className={`mb-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        <nav className="flex space-x-1" aria-label="Tabs">
+          <button
+            onClick={() => {
+              setActiveTab('registreren');
+              setShowNewRegistration(true);
+              setShowOverview(false);
+            }}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'registreren'
+                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                : isDark
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            Uren registreren
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('timer');
+              setIsTimerOpen(true);
+            }}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'timer'
+                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                : isDark
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Timer className="h-4 w-4" />
+            Timer
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('overzicht');
+              setShowNewRegistration(false);
+              setShowOverview(true);
+            }}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'overzicht'
+                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                : isDark
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Clock className="h-4 w-4" />
+            Overzicht
+          </button>
+        </nav>
+      </div>
+
       {showSuccessMessage && (
         <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
           {successMessage}
@@ -756,10 +876,10 @@ const Urenregistratie: React.FC = () => {
       )}
       
       {formError && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+        <div className="mb-4 p-4 bg-violet-100 border border-violet-400 text-violet-700 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-violet-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
@@ -772,37 +892,28 @@ const Urenregistratie: React.FC = () => {
       
       {showNewRegistration && (
         <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">{t('nieuweRegistratie')}</h1>
-            <button 
-              onClick={() => {
-                setShowNewRegistration(false);
-                setShowOverview(true);
-              }}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-            >
-              <span>{t('overzicht')}</span>
-            </button>
+          <div className="mb-6">
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('nieuweRegistratie')}</h1>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <h3 className="text-md font-medium text-gray-700 mb-4">{t('basisInformatie')}</h3>
+                <h3 className={`text-md font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-4`}>{t('basisInformatie')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('datum')} *</label>
+                    <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('datum')} *</label>
                     <input
                       type="date"
                       name="datum"
                       value={formData.datum}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')} *</label>
+                    <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('project')} *</label>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <select
                         name="project_id"
@@ -812,7 +923,7 @@ const Urenregistratie: React.FC = () => {
                           setSelectedProject(project || null);
                         }}
                         required
-                        className="flex-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`flex-1 w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                       >
                         <option value="">Selecteer een project</option>
                         {projecten.map((project: any) => (
@@ -824,7 +935,7 @@ const Urenregistratie: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmProjectModal(true)}
-                        className="w-full sm:w-auto px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center"
+                        className="w-full sm:w-auto px-3 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors flex items-center justify-center"
                         title="Snel nieuw project aanmaken"
                       >
                         <Plus size={20} />
@@ -840,7 +951,7 @@ const Urenregistratie: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Voortgang project (%)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Voortgang project (%)</label>
                   <input
                     type="number"
                     name="voortgang"
@@ -849,16 +960,16 @@ const Urenregistratie: React.FC = () => {
                     min="0"
                     max="100"
                     placeholder="0-100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{t('optioneelGeefAanHoeveelProcent')}</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
                 </div>
 
                 <div className="mt-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm font-medium text-gray-700">Gereden kilometers</label>
+                    <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Gereden kilometers</label>
                     <div className="group relative">
-                      <Info size={16} className="text-gray-400 cursor-help" />
+                      <Info size={16} className={`${isDark ? 'text-gray-400' : 'text-gray-400'} cursor-help`} />
                       <div className="invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-md shadow-lg -top-2 left-6">
                         Dit zijn kilometers die niet met een zakelijke auto gereden worden en ook geen woon-werk kilometers zijn.
                       </div>
@@ -872,19 +983,19 @@ const Urenregistratie: React.FC = () => {
                     min="0"
                     step="0.1"
                     placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Optioneel - vul alleen in indien van toepassing</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel - vul alleen in indien van toepassing</p>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
+              <div className={`border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} pt-4`}>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Werkregels</h3>
+                  <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Werkregels</h3>
                   <button
                     type="button"
                     onClick={addWorkLine}
-                    className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                    className="flex items-center gap-1 px-3 py-1 bg-violet-600 text-white text-sm rounded-md hover:bg-violet-700"
                   >
                     <Plus size={16} />
                     Regel toevoegen
@@ -893,14 +1004,14 @@ const Urenregistratie: React.FC = () => {
 
                 <div className="space-y-3">
                   {workLines.map((line, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <div key={index} className={`border ${isDark ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'} rounded-lg p-4`}>
                       <div className="flex items-start justify-between mb-3">
-                        <span className="text-sm font-medium text-gray-700">Regel {index + 1}</span>
+                        <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Regel {index + 1}</span>
                         {workLines.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeWorkLine(index)}
-                            className="text-red-600 hover:text-red-800"
+                            className="text-violet-600 hover:text-violet-800"
                           >
                             <Minus size={18} />
                           </button>
@@ -909,12 +1020,12 @@ const Urenregistratie: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">{t('werktype')} *</label>
+                          <label className={`block text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werktype')} *</label>
                           <select
                             value={line.werktype}
                             onChange={(e) => updateWorkLine(index, 'werktype', e.target.value)}
                             required
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                           >
                             <option value="">{t('selecteerType')}</option>
                             <option value="projectbasis">{t('projectbasis')}</option>
@@ -924,7 +1035,7 @@ const Urenregistratie: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">{t('aantalUren')} *</label>
+                          <label className={`block text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('aantalUren')} *</label>
                           <input
                             type="number"
                             value={line.aantal_uren || ''}
@@ -933,27 +1044,27 @@ const Urenregistratie: React.FC = () => {
                             min="0"
                             required
                             placeholder="bv. 8 of 4.5"
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                           />
                         </div>
 
                         <div className="md:col-span-1">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">{t('werkomschrijving')} *</label>
+                          <label className={`block text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werkomschrijving')} *</label>
                           <input
                             type="text"
                             value={line.werkomschrijving}
                             onChange={(e) => updateWorkLine(index, 'werkomschrijving', e.target.value)}
                             required
                             placeholder="Beschrijf het uitgevoerde werk"
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                           />
                         </div>
                       </div>
 
                       {(line.werktype === 'regie' || line.werktype === 'meerwerk') && (
-                        <div className="mt-4 pt-4 border-t border-gray-300">
+                        <div className={`mt-4 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-300'}`}>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block text-xs font-semibold text-gray-700">Materialen</label>
+                            <label className={`block text-xs font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Materialen</label>
                             <button
                               type="button"
                               onClick={() => addMaterialToWorkLine(index)}
@@ -967,20 +1078,20 @@ const Urenregistratie: React.FC = () => {
                           {line.materials && line.materials.length > 0 && (
                             <div className="space-y-2">
                               {line.materials.map((material, matIdx) => (
-                                <div key={matIdx} className="border border-gray-200 rounded bg-white">
-                                  <div className="p-2 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
+                                <div key={matIdx} className={`border ${isDark ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'} rounded`}>
+                                  <div className={`p-2 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'} border-b flex items-center justify-between`}>
                                     <div className="flex items-center gap-2">
                                       <button
                                         type="button"
                                         onClick={() => updateMaterial(index, matIdx, 'type', material.type === 'product' ? 'description' : 'product')}
-                                        className={`px-2 py-1 text-xs rounded ${material.type === 'product' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                                        className={`px-2 py-1 text-xs rounded ${material.type === 'product' ? 'bg-blue-600 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}
                                       >
                                         Product
                                       </button>
                                       <button
                                         type="button"
                                         onClick={() => updateMaterial(index, matIdx, 'type', material.type === 'description' ? 'product' : 'description')}
-                                        className={`px-2 py-1 text-xs rounded ${material.type === 'description' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                                        className={`px-2 py-1 text-xs rounded ${material.type === 'description' ? 'bg-blue-600 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}
                                       >
                                         Omschrijving
                                       </button>
@@ -988,7 +1099,7 @@ const Urenregistratie: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => removeMaterialFromWorkLine(index, matIdx)}
-                                      className="text-red-600 hover:text-red-800"
+                                      className="text-violet-600 hover:text-violet-800"
                                     >
                                       <X size={16} />
                                     </button>
@@ -1001,7 +1112,7 @@ const Urenregistratie: React.FC = () => {
                                           <select
                                             value={material.product_id || ''}
                                             onChange={(e) => updateMaterial(index, matIdx, 'product_id', e.target.value)}
-                                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-full px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           >
                                             <option value="">Selecteer product</option>
                                             {products.map((product: any) => (
@@ -1019,9 +1130,9 @@ const Urenregistratie: React.FC = () => {
                                             placeholder="Aantal"
                                             min="0"
                                             step="0.1"
-                                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-full px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
-                                          <span className="text-xs text-gray-600 min-w-[40px]">{material.unit || '-'}</span>
+                                          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} min-w-[40px]`}>{material.unit || '-'}</span>
                                         </div>
                                       </div>
                                     ) : (
@@ -1032,7 +1143,7 @@ const Urenregistratie: React.FC = () => {
                                             value={material.description || ''}
                                             onChange={(e) => updateMaterial(index, matIdx, 'description', e.target.value)}
                                             placeholder="Beschrijving materiaal"
-                                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-full px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
                                         </div>
                                         <div className="flex gap-2 items-center">
@@ -1043,14 +1154,14 @@ const Urenregistratie: React.FC = () => {
                                             placeholder="Aantal"
                                             min="0"
                                             step="0.1"
-                                            className="w-20 px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-20 px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
                                           <input
                                             type="text"
                                             value={material.unit || ''}
                                             onChange={(e) => updateMaterial(index, matIdx, 'unit', e.target.value)}
                                             placeholder="Eenheid"
-                                            className="w-20 px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-20 px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
                                         </div>
                                       </div>
@@ -1074,20 +1185,20 @@ const Urenregistratie: React.FC = () => {
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     setShowNewRegistration(false);
                     setShowOverview(true);
                   }}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                  className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
                 >
                   {t('annuleren')}
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={mutationLoading}
-                  className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
                 >
                   {mutationLoading ? 'Opslaan...' : t('registratieOpslaan')}
                 </button>
@@ -1100,20 +1211,20 @@ const Urenregistratie: React.FC = () => {
       {showOverview && (
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">{t('urenregistratie')}</h1>
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('urenregistratie')}</h1>
             <div className="flex space-x-3">
               <ProtectedRoute permission="export_data">
-                <button 
+                <button
                   onClick={handleExport}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  className={`flex items-center space-x-2 px-4 py-2 ${isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} rounded-md transition-colors`}
                 >
                   <Download size={16} />
                   <span>{t('exporteren')}</span>
                 </button>
               </ProtectedRoute>
-              <button 
+              <button
                 onClick={handleNewRegistration}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
               >
                 <Plus size={16} />
                 <span>{t('nieuweRegistratie')}</span>
@@ -1122,15 +1233,15 @@ const Urenregistratie: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow mb-6 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow mb-6 p-4`}>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               {hasPermission('view_reports') && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gebruiker</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Gebruiker</label>
                   <select
                     value={userFilter}
                     onChange={(e) => setUserFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   >
                     <option value="">Alle gebruikers</option>
                     {gebruikers.map((gebruiker: any) => (
@@ -1142,11 +1253,11 @@ const Urenregistratie: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Periode</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Periode</label>
                 <select
                   value={dateRangeFilter}
                   onChange={(e) => handleDateRangeChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 >
                   <option value="custom">Aangepast</option>
                   <option value="deze-week">Deze week</option>
@@ -1173,11 +1284,11 @@ const Urenregistratie: React.FC = () => {
                 placeholder={t('dateInputPlaceholder')}
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('type')}</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('type')}</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 >
                   <option value="alleTypes">{t('alleTypes')}</option>
                   <option value="projectbasis">{t('projectbasis')}</option>
@@ -1192,35 +1303,35 @@ const Urenregistratie: React.FC = () => {
                 placeholder={t('zoekProjectOfOrdernummer')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-80 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full md:w-80 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               />
             </div>
           </div>
 
           {/* Registraties overzicht */}
           {filteredRegistraties.length > 0 && (
-            <div className="bg-white rounded-lg shadow mt-6">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-800">
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow mt-6`}>
+              <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {searchTerm ? `Zoekresultaten (${filteredRegistraties.length})` : `Registraties (${filteredRegistraties.length})`}
                 </h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className={isDark ? 'bg-gray-900' : 'bg-gray-50'}>
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('datum')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('datum')}</th>
                       {hasPermission('view_reports') && (
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gebruiker</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Gebruiker</th>
                       )}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('werktype')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('aantalUren')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('werkomschrijving')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('acties')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Project</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('werktype')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('aantalUren')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('werkomschrijving')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('acties')}</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className={`${isDark ? 'bg-gray-800' : 'bg-white'} divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {paginatedRegistraties.map((registratie) => {
                       const hasExtraInfo = (registratie.driven_kilometers && registratie.driven_kilometers > 0) ||
                                           (registratie.materials && registratie.materials.length > 0) ||
@@ -1229,28 +1340,28 @@ const Urenregistratie: React.FC = () => {
 
                       return (
                         <React.Fragment key={registratie.id}>
-                          <tr className={isExpanded ? 'bg-gray-50' : 'hover:bg-gray-50'}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <tr className={isExpanded ? (isDark ? 'bg-gray-900' : 'bg-gray-50') : (isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-50')}>
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {formatDate(registratie.datum)}
                             </td>
                             {hasPermission('view_reports') && (
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                                 {gebruikers.find((g: any) => g.id === registratie.user_id)?.naam || 'Onbekend'}
                               </td>
                             )}
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {registratie.project_id ?
                                 projecten.find(p => p.id === registratie.project_id)?.naam || 'Onbekend project' :
                                 '-'
                               }
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {registratie.werktype}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {registratie.aantal_uren.toString().replace('.', ',')}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                            <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'} max-w-xs`}>
                               <div className="break-words">{registratie.werkomschrijving}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -1258,7 +1369,7 @@ const Urenregistratie: React.FC = () => {
                                 {hasExtraInfo && (
                                   <button
                                     onClick={() => toggleRowExpansion(registratie.id)}
-                                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                                    className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'} transition-colors`}
                                     title={isExpanded ? 'Verberg details' : 'Toon details'}
                                   >
                                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -1276,7 +1387,7 @@ const Urenregistratie: React.FC = () => {
                                     {hasPermission('approve_hours') && (
                                       <button
                                         onClick={() => handleDeleteRegistration(registratie.id)}
-                                        className="text-gray-600 hover:text-gray-900"
+                                        className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'}`}
                                         title="Verwijderen"
                                       >
                                         <Trash2 size={16} />
@@ -1288,28 +1399,28 @@ const Urenregistratie: React.FC = () => {
                             </td>
                           </tr>
                           {isExpanded && hasExtraInfo && (
-                            <tr className="bg-gray-50">
+                            <tr className={isDark ? 'bg-gray-900' : 'bg-gray-50'}>
                               <td colSpan={hasPermission('view_reports') ? 7 : 6} className="px-6 py-4">
-                                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                                <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg p-4 shadow-sm border`}>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {registratie.driven_kilometers && registratie.driven_kilometers > 0 && (
-                                      <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-                                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Kilometers</div>
-                                        <div className="text-2xl font-bold text-gray-900">
+                                      <div className={`${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border p-4 rounded-lg shadow-sm`}>
+                                        <div className={`text-xs font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-2`}>Kilometers</div>
+                                        <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                           {registratie.driven_kilometers.toString().replace('.', ',')} km
                                         </div>
                                       </div>
                                     )}
                                     {registratie.materials && registratie.materials.length > 0 && (
-                                      <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-                                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Materialen</div>
+                                      <div className={`${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border p-4 rounded-lg shadow-sm`}>
+                                        <div className={`text-xs font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-3`}>Materialen</div>
                                         <div className="space-y-2">
                                           {registratie.materials.map((mat: any, idx: number) => (
-                                            <div key={idx} className="flex justify-between items-center text-sm py-1 border-b border-gray-100 last:border-0">
-                                              <span className="font-medium text-gray-900">
+                                            <div key={idx} className={`flex justify-between items-center text-sm py-1 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'} last:border-0`}>
+                                              <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {mat.type === 'product' ? mat.product_name : mat.description}
                                               </span>
-                                              <span className="text-gray-600 font-semibold">{mat.quantity} {mat.unit}</span>
+                                              <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'} font-semibold`}>{mat.quantity} {mat.unit}</span>
                                             </div>
                                           ))}
                                         </div>
@@ -1336,29 +1447,29 @@ const Urenregistratie: React.FC = () => {
               </div>
 
               {/* Pagination Controls */}
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className={`px-6 py-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
                 <div className="flex items-center space-x-2">
-                  <label className="text-sm text-gray-700">Toon:</label>
+                  <label className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Toon:</label>
                   <select
                     value={itemsPerPage}
                     onChange={(e) => {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`px-3 py-1 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <span className="text-sm text-gray-700">
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     resultaten per pagina
                   </span>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-700">
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     Pagina {currentPage} van {totalPages} ({totalItems} resultaten)
                   </span>
 
@@ -1366,7 +1477,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed`}
                       title="Eerste pagina"
                     >
                       «
@@ -1374,7 +1485,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center`}
                       title="Vorige pagina"
                     >
                       <ChevronLeft size={16} />
@@ -1399,8 +1510,8 @@ const Urenregistratie: React.FC = () => {
                           onClick={() => setCurrentPage(pageNumber)}
                           className={`px-3 py-1 border rounded-md ${
                             currentPage === pageNumber
-                              ? 'bg-red-600 text-white border-red-600'
-                              : 'border-gray-300 hover:bg-gray-50'
+                              ? 'bg-violet-600 text-white border-violet-600'
+                              : isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
                           }`}
                         >
                           {pageNumber}
@@ -1411,7 +1522,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center`}
                       title="Volgende pagina"
                     >
                       <ChevronRight size={16} />
@@ -1419,7 +1530,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed`}
                       title="Laatste pagina"
                     >
                       »
@@ -1435,40 +1546,40 @@ const Urenregistratie: React.FC = () => {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={t('nieuweRegistratie')}>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <h3 className="text-md font-medium text-gray-700 mb-4">{t('basisInformatie')}</h3>
+            <h3 className={`text-md font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-4`}>{t('basisInformatie')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('datum')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('datum')} *</label>
                 <input
                   type="date"
                   name="datum"
                   value={formData.datum}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')}</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('project')}</label>
                 <input
                   type="text"
                   name="ordernummer"
                   value={formData.ordernummer}
                   onChange={handleInputChange}
                   placeholder={t('projectOrdernummerPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('werktype')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werktype')} *</label>
                 <select
                   name="werktype"
                   value={formData.werktype}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 >
                   <option value="">{t('selecteerType')}</option>
                   <option value="projectbasis">{t('projectbasis')}</option>
@@ -1477,7 +1588,7 @@ const Urenregistratie: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('aantalUren')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('aantalUren')} *</label>
                 <input
                   type="number"
                   name="aantalUren"
@@ -1487,7 +1598,7 @@ const Urenregistratie: React.FC = () => {
                   min="0"
                   required
                   placeholder="bv. 8 of 4.5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 />
               </div>
             </div>
@@ -1495,7 +1606,7 @@ const Urenregistratie: React.FC = () => {
             {/* Conditional Location field for Meerwerk */}
             {(formData.werktype === 'meerwerk' || formData.werktype === 'regie') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('verbruiktMateriaal')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('verbruiktMateriaal')} *</label>
                 <input
                   type="text"
                   name="locatie"
@@ -1503,14 +1614,14 @@ const Urenregistratie: React.FC = () => {
                   onChange={handleInputChange}
                   required={formData.werktype === 'meerwerk' || formData.werktype === 'regie'}
                   placeholder={t('verbruiktMateriaalPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 />
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Voortgang project (%)</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Voortgang project (%)</label>
             <input
               type="number"
               name="voortgang"
@@ -1519,13 +1630,13 @@ const Urenregistratie: React.FC = () => {
               min="0"
               max="100"
               placeholder="0-100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             />
-            <p className="text-xs text-gray-500 mt-1">Optioneel: geef aan hoeveel procent van het project is voltooid</p>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel: geef aan hoeveel procent van het project is voltooid</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('werkomschrijving')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werkomschrijving')} *</label>
             <textarea
               name="werkomschrijving"
               value={formData.werkomschrijving}
@@ -1533,22 +1644,22 @@ const Urenregistratie: React.FC = () => {
               rows={4}
               required
               placeholder={formData.werktype === 'meerwerk' ? t('beschrijfMeerwerk') : t('beschrijfWerk')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             />
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               {t('annuleren')}
             </button>
-            <button 
+            <button
               type="submit"
               disabled={mutationLoading}
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
             >
               {mutationLoading ? 'Opslaan...' : t('registratieOpslaan')}
             </button>
@@ -1586,10 +1697,10 @@ const Urenregistratie: React.FC = () => {
         </div>
         
         {newProjectModalError && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+          <div className="mb-4 p-4 bg-violet-100 border border-violet-400 text-violet-700 rounded-md">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-violet-400" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -1599,10 +1710,10 @@ const Urenregistratie: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <form onSubmit={handleNewProjectAndRegister} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectNaam')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNaam')} *</label>
             <input
               type="text"
               name="naam"
@@ -1610,12 +1721,12 @@ const Urenregistratie: React.FC = () => {
               onChange={handleNewProjectDetailsChange}
               required
               placeholder="Bijv. Renovatie kantoorpand"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectLocatie')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectLocatie')} *</label>
             <input
               type="text"
               name="locatie"
@@ -1623,12 +1734,12 @@ const Urenregistratie: React.FC = () => {
               onChange={handleNewProjectDetailsChange}
               required
               placeholder="Bijv. Amsterdam, Damrak 1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectBeschrijving')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectBeschrijving')} *</label>
             <textarea
               name="beschrijving"
               value={newProjectDetails.beschrijving}
@@ -1636,25 +1747,25 @@ const Urenregistratie: React.FC = () => {
               rows={3}
               required
               placeholder={t('beschrijfProject')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             />
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               onClick={() => {
                 setShowNewProjectModal(false);
                 setPendingTimeRegistration(null);
                 setNewProjectDetails({ naam: '', locatie: '', beschrijving: '' });
               }}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               {t('annuleren')}
             </button>
-            <button 
+            <button
               type="submit"
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
             >
               {t('projectAanmakenEnRegistreren')}
             </button>
@@ -1674,25 +1785,25 @@ const Urenregistratie: React.FC = () => {
         {editingRegistration && (
           <form onSubmit={handleUpdateRegistration} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('datum')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('datum')} *</label>
               <input
                 type="date"
                 name="datum"
                 value={editingRegistration.datum}
                 onChange={handleEditInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('project')} *</label>
               <select
                 name="project_id"
                 value={editingRegistration.project_id || ''}
                 onChange={handleEditInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               >
                 <option value="">Selecteer een project</option>
                 {projecten.map((project: any) => (
@@ -1704,13 +1815,13 @@ const Urenregistratie: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('werktype')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werktype')} *</label>
               <select
                 name="werktype"
                 value={editingRegistration.werktype}
                 onChange={handleEditInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               >
                 <option value="">{t('selecteerType')}</option>
                 <option value="projectbasis">{t('projectbasis')}</option>
@@ -1720,7 +1831,7 @@ const Urenregistratie: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('aantalUren')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('aantalUren')} *</label>
               <input
                 type="number"
                 step="0.5"
@@ -1731,26 +1842,26 @@ const Urenregistratie: React.FC = () => {
                 min="0.5"
                 max="24"
                 placeholder={t('aantalUrenPlaceholder')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               />
             </div>
 
             {(editingRegistration.werktype === 'meerwerk' || editingRegistration.werktype === 'regie') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('locatie')}</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('locatie')}</label>
                 <input
                   type="text"
                   name="locatie"
                   value={editingRegistration.locatie}
                   onChange={handleEditInputChange}
                   placeholder={t('locatiePlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('voortgang')} (%)</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('voortgang')} (%)</label>
               <input
                 type="number"
                 name="voortgang"
@@ -1759,16 +1870,16 @@ const Urenregistratie: React.FC = () => {
                 min="0"
                 max="100"
                 placeholder="0-100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               />
-              <p className="text-xs text-gray-500 mt-1">{t('optioneelGeefAanHoeveelProcent')}</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
             </div>
 
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <label className="block text-sm font-medium text-gray-700">Gereden kilometers</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Gereden kilometers</label>
                 <div className="group relative">
-                  <Info size={16} className="text-gray-400 cursor-help" />
+                  <Info size={16} className={`${isDark ? 'text-gray-400' : 'text-gray-400'} cursor-help`} />
                   <div className="invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-md shadow-lg -top-2 left-6">
                     Dit zijn kilometers die niet met een zakelijke auto gereden worden en ook geen woon-werk kilometers zijn.
                   </div>
@@ -1782,13 +1893,13 @@ const Urenregistratie: React.FC = () => {
                 min="0"
                 step="0.1"
                 placeholder="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               />
-              <p className="text-xs text-gray-500 mt-1">Optioneel - vul alleen in indien van toepassing</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel - vul alleen in indien van toepassing</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('werkomschrijving')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werkomschrijving')} *</label>
               <textarea
                 name="werkomschrijving"
                 value={editingRegistration.werkomschrijving}
@@ -1796,7 +1907,7 @@ const Urenregistratie: React.FC = () => {
                 rows={4}
                 required
                 placeholder={t('werkomschrijvingPlaceholder')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               />
             </div>
 
@@ -1807,13 +1918,13 @@ const Urenregistratie: React.FC = () => {
                   setShowEditModal(false);
                   setEditingRegistration(null);
                 }}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
               >
                 {t('annuleren')}
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
               >
                 {t('opslaan')}
               </button>
@@ -1829,14 +1940,14 @@ const Urenregistratie: React.FC = () => {
         title="Project Niet Gevonden?"
       >
         <div className="space-y-6">
-          <p className="text-gray-700">
+          <p className={isDark ? 'text-gray-300' : 'text-gray-700'}>
             Weet je zeker dat het project niet in het keuzemenu staat?
           </p>
           <div className="flex justify-end space-x-3">
             <button
               type="button"
               onClick={() => setShowConfirmProjectModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               Nee
             </button>
@@ -1845,7 +1956,7 @@ const Urenregistratie: React.FC = () => {
                 setShowConfirmProjectModal(false);
                 setShowQuickProjectModal(true);
               }}
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
             >
               Ja
             </button>
@@ -1863,17 +1974,17 @@ const Urenregistratie: React.FC = () => {
         title="Snel Project Aanmaken"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Maak snel een nieuw project aan. Kantoorpersoneel zal later de details aanvullen.
           </p>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Projectnaam *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Projectnaam *</label>
             <input
               type="text"
               value={quickProjectName}
               onChange={(e) => setQuickProjectName(e.target.value)}
               placeholder="Bijv: Renovatie Hoofdstraat 123"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleQuickProjectCreate();
@@ -1888,13 +1999,13 @@ const Urenregistratie: React.FC = () => {
                 setShowQuickProjectModal(false);
                 setQuickProjectName('');
               }}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               Annuleren
             </button>
             <button
               onClick={handleQuickProjectCreate}
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
             >
               Aanmaken
             </button>
@@ -1911,13 +2022,13 @@ const Urenregistratie: React.FC = () => {
         <div className="py-8">
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 border-4 border-red-200 rounded-full"></div>
-              <div className="absolute top-0 left-0 w-20 h-20 border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
+              <div className="w-20 h-20 border-4 border-violet-200 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-20 h-20 border-4 border-violet-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold text-gray-800">Project wordt aangemaakt...</h3>
-              <p className="text-sm text-gray-600">Even geduld, we maken het project aan en slaan je urenregistratie op.</p>
-              <p className="text-xs text-gray-500 mt-4">De pagina wordt automatisch ververst...</p>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Project wordt aangemaakt...</h3>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Even geduld, we maken het project aan en slaan je urenregistratie op.</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-4`}>De pagina wordt automatisch ververst...</p>
             </div>
           </div>
         </div>

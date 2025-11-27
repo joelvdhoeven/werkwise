@@ -179,7 +179,7 @@ const LandingPage: React.FC = () => {
               </motion.h1>
 
               {/* Animated words */}
-              <div className="h-24 sm:h-28 lg:h-32 relative mb-6 flex items-center justify-center lg:justify-start pb-2">
+              <div className="h-20 sm:h-24 lg:h-28 relative mb-6 flex items-start justify-center lg:justify-start overflow-visible">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={titleNumber}
@@ -187,7 +187,7 @@ const LandingPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -40 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="absolute text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent"
+                    className="absolute text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent pb-4 leading-tight"
                   >
                     {animatedWords[titleNumber]}
                   </motion.span>

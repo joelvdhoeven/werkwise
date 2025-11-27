@@ -3,6 +3,7 @@ import { TrendingUp, DollarSign, Calendar, Filter } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 type TimeRange = '1day' | '7days' | '1month' | 'quarter' | '1year';
 type ViewMode = 'total' | 'project' | 'employee';
@@ -31,6 +32,8 @@ interface Employee {
 
 const FinancieelDashboard: React.FC = () => {
   const { hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [timeRange, setTimeRange] = useState<TimeRange>('1month');
   const [viewMode, setViewMode] = useState<ViewMode>('total');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -421,7 +424,7 @@ const FinancieelDashboard: React.FC = () => {
     { value: '1year', label: '1 Jaar' },
   ];
 
-  const COLORS = ['#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2', '#7F1D1D', '#991B1B', '#B91C1C'];
+  const COLORS = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#EDE9FE', '#5B21B6', '#6D28D9', '#7C3AED'];
 
   const handleViewModeChange = (newMode: ViewMode) => {
     setViewMode(newMode);
@@ -432,7 +435,7 @@ const FinancieelDashboard: React.FC = () => {
   if (!hasPermission('manage_settings')) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Geen toegang tot financieel dashboard</p>
+        <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Geen toegang tot financieel dashboard</p>
       </div>
     );
   }
@@ -440,7 +443,7 @@ const FinancieelDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
       </div>
     );
   }
@@ -449,17 +452,17 @@ const FinancieelDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financieel Dashboard</h1>
-          <p className="text-gray-600">Inzicht in omzet, kosten en winst</p>
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Financieel Dashboard</h1>
+          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Inzicht in omzet, kosten en winst</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <Filter size={20} className="text-red-600" />
+            <Filter size={20} className="text-violet-600" />
             <select
               value={viewMode}
               onChange={(e) => handleViewModeChange(e.target.value as ViewMode)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             >
               <option value="total">Totale Omzet</option>
               <option value="project">Per Project</option>
@@ -471,7 +474,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             >
               <option value="">Alle Projecten</option>
               {projects.map(project => (
@@ -486,7 +489,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             >
               <option value="">Alle Medewerkers</option>
               {employees.map(employee => (
@@ -498,11 +501,11 @@ const FinancieelDashboard: React.FC = () => {
           )}
 
           <div className="flex items-center gap-2">
-            <Calendar size={20} className="text-red-600" />
+            <Calendar size={20} className="text-violet-600" />
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             >
               {timeRangeOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -516,67 +519,67 @@ const FinancieelDashboard: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Totale Omzet</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Omzet</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mt-1`}>
                 {formatCurrency(financialData.totalRevenue)}
               </p>
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <TrendingUp size={24} className="text-red-600" />
+            <div className="p-3 bg-violet-100 rounded-lg">
+              <TrendingUp size={24} className="text-violet-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Totale Kosten</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Kosten</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mt-1`}>
                 {formatCurrency(financialData.totalCosts)}
               </p>
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <TrendingUp size={24} className="text-red-600" style={{ transform: 'rotate(180deg)' }} />
+            <div className="p-3 bg-violet-100 rounded-lg">
+              <TrendingUp size={24} className="text-violet-600" style={{ transform: 'rotate(180deg)' }} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Winst</p>
-              <p className={`text-2xl font-bold mt-1 ${financialData.profit >= 0 ? 'text-red-600' : 'text-gray-600'}`}>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Winst</p>
+              <p className={`text-2xl font-bold mt-1 ${financialData.profit >= 0 ? 'text-violet-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
                 {formatCurrency(financialData.profit)}
               </p>
             </div>
-            <div className={`p-3 rounded-lg ${financialData.profit >= 0 ? 'bg-red-100' : 'bg-gray-100'}`}>
-              <DollarSign size={24} className={financialData.profit >= 0 ? 'text-red-600' : 'text-gray-600'} />
+            <div className={`p-3 rounded-lg ${financialData.profit >= 0 ? 'bg-violet-100' : 'bg-gray-100'}`}>
+              <DollarSign size={24} className={financialData.profit >= 0 ? 'text-violet-600' : (isDark ? 'text-gray-300' : 'text-gray-600')} />
             </div>
           </div>
           <div className="mt-2">
-            <span className={`text-sm font-medium ${financialData.profitMargin >= 0 ? 'text-red-600' : 'text-gray-600'}`}>
+            <span className={`text-sm font-medium ${financialData.profitMargin >= 0 ? 'text-violet-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
               {financialData.profitMargin.toFixed(1)}% marge
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Gewerkte Uren</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Gewerkte Uren</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mt-1`}>
                 {financialData.hoursWorked.toFixed(1)}
               </p>
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <TrendingUp size={24} className="text-red-600" />
+            <div className="p-3 bg-violet-100 rounded-lg">
+              <TrendingUp size={24} className="text-violet-600" />
             </div>
           </div>
           <div className="mt-2">
-            <span className="text-sm text-gray-600">
+            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
               {financialData.projectCount} projecten
             </span>
           </div>
@@ -586,8 +589,8 @@ const FinancieelDashboard: React.FC = () => {
       {/* Charts Row 1 - Pie Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Total Costs vs Profit Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Totale Kosten vs Winst</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Totale Kosten vs Winst</h3>
           {financialData.totalCosts > 0 || financialData.profit > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -604,22 +607,22 @@ const FinancieelDashboard: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  <Cell fill="#F87171" />
-                  <Cell fill="#7F1D1D" />
+                  <Cell fill="#A78BFA" />
+                  <Cell fill="#5B21B6" />
                 </Pie>
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Geen data beschikbaar
             </div>
           )}
         </div>
 
         {/* Worked Hours by Employee Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Gewerkte Uren per Medewerker</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Gewerkte Uren per Medewerker</h3>
           {financialData.revenueByItem.length > 0 && viewMode === 'employee' ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -644,7 +647,7 @@ const FinancieelDashboard: React.FC = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               {viewMode === 'employee' ? 'Geen data beschikbaar' : 'Selecteer "Per Medewerker" om gewerkte uren te zien'}
             </div>
           )}
@@ -654,8 +657,8 @@ const FinancieelDashboard: React.FC = () => {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue/Cost Line Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Omzet vs Kosten per Maand</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Omzet vs Kosten per Maand</h3>
           {financialData.revenueByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={financialData.revenueByMonth}>
@@ -664,21 +667,21 @@ const FinancieelDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="#DC2626" strokeWidth={2} name="Omzet" />
-                <Line type="monotone" dataKey="costs" stroke="#F87171" strokeWidth={2} name="Kosten" />
-                <Line type="monotone" dataKey="profit" stroke="#7F1D1D" strokeWidth={2} name="Winst" />
+                <Line type="monotone" dataKey="revenue" stroke="#7C3AED" strokeWidth={2} name="Omzet" />
+                <Line type="monotone" dataKey="costs" stroke="#A78BFA" strokeWidth={2} name="Kosten" />
+                <Line type="monotone" dataKey="profit" stroke="#5B21B6" strokeWidth={2} name="Winst" />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Geen data beschikbaar
             </div>
           )}
         </div>
 
         {/* Cost Breakdown Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Kosten Verdeling (Personeel/Materiaal)</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Kosten Verdeling (Personeel/Materiaal)</h3>
           {financialData.costBreakdown.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -700,7 +703,7 @@ const FinancieelDashboard: React.FC = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Geen data beschikbaar
             </div>
           )}
@@ -709,8 +712,8 @@ const FinancieelDashboard: React.FC = () => {
 
       {/* Revenue by Project/Employee */}
       {viewMode !== 'total' && financialData.revenueByItem.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>
             {viewMode === 'project'
               ? (selectedProjectId ? 'Project Details' : 'Omzet per Project (Top 10)')
               : (selectedEmployeeId ? 'Medewerker Details' : 'Omzet per Medewerker (Top 10)')
@@ -723,9 +726,9 @@ const FinancieelDashboard: React.FC = () => {
               <YAxis />
               <Tooltip formatter={(value) => formatCurrency(Number(value))} />
               <Legend />
-              <Bar dataKey="revenue" fill="#DC2626" name="Omzet" />
-              <Bar dataKey="costs" fill="#F87171" name="Kosten" />
-              <Bar dataKey="profit" fill="#7F1D1D" name="Winst" />
+              <Bar dataKey="revenue" fill="#7C3AED" name="Omzet" />
+              <Bar dataKey="costs" fill="#A78BFA" name="Kosten" />
+              <Bar dataKey="profit" fill="#5B21B6" name="Winst" />
             </BarChart>
           </ResponsiveContainer>
         </div>

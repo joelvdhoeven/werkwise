@@ -5,6 +5,7 @@ import { exportToCSV } from '../utils/exportUtils';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Html5Qrcode } from 'html5-qrcode';
 
 interface Product {
@@ -70,6 +71,8 @@ type DateFilter = 'vandaag' | 'deze_week' | 'deze_maand' | 'dit_jaar' | 'custom'
 const VoorraadbeheerAfboeken: React.FC = () => {
   const { user } = useAuth();
   const { getCsvSeparator } = useSystemSettings();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [projects, setProjects] = useState<Project[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -710,12 +713,12 @@ const VoorraadbeheerAfboeken: React.FC = () => {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Voorraad Afboeken</h1>
-          <p className="text-gray-600">Scan of zoek producten en boek ze af op een project</p>
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Afboeken</h1>
+          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Scan of zoek producten en boek ze af op een project</p>
         </div>
         <button
           onClick={() => setShowOverview(true)}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+          className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
         >
           <FileText size={20} />
           Overzicht
@@ -730,39 +733,39 @@ const VoorraadbeheerAfboeken: React.FC = () => {
       )}
 
       {errorMessage && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="text-red-600" size={20} />
-          <span className="text-red-800">{errorMessage}</span>
+        <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="text-violet-600" size={20} />
+          <span className="text-violet-800">{errorMessage}</span>
         </div>
       )}
 
       {showScanner && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-4`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Scan Barcode</h3>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Scan Barcode</h3>
               <button
                 onClick={stopScanning}
-                className="p-2 text-gray-400 hover:text-gray-600"
+                className={`p-2 ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
             </div>
-            <div className="relative border-2 border-red-500 rounded-lg overflow-hidden">
+            <div className="relative border-2 border-violet-500 rounded-lg overflow-hidden">
               <div id="qr-reader" className="w-full"></div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6 space-y-4`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Project *</label>
             <select
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
             >
               <option value="">Selecteer project</option>
               {projects.map(project => (
@@ -776,10 +779,10 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6 space-y-4`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Producten</h2>
-          <span className="text-sm text-gray-600">
+          <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Producten</h2>
+          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             {getTotalItems()} {getTotalItems() === 1 ? 'artikel' : 'artikelen'}
           </span>
         </div>
@@ -792,7 +795,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   <select
                     value={line.location}
                     onChange={(e) => updateLineLocation(index, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   >
                     <option value="">Selecteer locatie</option>
                     {locations.map(location => (
@@ -815,18 +818,18 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                         setBookingLines(newLines);
                       }
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   />
                   {line.showDropdown && getFilteredProducts(line.searchValue).length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className={`absolute z-10 w-full mt-1 ${isDark ? 'bg-gray-800' : 'bg-white'} border ${isDark ? 'border-gray-700' : 'border-gray-300'} rounded-md shadow-lg max-h-60 overflow-y-auto`}>
                       {getFilteredProducts(line.searchValue).map((product) => (
                         <button
                           key={product.id}
                           onClick={() => selectProduct(index, product)}
-                          className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          className={`w-full px-3 py-2 text-left ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} border-b ${isDark ? 'border-gray-700' : 'border-gray-100'} last:border-b-0`}
                         >
-                          <div className="font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-600">{product.sku} - {product.category}</div>
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{product.name}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{product.sku} - {product.category}</div>
                         </button>
                       ))}
                     </div>
@@ -843,14 +846,14 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 <button
                   onClick={() => startScanning(index)}
                   disabled={scanning}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2"
                 >
                   <Scan size={20} />
                 </button>
                 {bookingLines.length > 1 && (
                   <button
                     onClick={() => removeLine(index)}
-                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
+                    className={`px-3 py-2 text-violet-600 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-violet-50'} rounded-md`}
                   >
                     <Trash2 size={20} />
                   </button>
@@ -858,25 +861,25 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               </div>
 
               {line.product && (
-                <div className="ml-2 p-3 bg-gray-50 rounded-md">
+                <div className={`ml-2 p-3 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-md`}>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">{line.product.name}</div>
-                      <div className="text-sm text-gray-600">{line.product.sku} - {line.product.category}</div>
+                      <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{line.product.name}</div>
+                      <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{line.product.sku} - {line.product.category}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateLineQuantity(index, -1)}
-                        className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-100"
+                        className={`p-1 ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded ${isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-100'}`}
                       >
                         <Minus size={16} />
                       </button>
-                      <span className="font-medium w-16 text-center">
+                      <span className={`font-medium w-16 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {line.quantity} {line.product.unit}
                       </span>
                       <button
                         onClick={() => updateLineQuantity(index, 1)}
-                        className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-100"
+                        className={`p-1 ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded ${isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-100'}`}
                       >
                         <Plus size={16} />
                       </button>
@@ -896,26 +899,26 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
         <button
           onClick={addLine}
-          className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center justify-center gap-2"
         >
           <Plus size={20} />
           Voeg regel toe
         </button>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
           <button
             onClick={() => {
               setBookingLines([{ searchValue: '', product: null, quantity: 1, showDropdown: false, location: '' }]);
               setSelectedProject('');
             }}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
           >
             Annuleren
           </button>
           <button
             onClick={handleBookProducts}
             disabled={!selectedProject || bookingLines.filter(l => l.product && l.location).length === 0}
-            className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Afboeken
           </button>
@@ -924,12 +927,12 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showOverview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold text-gray-900">Overzicht Afboekingen</h2>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} flex justify-between items-center sticky top-0`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Overzicht Afboekingen</h2>
               <button
                 onClick={() => setShowOverview(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -938,19 +941,19 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <div className="p-6 space-y-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <Search className={`absolute left-3 top-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={20} />
                   <input
                     type="text"
                     placeholder="Zoek op project, medewerker, product, locatie..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={loadTransactions}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center gap-2"
+                    className={`px-4 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md flex items-center gap-2`}
                     title="Ververs overzicht"
                   >
                     <Search size={20} />
@@ -968,7 +971,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                       <button
                         onClick={handleExportTransactions}
                         disabled={filteredTransactions.length === 0}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2"
                       >
                         <Download size={20} />
                         Export
@@ -979,7 +982,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     <button
                       onClick={handleExportTransactions}
                       disabled={filteredTransactions.length === 0}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2"
                     >
                       <Download size={20} />
                       Export
@@ -989,13 +992,13 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               </div>
 
               {(userRole === 'admin' || userRole === 'kantoor_medewerker') && selectedTransactions.size > 0 && (
-                <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-3">
-                  <span className="text-sm text-red-800 font-medium">
+                <div className="flex items-center justify-between bg-violet-50 border border-violet-200 rounded-lg p-3">
+                  <span className="text-sm text-violet-800 font-medium">
                     {selectedTransactions.size} {selectedTransactions.size === 1 ? 'afboeking' : 'afboekingen'} geselecteerd
                   </span>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
                   >
                     <Trash2 size={18} />
                     Verwijderen
@@ -1005,11 +1008,11 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Periode</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Periode</label>
                   <select
                     value={dateFilter}
                     onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                   >
                     <option value="vandaag">Vandaag</option>
                     <option value="deze_week">Deze Week</option>
@@ -1022,41 +1025,41 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 {dateFilter === 'custom' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Van Datum</label>
+                      <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Van Datum</label>
                       <input
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Tot Datum</label>
+                      <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Tot Datum</label>
                       <input
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
                       />
                     </div>
                   </>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} p-4 rounded-lg`}>
                 <div>
-                  <div className="text-sm text-gray-600">Totaal Afboekingen</div>
-                  <div className="text-2xl font-bold text-gray-900">{filteredTransactions.length}</div>
+                  <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Afboekingen</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{filteredTransactions.length}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Totaal Producten</div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Producten</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {filteredTransactions.reduce((sum, t) => sum + Math.abs(t.quantity), 0).toFixed(0)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Unieke Producten</div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Unieke Producten</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {new Set(filteredTransactions.map(t => t.product_id)).size}
                   </div>
                 </div>
@@ -1064,17 +1067,17 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
               {loadingTransactions ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
                 </div>
               ) : filteredTransactions.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
+                <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Geen afboekingen gevonden
                 </div>
               ) : (
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg overflow-hidden`}>
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50">
+                      <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                         <tr>
                           {(userRole === 'admin' || userRole === 'kantoor_medewerker') && (
                             <th className="px-4 py-3 text-center">
@@ -1082,66 +1085,66 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                                 type="checkbox"
                                 checked={selectedTransactions.size === filteredTransactions.length && filteredTransactions.length > 0}
                                 onChange={toggleSelectAll}
-                                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                               />
                             </th>
                           )}
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum & Tijd</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categorie</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Locatie</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medewerker</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opmerkingen</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Datum & Tijd</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Project</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Product</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Categorie</th>
+                          <th className={`px-4 py-3 text-center text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Aantal</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Locatie</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Medewerker</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Opmerkingen</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200 bg-white">
+                      <tbody className={`divide-y ${isDark ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
                         {filteredTransactions.map((transaction) => (
-                          <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                          <tr key={transaction.id} className={`${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
                             {(userRole === 'admin' || userRole === 'kantoor_medewerker') && (
                               <td className="px-4 py-3 text-center">
                                 <input
                                   type="checkbox"
                                   checked={selectedTransactions.has(transaction.id)}
                                   onChange={() => toggleSelectTransaction(transaction.id)}
-                                  className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                  className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                                 />
                               </td>
                             )}
-                            <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                            <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'} whitespace-nowrap`}>
                               <div>{new Date(transaction.created_at).toLocaleDateString('nl-NL')}</div>
-                              <div className="text-xs text-gray-500">{new Date(transaction.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
+                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{new Date(transaction.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{transaction.project?.naam}</div>
+                              <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.project?.naam}</div>
                               {transaction.project?.project_nummer && (
-                                <div className="text-xs text-gray-500">#{transaction.project.project_nummer}</div>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>#{transaction.project.project_nummer}</div>
                               )}
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{transaction.product?.name}</div>
-                              <div className="text-xs text-gray-500">{transaction.product?.sku}</div>
+                              <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.product?.name}</div>
+                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.product?.sku}</div>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
                                 {transaction.product?.category}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-center">
-                              <div className="font-semibold text-gray-900">{Math.abs(transaction.quantity)}</div>
-                              <div className="text-xs text-gray-500">{transaction.product?.unit}</div>
+                              <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{Math.abs(transaction.quantity)}</div>
+                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.product?.unit}</div>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{transaction.location?.name}</div>
+                              <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.location?.name}</div>
                               {transaction.location?.type && (
-                                <div className="text-xs text-gray-500 capitalize">{transaction.location.type}</div>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} capitalize`}>{transaction.location.type}</div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-900">
+                            <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
                               {transaction.user?.naam || transaction.user?.email}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={transaction.notes || '-'}>
+                            <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-xs truncate`} title={transaction.notes || '-'}>
                               {transaction.notes || '-'}
                             </td>
                           </tr>
@@ -1158,15 +1161,15 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showImportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-lg w-full p-6`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Afboekingen Importeren</h3>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Afboekingen Importeren</h3>
               <button
                 onClick={() => {
                   setShowImportModal(false);
                   setImportFile(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -1174,10 +1177,10 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-3`}>
                   Upload een CSV bestand met afboekingen. Het bestand moet de volgende kolommen bevatten:
                 </p>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1 mb-3">
+                <ul className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} list-disc list-inside space-y-1 mb-3`}>
                   <li>Datum (bijv. 14-10-2025)</li>
                   <li>Project (naam)</li>
                   <li>Product SKU</li>
@@ -1187,7 +1190,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 </ul>
                 <button
                   onClick={downloadTemplate}
-                  className="text-sm text-red-600 hover:text-red-700 flex items-center gap-2"
+                  className="text-sm text-violet-600 hover:text-violet-700 flex items-center gap-2"
                 >
                   <FileSpreadsheet size={16} />
                   Download CSV sjabloon
@@ -1204,7 +1207,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-400 text-gray-600 hover:text-red-600 flex items-center justify-center gap-2"
+                  className={`w-full px-4 py-3 border-2 border-dashed ${isDark ? 'border-gray-700 text-gray-300 hover:border-violet-500 hover:text-violet-400' : 'border-gray-300 text-gray-600 hover:border-violet-400 hover:text-violet-600'} rounded-lg flex items-center justify-center gap-2`}
                 >
                   <Upload size={20} />
                   {importFile ? importFile.name : 'Selecteer CSV bestand'}
@@ -1217,7 +1220,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     setShowImportModal(false);
                     setImportFile(null);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -1236,9 +1239,9 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showStockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold text-gray-900">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} flex justify-between items-center sticky top-0`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Voorraad - {stockModalLineIndex !== null && bookingLines[stockModalLineIndex]?.location
                   ? locations.find(l => l.id === bookingLines[stockModalLineIndex!].location)?.name
                   : 'Locatie'}
@@ -1248,7 +1251,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   setShowStockModal(false);
                   setStockModalLineIndex(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -1257,10 +1260,10 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <div className="p-6">
               {loadingStock ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
                 </div>
               ) : locationStock.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
+                <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Geen voorraad beschikbaar op deze locatie
                 </div>
               ) : (
@@ -1269,21 +1272,21 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     <button
                       key={stockItem.product_id}
                       onClick={() => selectProductFromStock(stockItem)}
-                      className="w-full p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 text-left transition-colors"
+                      className={`w-full p-4 border ${isDark ? 'border-gray-700 hover:border-violet-500 hover:bg-gray-700' : 'border-gray-200 hover:border-violet-500 hover:bg-violet-50'} rounded-lg text-left transition-colors`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">{stockItem.product.name}</div>
-                          <div className="text-sm text-gray-600">
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{stockItem.product.name}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                             SKU: {stockItem.product.sku} | Categorie: {stockItem.product.category}
                           </div>
                           {stockItem.product.ean && (
-                            <div className="text-sm text-gray-500">EAN: {stockItem.product.ean}</div>
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>EAN: {stockItem.product.ean}</div>
                           )}
                         </div>
                         <div className="ml-4 text-right">
-                          <div className="text-lg font-bold text-gray-900">{stockItem.quantity}</div>
-                          <div className="text-sm text-gray-600">{stockItem.product.unit}</div>
+                          <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stockItem.quantity}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{stockItem.product.unit}</div>
                         </div>
                       </div>
                     </button>
@@ -1297,14 +1300,14 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertCircle className="text-red-600" size={24} />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center">
+                <AlertCircle className="text-violet-600" size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Afboekingen Verwijderen</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Afboekingen Verwijderen</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   Weet je zeker dat je {selectedTransactions.size} {selectedTransactions.size === 1 ? 'afboeking' : 'afboekingen'} wilt verwijderen?
                 </p>
               </div>
@@ -1319,13 +1322,13 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Annuleren
               </button>
               <button
                 onClick={handleDeleteSelected}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
               >
                 Verwijderen
               </button>

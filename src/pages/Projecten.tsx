@@ -12,10 +12,13 @@ import Modal from '../components/Modal';
 import SupabaseErrorHelper from '../components/SupabaseErrorHelper';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ProjectDetailsModal from '../components/ProjectDetailsModal';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Projecten: React.FC = () => {
   const { t } = useLanguage();
   const { user, hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const { data: allProjecten, loading, refetch } = useSupabaseQuery<any>('projects');
   const { data: urenRegistraties = [] } = useSupabaseQuery<any>('time_registrations', 'id, user_id, project_id, datum, aantal_uren, werktype, werkomschrijving, locatie, status, project_naam, progress_percentage, created_at, updated_at, driven_kilometers');
   const { data: gebruikers = [] } = useSupabaseQuery<any>('profiles', 'id, naam');
@@ -325,7 +328,7 @@ const Projecten: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
@@ -345,8 +348,8 @@ const Projecten: React.FC = () => {
       />
       
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center space-x-3">
-          <FolderOpen className="text-red-600" />
+        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center space-x-3`}>
+          <FolderOpen className="text-violet-600" />
           <span>{t('projecten')}</span>
         </h1>
         <div className="flex items-center space-x-2">
@@ -359,7 +362,7 @@ const Projecten: React.FC = () => {
           </button>
           <button
             onClick={handleNewProject}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
           >
             <Plus size={16} />
             <span>{t('nieuwProject')}</span>
@@ -368,10 +371,10 @@ const Projecten: React.FC = () => {
       </div>
 
       {/* Projecten Overview */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">{t('projectOverzicht')}</h2>
-          <p className="text-sm text-gray-600">{t('beheerProjecten')}</p>
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow`}>
+        <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+          <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('projectOverzicht')}</h2>
+          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t('beheerProjecten')}</p>
         </div>
 
         {/* Search Bar (Only for Admins and Kantoor) */}
@@ -384,11 +387,11 @@ const Projecten: React.FC = () => {
                 placeholder="Zoek project op naam, nummer of beschrijving..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
             </div>
             {searchTerm && (
-              <p className="mt-2 text-sm text-gray-600">
+              <p className={`mt-2 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 {filteredProjecten.length} {filteredProjecten.length === 1 ? 'project gevonden' : 'projecten gevonden'}
               </p>
             )}
@@ -403,9 +406,9 @@ const Projecten: React.FC = () => {
               <p className="text-gray-400 text-sm mt-2">
                 {t('voegProjectToe')}
               </p>
-              <button 
+              <button
                 onClick={handleNewProject}
-                className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
               >
                 <Plus size={16} />
                 <span>{t('nieuwProject')}</span>
@@ -428,12 +431,12 @@ const Projecten: React.FC = () => {
 
                 return (
                   <div key={project.id} className={`rounded-lg p-6 hover:shadow-md transition-shadow ${
-                    incomplete ? 'bg-red-50 border-2 border-red-200' : 'bg-gray-50'
+                    incomplete ? (isDark ? 'bg-violet-900/20 border-2 border-violet-500' : 'bg-violet-50 border-2 border-violet-200') : (isDark ? 'bg-gray-700' : 'bg-gray-50')
                   }`}>
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{project.naam}</h3>
-                        <p className="text-sm text-gray-500">#{project.project_nummer || 'Geen nummer'}</p>
+                        <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.naam}</h3>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>#{project.project_nummer || 'Geen nummer'}</p>
                       </div>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         project.status === 'actief' ? 'bg-green-100 text-green-800' :
@@ -445,36 +448,36 @@ const Projecten: React.FC = () => {
                     </div>
 
                     {incomplete && hasPermission('view_reports') && (
-                      <div className="mb-3 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-700">
+                      <div className={`mb-3 p-2 ${isDark ? 'bg-violet-900/40 border-violet-500' : 'bg-violet-100 border-violet-300'} border rounded text-xs ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
                         ⚠️ Ontbrekende velden: {getMissingFields(project).join(', ')}
                       </div>
                     )}
 
-                    <p className="text-gray-600 text-sm mb-4 break-words line-clamp-3">{project.beschrijving}</p>
+                    <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-sm mb-4 break-words line-clamp-3`}>{project.beschrijving}</p>
                     <div className="space-y-2">
-                      <div className="flex items-center text-sm text-gray-500">
+                      <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         <Calendar size={14} className="mr-2" />
                         <span>{formatDate(project.start_datum)}</span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-500">
+                      <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         <Clock size={14} className="mr-2" />
                         <span>{t('totalLoggedHours')}: {totalHours.toFixed(1)}h</span>
                       </div>
                       <ProtectedRoute permission="view_reports">
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                           <Users size={14} className="mr-2" />
                           <span>{projectUsers.length} {projectUsers.length === 1 ? 'gebruiker' : 'gebruikers'}</span>
                         </div>
                       </ProtectedRoute>
                       {project.progress_percentage > 0 && (
                         <div className="mt-3">
-                          <div className="flex justify-between text-sm text-gray-600 mb-1">
+                          <div className={`flex justify-between text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-1`}>
                             <span>Voortgang</span>
                             <span className="font-medium">{project.progress_percentage}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                              className="bg-violet-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${project.progress_percentage}%` }}
                             ></div>
                           </div>
@@ -485,7 +488,7 @@ const Projecten: React.FC = () => {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => setSelectedProjectForDetails(project)}
-                        className="flex items-center space-x-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+                        className="flex items-center space-x-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors text-sm"
                       >
                         <Eye size={16} />
                         <span>Bekijk details</span>
@@ -508,7 +511,7 @@ const Projecten: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectNaam')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNaam')} *</label>
               <input
                 type="text"
                 name="naam"
@@ -516,25 +519,25 @@ const Projecten: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="Bijv. Renovatie kantoorpand"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectNumber')}</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNumber')}</label>
               <input
                 type="text"
                 name="project_nummer"
                 value={formData.project_nummer}
                 onChange={handleInputChange}
                 placeholder="Bijv. 2024-001"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('startDatum')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('startDatum')} *</label>
               <div className="relative">
                 <input
                   type="date"
@@ -542,21 +545,21 @@ const Projecten: React.FC = () => {
                   value={formData.startDatum}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                 />
                 <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
               </div>
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectStatus')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectStatus')} *</label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             >
               <option value="actief">{t('actief')}</option>
               <option value="gepauzeerd">{t('gepauzeerd')}</option>
@@ -565,7 +568,7 @@ const Projecten: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Voortgang (%)</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Voortgang (%)</label>
             <input
               type="number"
               name="progressPercentage"
@@ -574,13 +577,13 @@ const Projecten: React.FC = () => {
               min="0"
               max="100"
               placeholder="0-100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
-            <p className="text-xs text-gray-500 mt-1">{t('optioneelGeefAanHoeveelProcent')}</p>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gecalculeerde Uren</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Gecalculeerde Uren</label>
             <input
               type="number"
               name="calculatedHours"
@@ -588,13 +591,13 @@ const Projecten: React.FC = () => {
               onChange={handleInputChange}
               min="0"
               placeholder="Geschatte uren voor dit project"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Optioneel: vul in hoeveel uren je verwacht nodig te hebben voor dit project</p>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel: vul in hoeveel uren je verwacht nodig te hebben voor dit project</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectBeschrijving')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectBeschrijving')} *</label>
             <textarea
               name="beschrijving"
               value={formData.beschrijving}
@@ -602,7 +605,7 @@ const Projecten: React.FC = () => {
               rows={4}
               required
               placeholder={t('beschrijfProject')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
           <div className="flex flex-col space-y-3 pt-4">
@@ -631,7 +634,7 @@ const Projecten: React.FC = () => {
               <button
                 type="submit"
                 disabled={mutationLoading}
-                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
               >
                 {mutationLoading ? 'Opslaan...' : t('opslaan')}
               </button>
@@ -649,10 +652,10 @@ const Projecten: React.FC = () => {
         >
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-gray-700">
+              <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Weet je zeker dat je dit project wilt verwijderen?
               </p>
-              <p className="text-red-600 font-medium text-sm">
+              <p className={`${isDark ? 'text-violet-400' : 'text-violet-600'} font-medium text-sm`}>
                 Let op: Alle urenregistraties die aan dit project gekoppeld zijn worden ook permanent verwijderd. Deze actie kan niet ongedaan worden gemaakt.
               </p>
             </div>
@@ -665,7 +668,7 @@ const Projecten: React.FC = () => {
               </button>
               <button
                 onClick={() => handleDeleteProject(deleteConfirmProject)}
-                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
               >
                 Verwijderen
               </button>
@@ -711,7 +714,7 @@ const Projecten: React.FC = () => {
               placeholder="Zoek in gearchiveerde projecten..."
               value={archiveSearchTerm}
               onChange={(e) => setArchiveSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
 
@@ -747,13 +750,13 @@ const Projecten: React.FC = () => {
                 return (
                   <div
                     key={project.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                    className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800' : 'bg-white'}`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900 text-lg">{project.naam}</h3>
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'} text-lg`}>{project.naam}</h3>
                         {project.project_nummer && (
-                          <p className="text-sm text-gray-500 font-mono">#{project.project_nummer}</p>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} font-mono`}>#{project.project_nummer}</p>
                         )}
                       </div>
                       <span
@@ -767,7 +770,7 @@ const Projecten: React.FC = () => {
                       </span>
                     </div>
 
-                    <p className="text-gray-600 text-sm mb-4">{project.beschrijving}</p>
+                    <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-sm mb-4`}>{project.beschrijving}</p>
 
                     {/* Project Stats Grid */}
                     <div className="grid grid-cols-2 gap-3 mb-4 bg-gray-50 p-3 rounded-md">
@@ -832,7 +835,7 @@ const Projecten: React.FC = () => {
                           setSelectedProjectForDetails(project);
                           setShowArchive(false);
                         }}
-                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm flex items-center justify-center space-x-1"
+                        className="flex-1 px-3 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors text-sm flex items-center justify-center space-x-1"
                       >
                         <Eye size={16} />
                         <span>Details</span>
