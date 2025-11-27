@@ -1,13 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   Briefcase, Clock, Package,
   Wrench, Zap, Play, ChevronRight,
-  Building2, TrendingUp, Bell, Globe, Sparkles, Check
+  Building2, TrendingUp, Bell, Sparkles, Check
 } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from '../components/ui/button';
 import { ThemeToggle } from '../components/ui/theme-toggle';
@@ -19,15 +18,8 @@ const LandingPage: React.FC = () => {
   const [titleNumber, setTitleNumber] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
 
-  // Animated words for hero
-  const animatedWords = useMemo(() => {
-    if (language === 'nl') {
-      return ['Urenregistratie', 'Projectbeheer', 'Voorraadbeheer', 'Administratie', 'Facturatie'];
-    } else if (language === 'pl') {
-      return ['Rejestracja godzin', 'Projekty', 'Magazyn', 'Administracja', 'Fakturowanie'];
-    }
-    return ['Time Tracking', 'Project Management', 'Inventory', 'Administration', 'Invoicing'];
-  }, [language]);
+  // Animated words for hero (Dutch only)
+  const animatedWords = ['Urenregistratie', 'Projectbeheer', 'Voorraadbeheer', 'Administratie', 'Facturatie'];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -44,97 +36,67 @@ const LandingPage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const languages = [
-    { code: 'nl' as const, name: 'NL', flag: '🇳🇱' },
-    { code: 'en' as const, name: 'EN', flag: '🇬🇧' },
-    { code: 'pl' as const, name: 'PL', flag: '🇵🇱' },
-  ];
-
   const stats = [
-    { value: '50%', label: language === 'nl' ? 'Tijdsbesparing' : language === 'pl' ? 'Oszczędność czasu' : 'Time Saved' },
-    { value: '100%', label: language === 'nl' ? 'Digitaal' : language === 'pl' ? 'Cyfrowo' : 'Digital' },
-    { value: '24/7', label: language === 'nl' ? 'Toegang' : language === 'pl' ? 'Dostęp' : 'Access' },
-    { value: '3', label: language === 'nl' ? 'Talen' : language === 'pl' ? 'Języki' : 'Languages' },
+    { value: '50%', label: 'Tijdsbesparing' },
+    { value: '100%', label: 'Digitaal' },
+    { value: '24/7', label: 'Toegang' },
+    { value: '3', label: 'Talen' },
   ];
 
   const features = [
     {
       icon: Clock,
-      title: language === 'nl' ? 'Urenregistratie' : language === 'pl' ? 'Rejestracja godzin' : 'Time Tracking',
-      description: language === 'nl'
-        ? 'Registreer werkuren met materialen, kilometers en foto\'s. Automatische goedkeuringsflow.'
-        : language === 'pl'
-        ? 'Rejestruj godziny z materiałami, kilometrami i zdjęciami. Automatyczny przepływ zatwierdzania.'
-        : 'Track work hours with materials, kilometers and photos. Automatic approval workflow.',
-      highlight: language === 'nl' ? '8:30 uur vandaag' : language === 'pl' ? '8:30 godzin dziś' : '8:30 hours today',
+      title: 'Urenregistratie',
+      description: 'Registreer werkuren met materialen, kilometers en foto\'s. Automatische goedkeuringsflow.',
+      highlight: '8:30 uur vandaag',
     },
     {
       icon: Building2,
-      title: language === 'nl' ? 'Projectbeheer' : language === 'pl' ? 'Projekty' : 'Projects',
-      description: language === 'nl'
-        ? 'Beheer projecten met voortgang, budgetten en real-time inzicht in de status.'
-        : language === 'pl'
-        ? 'Zarządzaj projektami z postępem, budżetami i wglądem w czasie rzeczywistym.'
-        : 'Manage projects with progress, budgets and real-time status insights.',
-      highlight: language === 'nl' ? '12 actieve projecten' : language === 'pl' ? '12 aktywnych projektów' : '12 active projects',
+      title: 'Projectbeheer',
+      description: 'Beheer projecten met voortgang, budgetten en real-time inzicht in de status.',
+      highlight: '12 actieve projecten',
     },
     {
       icon: Package,
-      title: language === 'nl' ? 'Voorraadbeheer' : language === 'pl' ? 'Magazyn' : 'Inventory',
-      description: language === 'nl'
-        ? 'Multi-locatie voorraad met automatische afboekingen en lage voorraad alerts.'
-        : language === 'pl'
-        ? 'Wielolokalizacyjny magazyn z automatycznymi odpisami i alertami o niskim stanie.'
-        : 'Multi-location inventory with automatic deductions and low stock alerts.',
-      highlight: language === 'nl' ? '2 alerts actief' : language === 'pl' ? '2 aktywne alerty' : '2 active alerts',
+      title: 'Voorraadbeheer',
+      description: 'Multi-locatie voorraad met automatische afboekingen en lage voorraad alerts.',
+      highlight: '2 alerts actief',
     },
     {
       icon: Wrench,
-      title: language === 'nl' ? 'Gereedschap' : language === 'pl' ? 'Narzędzia' : 'Tools',
-      description: language === 'nl'
-        ? 'Track speciaal gereedschap met onderhoudschema\'s en beschikbaarheid.'
-        : language === 'pl'
-        ? 'Śledź narzędzia z harmonogramami konserwacji i dostępnością.'
-        : 'Track special tools with maintenance schedules and availability.',
-      highlight: language === 'nl' ? '24 items getrackt' : language === 'pl' ? '24 pozycji śledzonych' : '24 items tracked',
+      title: 'Gereedschap',
+      description: 'Track speciaal gereedschap met onderhoudschema\'s en beschikbaarheid.',
+      highlight: '24 items getrackt',
     },
     {
       icon: TrendingUp,
-      title: language === 'nl' ? 'Financieel' : language === 'pl' ? 'Finanse' : 'Financial',
-      description: language === 'nl'
-        ? 'Real-time inzicht in omzet, winst en KPI\'s met uitgebreide rapportages.'
-        : language === 'pl'
-        ? 'Wgląd w przychody, zyski i KPI z rozbudowanymi raportami.'
-        : 'Real-time revenue, profit and KPI insights with detailed reports.',
-      highlight: language === 'nl' ? '+23% deze maand' : language === 'pl' ? '+23% w tym miesiącu' : '+23% this month',
+      title: 'Financieel',
+      description: 'Real-time inzicht in omzet, winst en KPI\'s met uitgebreide rapportages.',
+      highlight: '+23% deze maand',
     },
     {
       icon: Bell,
-      title: language === 'nl' ? 'Notificaties' : language === 'pl' ? 'Powiadomienia' : 'Notifications',
-      description: language === 'nl'
-        ? 'Automatische meldingen voor goedkeuringen, deadlines en alerts.'
-        : language === 'pl'
-        ? 'Automatyczne powiadomienia o zatwierdzeniach, terminach i alertach.'
-        : 'Automatic alerts for approvals, deadlines and notifications.',
-      highlight: language === 'nl' ? '3 nieuwe items' : language === 'pl' ? '3 nowe pozycje' : '3 new items',
+      title: 'Notificaties',
+      description: 'Automatische meldingen voor goedkeuringen, deadlines en alerts.',
+      highlight: '3 nieuwe items',
     },
   ];
 
   const steps = [
     {
       num: '01',
-      title: language === 'nl' ? 'Registreer je bedrijf' : language === 'pl' ? 'Zarejestruj firmę' : 'Register your company',
-      desc: language === 'nl' ? 'Maak een account aan en configureer je bedrijfsgegevens.' : language === 'pl' ? 'Utwórz konto i skonfiguruj dane firmy.' : 'Create an account and configure your company details.',
+      title: 'Registreer je bedrijf',
+      desc: 'Maak een account aan en configureer je bedrijfsgegevens.',
     },
     {
       num: '02',
-      title: language === 'nl' ? 'Voeg je team toe' : language === 'pl' ? 'Dodaj zespół' : 'Add your team',
-      desc: language === 'nl' ? 'Nodig medewerkers uit en wijs rollen toe.' : language === 'pl' ? 'Zaproś pracowników i przypisz role.' : 'Invite employees and assign roles.',
+      title: 'Voeg je team toe',
+      desc: 'Nodig medewerkers uit en wijs rollen toe.',
     },
     {
       num: '03',
-      title: language === 'nl' ? 'Start met werken' : language === 'pl' ? 'Zacznij pracować' : 'Start working',
-      desc: language === 'nl' ? 'Registreer uren, beheer projecten en voorraad.' : language === 'pl' ? 'Rejestruj godziny, zarządzaj projektami i zapasami.' : 'Track hours, manage projects and inventory.',
+      title: 'Start met werken',
+      desc: 'Registreer uren, beheer projecten en voorraad.',
     },
   ];
 
@@ -159,27 +121,8 @@ const LandingPage: React.FC = () => {
 
             <div className="flex items-center space-x-3">
               <ThemeToggle className="hidden sm:flex" />
-              <div className={`hidden sm:flex items-center space-x-1 rounded-lg p-1 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                      language === lang.code
-                        ? isDark
-                          ? 'bg-gray-700 text-indigo-400 shadow-sm'
-                          : 'bg-white text-indigo-600 shadow-sm'
-                        : isDark
-                          ? 'text-gray-400 hover:text-gray-200'
-                          : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    {lang.flag} {lang.name}
-                  </button>
-                ))}
-              </div>
               <Link to="/demo">
-                <Button size="default" variant="outline" className={`gap-2 ${isDark ? 'border-gray-700 hover:bg-gray-800' : ''}`}>
+                <Button size="default" variant="outline" className={`gap-2 ${isDark ? 'border-gray-600 text-white hover:bg-gray-800' : ''}`}>
                   <Play className="h-4 w-4" />
                   <span className="hidden sm:inline">Demo</span>
                 </Button>
@@ -187,7 +130,7 @@ const LandingPage: React.FC = () => {
               <Link to="/onboarding">
                 <Button size="default" className="gap-2">
                   <Sparkles className="h-4 w-4" />
-                  <span className="hidden sm:inline">{language === 'nl' ? 'Start' : language === 'pl' ? 'Start' : 'Start'}</span>
+                  <span className="hidden sm:inline">Start</span>
                 </Button>
               </Link>
             </div>
@@ -216,7 +159,7 @@ const LandingPage: React.FC = () => {
                   isDark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-700'
                 }`}>
                   <Zap className="h-4 w-4" />
-                  {language === 'nl' ? 'De slimme keuze voor je bedrijf' : language === 'pl' ? 'Mądry wybór dla Twojej firmy' : 'The smart choice for your business'}
+                  De slimme keuze voor je bedrijf
                 </span>
               </motion.div>
 
@@ -226,13 +169,7 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className={`text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}
               >
-                {language === 'nl' ? (
-                  <>Doe makkelijk je</>
-                ) : language === 'pl' ? (
-                  <>Łatwo zarządzaj</>
-                ) : (
-                  <>Easily manage your</>
-                )}
+                Doe makkelijk je
               </motion.h1>
 
               {/* Animated words */}
@@ -257,11 +194,7 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className={`text-xl mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
               >
-                {language === 'nl'
-                  ? 'WerkWise combineert urenregistratie, projectbeheer, voorraadbeheer en facturatie in één krachtig platform.'
-                  : language === 'pl'
-                  ? 'WerkWise łączy rejestrację godzin, zarządzanie projektami, magazynem i fakturowanie w jednej platformie.'
-                  : 'WerkWise combines time tracking, project management, inventory and invoicing in one powerful platform.'}
+                WerkWise combineert urenregistratie, projectbeheer, voorraadbeheer en facturatie in één krachtig platform.
               </motion.p>
 
               <motion.div
@@ -273,13 +206,13 @@ const LandingPage: React.FC = () => {
                 <Link to="/onboarding">
                   <Button size="lg" className="w-full sm:w-auto gap-2">
                     <Sparkles className="h-5 w-5" />
-                    {language === 'nl' ? 'Wordt Klant' : language === 'pl' ? 'Zostań klientem' : 'Become a Customer'}
+                    Wordt Klant
                   </Button>
                 </Link>
                 <Link to="/demo">
-                  <Button size="lg" variant="outline" className={`w-full sm:w-auto gap-2 ${isDark ? 'border-gray-700 hover:bg-gray-800' : ''}`}>
+                  <Button size="lg" variant="outline" className={`w-full sm:w-auto gap-2 ${isDark ? 'border-gray-600 text-white hover:bg-gray-800' : ''}`}>
                     <Play className="h-5 w-5" />
-                    {language === 'nl' ? 'Open Demo' : language === 'pl' ? 'Otwórz Demo' : 'Open Demo'}
+                    Open Demo
                   </Button>
                 </Link>
               </motion.div>
@@ -328,7 +261,7 @@ const LandingPage: React.FC = () => {
                       <div>
                         <div className={`font-semibold ${isDark ? 'text-white' : 'text-white'}`}>Dashboard</div>
                         <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-indigo-200'}`}>
-                          {language === 'nl' ? 'Real-time overzicht' : language === 'pl' ? 'Przegląd w czasie rzeczywistym' : 'Real-time overview'}
+                          Real-time overzicht
                         </div>
                       </div>
                     </div>
@@ -338,13 +271,13 @@ const LandingPage: React.FC = () => {
                       <div className={`rounded-xl p-4 ${isDark ? 'bg-gray-700/50' : 'bg-white/10'}`}>
                         <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-white'}`}>12</div>
                         <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-indigo-200'}`}>
-                          {language === 'nl' ? 'Actieve projecten' : language === 'pl' ? 'Aktywne projekty' : 'Active projects'}
+                          Actieve projecten
                         </div>
                       </div>
                       <div className={`rounded-xl p-4 ${isDark ? 'bg-gray-700/50' : 'bg-white/10'}`}>
                         <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-white'}`}>248</div>
                         <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-indigo-200'}`}>
-                          {language === 'nl' ? 'Uren deze maand' : language === 'pl' ? 'Godzin w tym miesiącu' : 'Hours this month'}
+                          Uren deze maand
                         </div>
                       </div>
                     </div>
@@ -353,9 +286,9 @@ const LandingPage: React.FC = () => {
                   {/* Feature highlights */}
                   <div className="space-y-3">
                     {[
-                      { icon: Clock, text: language === 'nl' ? 'Urenregistratie in seconden' : language === 'pl' ? 'Rejestracja w sekundach' : 'Time tracking in seconds' },
-                      { icon: Building2, text: language === 'nl' ? 'Projectvoortgang real-time' : language === 'pl' ? 'Postęp projektu w czasie rzeczywistym' : 'Real-time project progress' },
-                      { icon: Package, text: language === 'nl' ? 'Automatisch voorraadbeheer' : language === 'pl' ? 'Automatyczne zarządzanie zapasami' : 'Automatic inventory management' },
+                      { icon: Clock, text: 'Urenregistratie in seconden' },
+                      { icon: Building2, text: 'Projectvoortgang real-time' },
+                      { icon: Package, text: 'Automatisch voorraadbeheer' },
                     ].map((item, index) => (
                       <motion.div
                         key={index}
@@ -377,7 +310,7 @@ const LandingPage: React.FC = () => {
                     <Link to="/onboarding" className="block">
                       <Button size="lg" className={`w-full gap-2 ${isDark ? '' : 'bg-white text-indigo-600 hover:bg-gray-100'}`}>
                         <Sparkles className="h-5 w-5" />
-                        {language === 'nl' ? 'Start Nu - Gratis' : language === 'pl' ? 'Zacznij teraz - za darmo' : 'Start Now - Free'}
+                        Start Nu - Gratis
                       </Button>
                     </Link>
                   </div>
@@ -403,18 +336,10 @@ const LandingPage: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {language === 'nl'
-                ? 'Eén platform, alles geregeld'
-                : language === 'pl'
-                ? 'Jedna platforma, wszystko załatwione'
-                : 'One platform, everything sorted'}
+              Eén platform, alles geregeld
             </h2>
             <p className={`text-xl max-w-2xl mx-auto ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-              {language === 'nl'
-                ? 'Stop met schakelen tussen apps. WerkWise doet alles.'
-                : language === 'pl'
-                ? 'Przestań przełączać się między aplikacjami.'
-                : 'Stop switching between apps. WerkWise does it all.'}
+              Stop met schakelen tussen apps. WerkWise doet alles.
             </p>
           </motion.div>
 
@@ -506,7 +431,7 @@ const LandingPage: React.FC = () => {
                   <div className={`rounded-2xl p-4 ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
                     <div className="flex items-center justify-between mb-3">
                       <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {language === 'nl' ? 'Status' : 'Status'}
+                        Status
                       </span>
                       <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {features[activeFeature].highlight}
@@ -523,8 +448,8 @@ const LandingPage: React.FC = () => {
                   </div>
 
                   <Link to="/demo" className="mt-6 block">
-                    <Button variant="outline" className={`w-full gap-2 ${isDark ? 'border-gray-600 hover:bg-gray-700' : ''}`}>
-                      {language === 'nl' ? 'Bekijk in demo' : language === 'pl' ? 'Zobacz w demo' : 'View in demo'}
+                    <Button variant="outline" className={`w-full gap-2 ${isDark ? 'border-gray-600 text-white hover:bg-gray-700' : ''}`}>
+                      Bekijk in demo
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
@@ -547,14 +472,10 @@ const LandingPage: React.FC = () => {
             <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ${
               isDark ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700'
             }`}>
-              {language === 'nl' ? 'Hoe het werkt' : language === 'pl' ? 'Jak to działa' : 'How it works'}
+              Hoe het werkt
             </span>
             <h2 className={`text-3xl sm:text-4xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {language === 'nl'
-                ? 'In 3 stappen aan de slag'
-                : language === 'pl'
-                ? 'Zacznij w 3 krokach'
-                : 'Get started in 3 steps'}
+              In 3 stappen aan de slag
             </h2>
           </motion.div>
 
@@ -598,30 +519,22 @@ const LandingPage: React.FC = () => {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-              {language === 'nl'
-                ? 'Klaar om je administratie te vereenvoudigen?'
-                : language === 'pl'
-                ? 'Gotowy uprościć swoją administrację?'
-                : 'Ready to simplify your administration?'}
+              Klaar om je administratie te vereenvoudigen?
             </h2>
             <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto">
-              {language === 'nl'
-                ? 'Begin vandaag nog en bespaar uren per week op administratief werk.'
-                : language === 'pl'
-                ? 'Zacznij już dziś i oszczędź godziny tygodniowo na pracy administracyjnej.'
-                : 'Start today and save hours per week on administrative work.'}
+              Begin vandaag nog en bespaar uren per week op administratief werk.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/onboarding">
                 <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 shadow-2xl w-full sm:w-auto gap-2">
                   <Sparkles className="h-5 w-5" />
-                  {language === 'nl' ? 'Wordt Klant' : language === 'pl' ? 'Zostań klientem' : 'Become a Customer'}
+                  Wordt Klant
                 </Button>
               </Link>
               <Link to="/demo">
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 w-full sm:w-auto gap-2">
                   <Play className="h-5 w-5" />
-                  {language === 'nl' ? 'Open Demo' : language === 'pl' ? 'Otwórz Demo' : 'Open Demo'}
+                  Open Demo
                 </Button>
               </Link>
             </div>
@@ -636,22 +549,16 @@ const LandingPage: React.FC = () => {
             <span className="text-xl font-bold text-white">WerkWise</span>
             <div className="flex items-center gap-6">
               <a href="#features" className="text-gray-400 hover:text-white transition-colors">
-                {language === 'nl' ? 'Functies' : language === 'pl' ? 'Funkcje' : 'Features'}
+                Functies
               </a>
               <Link to="/demo" className="text-gray-400 hover:text-white transition-colors">
                 Demo
               </Link>
             </div>
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
-                <Globe className="h-4 w-4" />
-                <span>NL | EN | PL</span>
-              </div>
-            </div>
+            <ThemeToggle />
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            © 2025 WerkWise. {t('allRightsReserved')}
+            © 2025 WerkWise. Alle rechten voorbehouden.
           </div>
         </div>
       </footer>
