@@ -1,29 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mail, Lock, Eye, EyeOff, User, CheckCircle, ArrowRight,
-  Briefcase, Clock, Users, Package, BarChart3, Shield,
-  Wrench, AlertTriangle, FileText, Zap, Play, ChevronRight,
-  Building2, Truck, ClipboardCheck, TrendingUp, Bell, Globe
+  ArrowRight,
+  Briefcase, Clock, Package,
+  Wrench, Zap, Play, ChevronRight,
+  Building2, TrendingUp, Bell, Globe, Sparkles
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/button';
 
 const LandingPage: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [titleNumber, setTitleNumber] = useState(0);
-
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-  });
 
   // Animated words for hero
   const animatedWords = useMemo(() => {
@@ -47,68 +36,6 @@ const LandingPage: React.FC = () => {
     { code: 'en' as const, name: 'EN', flag: '🇬🇧' },
     { code: 'pl' as const, name: 'PL', flag: '🇵🇱' },
   ];
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!formData.fullName || !formData.email || !formData.password) {
-      setError(language === 'nl' ? 'Vul alle velden in' : language === 'pl' ? 'Wypełnij wszystkie pola' : 'Please fill in all fields');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError(t('wachtwoordMinimaal6'));
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.fullName,
-            role: 'medewerker',
-          },
-        },
-      });
-
-      if (signUpError) {
-        if (signUpError.message.includes('already registered')) {
-          setError(t('emailAlreadyExists'));
-        } else {
-          setError(signUpError.message);
-        }
-        return;
-      }
-
-      if (data.user) {
-        await supabase.from('profiles').insert({
-          id: data.user.id,
-          naam: formData.fullName,
-          email: formData.email,
-          role: 'medewerker',
-        });
-
-        setSuccess(
-          language === 'nl'
-            ? 'Account aangemaakt! Je kunt nu inloggen.'
-            : language === 'pl'
-            ? 'Konto utworzone! Możesz się zalogować.'
-            : 'Account created! You can now log in.'
-        );
-        setFormData({ fullName: '', email: '', password: '' });
-      }
-    } catch (err: any) {
-      setError(err.message || t('foutOpgetreden'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Features data based on actual WerkWise capabilities
   const features = [
@@ -218,7 +145,7 @@ const LandingPage: React.FC = () => {
               </span>
             </motion.div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <div className="hidden sm:flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                 {languages.map((lang) => (
                   <button
@@ -235,9 +162,15 @@ const LandingPage: React.FC = () => {
                 ))}
               </div>
               <Link to="/demo">
+                <Button size="default" variant="outline" className="gap-2">
+                  <Play className="h-4 w-4" />
+                  <span className="hidden sm:inline">{language === 'nl' ? 'Open Demo' : language === 'pl' ? 'Otwórz Demo' : 'Open Demo'}</span>
+                </Button>
+              </Link>
+              <Link to="/onboarding">
                 <Button size="default" className="gap-2">
-                  <span>{language === 'nl' ? 'Naar App' : language === 'pl' ? 'Do aplikacji' : 'Go to App'}</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden sm:inline">{language === 'nl' ? 'Wordt Klant' : language === 'pl' ? 'Zostań klientem' : 'Become a Customer'}</span>
                 </Button>
               </Link>
             </div>
@@ -318,16 +251,16 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               >
-                <Link to="/demo">
+                <Link to="/onboarding">
                   <Button size="lg" className="w-full sm:w-auto gap-2">
-                    {language === 'nl' ? 'Probeer Gratis' : language === 'pl' ? 'Wypróbuj za darmo' : 'Try for Free'}
-                    <ArrowRight className="h-5 w-5" />
+                    <Sparkles className="h-5 w-5" />
+                    {language === 'nl' ? 'Wordt Klant' : language === 'pl' ? 'Zostań klientem' : 'Become a Customer'}
                   </Button>
                 </Link>
                 <Link to="/demo">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2">
                     <Play className="h-5 w-5" />
-                    {language === 'nl' ? 'Bekijk Demo' : language === 'pl' ? 'Zobacz Demo' : 'Watch Demo'}
+                    {language === 'nl' ? 'Open Demo' : language === 'pl' ? 'Otwórz Demo' : 'Open Demo'}
                   </Button>
                 </Link>
               </motion.div>
@@ -348,127 +281,75 @@ const LandingPage: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Right: Register Form */}
+            {/* Right: App Preview */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="lg:pl-8"
             >
-              <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-8 max-w-md mx-auto lg:ml-auto relative overflow-hidden">
-                {/* Gradient decoration */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-2xl shadow-indigo-300/50 p-8 max-w-lg mx-auto lg:ml-auto relative overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
                 <div className="relative">
-                  <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
-                      <User className="h-8 w-8 text-white" />
+                  {/* Mock Dashboard Preview */}
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <Briefcase className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold">Dashboard</div>
+                        <div className="text-indigo-200 text-sm">{language === 'nl' ? 'Real-time overzicht' : language === 'pl' ? 'Przegląd w czasie rzeczywistym' : 'Real-time overview'}</div>
+                      </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      {language === 'nl' ? 'Gratis beginnen' : language === 'pl' ? 'Zacznij za darmo' : 'Start for free'}
-                    </h2>
-                    <p className="text-gray-600">
-                      {language === 'nl' ? 'Geen creditcard nodig' : language === 'pl' ? 'Bez karty kredytowej' : 'No credit card required'}
-                    </p>
+
+                    {/* Mock stats */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/10 rounded-xl p-4">
+                        <div className="text-2xl font-bold text-white">12</div>
+                        <div className="text-indigo-200 text-sm">{language === 'nl' ? 'Actieve projecten' : language === 'pl' ? 'Aktywne projekty' : 'Active projects'}</div>
+                      </div>
+                      <div className="bg-white/10 rounded-xl p-4">
+                        <div className="text-2xl font-bold text-white">248</div>
+                        <div className="text-indigo-200 text-sm">{language === 'nl' ? 'Uren deze maand' : language === 'pl' ? 'Godzin w tym miesiącu' : 'Hours this month'}</div>
+                      </div>
+                    </div>
                   </div>
 
-                  <form onSubmit={handleRegister} className="space-y-5">
-                    {error && (
+                  {/* Feature highlights */}
+                  <div className="space-y-3">
+                    {[
+                      { icon: Clock, text: language === 'nl' ? 'Urenregistratie in seconden' : language === 'pl' ? 'Rejestracja w sekundach' : 'Time tracking in seconds' },
+                      { icon: Building2, text: language === 'nl' ? 'Projectvoortgang real-time' : language === 'pl' ? 'Postęp projektu w czasie rzeczywistym' : 'Real-time project progress' },
+                      { icon: Package, text: language === 'nl' ? 'Automatisch voorraadbeheer' : language === 'pl' ? 'Automatyczne zarządzanie zapasami' : 'Automatic inventory management' },
+                    ].map((item, index) => (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm"
+                        key={index}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                        className="flex items-center gap-3 text-white"
                       >
-                        {error}
-                      </motion.div>
-                    )}
-                    {success && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl text-sm flex items-center gap-3"
-                      >
-                        <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                        <span>{success}</span>
-                      </motion.div>
-                    )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('fullName')}
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={formData.fullName}
-                          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                          placeholder={t('fullNamePlaceholder')}
-                          className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('emailAddress')}
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          placeholder={t('emailPlaceholder')}
-                          className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('password')}
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          placeholder={t('choosePassword')}
-                          className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                      {isLoading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                          <span>{t('registering')}</span>
+                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <item.icon className="h-4 w-4" />
                         </div>
-                      ) : (
-                        <>
-                          {t('createAccount')}
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </>
-                      )}
-                    </Button>
+                        <span className="text-sm">{item.text}</span>
+                      </motion.div>
+                    ))}
+                  </div>
 
-                    <p className="text-center text-sm text-gray-600">
-                      {language === 'nl' ? 'Al een account?' : language === 'pl' ? 'Masz już konto?' : 'Already have an account?'}{' '}
-                      <Link to="/demo" className="text-indigo-600 hover:text-indigo-700 font-semibold">
-                        {t('login')}
-                      </Link>
-                    </p>
-                  </form>
+                  {/* CTA */}
+                  <div className="mt-6 pt-6 border-t border-white/20">
+                    <Link to="/onboarding" className="block">
+                      <Button size="lg" className="w-full bg-white text-indigo-600 hover:bg-gray-100 gap-2">
+                        <Sparkles className="h-5 w-5" />
+                        {language === 'nl' ? 'Start Nu - Gratis' : language === 'pl' ? 'Zacznij teraz - za darmo' : 'Start Now - Free'}
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -604,10 +485,16 @@ const LandingPage: React.FC = () => {
                 : 'Start today and save hours per week on administrative work.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/onboarding">
+                <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 shadow-2xl w-full sm:w-auto gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  {language === 'nl' ? 'Wordt Klant' : language === 'pl' ? 'Zostań klientem' : 'Become a Customer'}
+                </Button>
+              </Link>
               <Link to="/demo">
-                <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 shadow-2xl w-full sm:w-auto">
-                  {language === 'nl' ? 'Start Nu Gratis' : language === 'pl' ? 'Zacznij za darmo' : 'Start Free Now'}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 w-full sm:w-auto gap-2">
+                  <Play className="h-5 w-5" />
+                  {language === 'nl' ? 'Open Demo' : language === 'pl' ? 'Otwórz Demo' : 'Open Demo'}
                 </Button>
               </Link>
             </div>
