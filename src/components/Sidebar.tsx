@@ -13,7 +13,8 @@ import {
   Package,
   FileText,
   TrendingUp,
-  Ticket
+  Ticket,
+  Briefcase
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -106,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -114,25 +115,35 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       {/* Sidebar */}
       <div className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-64 bg-white shadow-lg border-r border-gray-200 h-screen flex flex-col
-        transform transition-transform duration-300 ease-in-out
+        w-72 bg-white border-r border-gray-100 h-screen flex flex-col
+        transform transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-6 border-b border-gray-200">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <img src="/image copy copy.png" alt="GouweBouw" className="w-12 h-12 object-contain" />
-              <h1 className="text-xl font-bold text-gray-800">GouweBouw</h1>
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                <Briefcase className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
+                  WerkWise
+                </h1>
+                <p className="text-xs text-gray-400">Workforce Management</p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-md transition-colors"
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors"
               aria-label="Close menu"
             >
-              <X size={20} className="text-gray-600" />
+              <X size={20} className="text-gray-500" />
             </button>
           </div>
         </div>
+
+        {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
             {menuItems.map((item) => {
@@ -142,15 +153,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
                 <li key={item.id}>
                   <button
                     onClick={() => setActiveSection(item.id)}
-                    className={`w-full text-left px-3 py-2.5 rounded-md flex items-center space-x-3 transition-colors ${
+                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all ${
                       isActive
-                        ? 'bg-red-600 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
                     <Icon
-                      size={18}
-                      className={item.id === 'schademeldingen' ? 'text-yellow-400' : ''}
+                      size={20}
+                      className={item.id === 'schademeldingen' && !isActive ? 'text-amber-500' : ''}
                     />
                     <span className="text-sm font-medium">{item.label}</span>
                   </button>
@@ -159,6 +170,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
             })}
           </ul>
         </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-100">
+          <div className="text-xs text-gray-400 text-center">
+            © 2025 WerkWise
+          </div>
+        </div>
       </div>
     </>
   );

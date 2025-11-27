@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, User, CheckCircle, Clock, Users, BarChart3, ArrowRight, Check } from 'lucide-react';
+import {
+  Mail, Lock, Eye, EyeOff, User, CheckCircle, Clock, Users,
+  BarChart3, ArrowRight, Check, Briefcase, Shield, Zap,
+  Building2, ClipboardList, Package
+} from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 
 const LandingPage: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
-  const [isRegistering, setIsRegistering] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Form fields
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -43,14 +45,13 @@ const LandingPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Create account with Supabase
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             name: formData.fullName,
-            role: 'medewerker', // Default role for self-registration
+            role: 'medewerker',
           },
         },
       });
@@ -65,7 +66,6 @@ const LandingPage: React.FC = () => {
       }
 
       if (data.user) {
-        // Create profile in database
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -81,10 +81,10 @@ const LandingPage: React.FC = () => {
 
         setSuccess(
           language === 'nl'
-            ? 'Account succesvol aangemaakt! Je kunt nu inloggen in de demo.'
+            ? 'Account succesvol aangemaakt! Je kunt nu inloggen.'
             : language === 'pl'
-            ? 'Konto zostało pomyślnie utworzone! Możesz teraz zalogować się do demo.'
-            : 'Account created successfully! You can now log in to the demo.'
+            ? 'Konto zostało pomyślnie utworzone! Możesz teraz zalogować się.'
+            : 'Account created successfully! You can now log in.'
         );
         setFormData({ fullName: '', email: '', password: '' });
       }
@@ -98,74 +98,101 @@ const LandingPage: React.FC = () => {
   const features = [
     {
       icon: Clock,
-      title: language === 'nl' ? 'Urenregistratie' : language === 'pl' ? 'Rejestracja godzin' : 'Time Registration',
+      title: language === 'nl' ? 'Urenregistratie' : language === 'pl' ? 'Rejestracja godzin' : 'Time Tracking',
       description: language === 'nl'
-        ? 'Registreer eenvoudig je werkuren per project'
+        ? 'Registreer werkuren per project met één klik. Overzichtelijk en efficiënt.'
         : language === 'pl'
-        ? 'Łatwo rejestruj godziny pracy dla każdego projektu'
-        : 'Easily register your work hours per project',
+        ? 'Rejestruj godziny pracy jednym kliknięciem. Przejrzyście i wydajnie.'
+        : 'Track work hours per project with one click. Clear and efficient.',
+    },
+    {
+      icon: Building2,
+      title: language === 'nl' ? 'Projectbeheer' : language === 'pl' ? 'Zarządzanie projektami' : 'Project Management',
+      description: language === 'nl'
+        ? 'Beheer al je projecten op één centrale plek met real-time voortgang.'
+        : language === 'pl'
+        ? 'Zarządzaj wszystkimi projektami w jednym miejscu z postępem w czasie rzeczywistym.'
+        : 'Manage all projects in one central place with real-time progress.',
     },
     {
       icon: Users,
-      title: language === 'nl' ? 'Team Management' : language === 'pl' ? 'Zarządzanie zespołem' : 'Team Management',
+      title: language === 'nl' ? 'Teambeheer' : language === 'pl' ? 'Zarządzanie zespołem' : 'Team Management',
       description: language === 'nl'
-        ? 'Beheer je team en projecten op één plek'
+        ? 'Houd overzicht over je team, rollen en productiviteit.'
         : language === 'pl'
-        ? 'Zarządzaj zespołem i projektami w jednym miejscu'
-        : 'Manage your team and projects in one place',
+        ? 'Miej przegląd swojego zespołu, ról i produktywności.'
+        : 'Keep overview of your team, roles and productivity.',
+    },
+    {
+      icon: Package,
+      title: language === 'nl' ? 'Voorraadbeheer' : language === 'pl' ? 'Zarządzanie zapasami' : 'Inventory Management',
+      description: language === 'nl'
+        ? 'Beheer voorraad en materialen met automatische meldingen.'
+        : language === 'pl'
+        ? 'Zarządzaj zapasami i materiałami z automatycznymi powiadomieniami.'
+        : 'Manage inventory and materials with automatic notifications.',
     },
     {
       icon: BarChart3,
-      title: language === 'nl' ? 'Rapportages' : language === 'pl' ? 'Raporty' : 'Reports',
+      title: language === 'nl' ? 'Rapportages' : language === 'pl' ? 'Raporty' : 'Reports & Analytics',
       description: language === 'nl'
-        ? 'Inzicht in uren, kosten en projectvoortgang'
+        ? 'Gedetailleerde rapporten en inzichten voor betere beslissingen.'
         : language === 'pl'
-        ? 'Wgląd w godziny, koszty i postępy projektu'
-        : 'Insights into hours, costs and project progress',
+        ? 'Szczegółowe raporty i wglądy dla lepszych decyzji.'
+        : 'Detailed reports and insights for better decisions.',
+    },
+    {
+      icon: Shield,
+      title: language === 'nl' ? 'Veilig & Betrouwbaar' : language === 'pl' ? 'Bezpieczne i niezawodne' : 'Secure & Reliable',
+      description: language === 'nl'
+        ? 'Enterprise-grade beveiliging voor al je bedrijfsdata.'
+        : language === 'pl'
+        ? 'Bezpieczeństwo klasy korporacyjnej dla wszystkich danych firmowych.'
+        : 'Enterprise-grade security for all your business data.',
     },
   ];
 
-  const benefits = [
-    language === 'nl' ? 'Eenvoudige urenregistratie' : language === 'pl' ? 'Prosta rejestracja godzin' : 'Simple time registration',
-    language === 'nl' ? 'Projectbeheer' : language === 'pl' ? 'Zarządzanie projektami' : 'Project management',
-    language === 'nl' ? 'Magazijnbeheer' : language === 'pl' ? 'Zarządzanie magazynem' : 'Warehouse management',
-    language === 'nl' ? 'Schademeldingen' : language === 'pl' ? 'Zgłoszenia szkód' : 'Damage reports',
-    language === 'nl' ? 'Team overzichten' : language === 'pl' ? 'Przeglądy zespołu' : 'Team overviews',
-    language === 'nl' ? 'Meertalige ondersteuning' : language === 'pl' ? 'Wsparcie wielojęzyczne' : 'Multi-language support',
+  const stats = [
+    { value: '10K+', label: language === 'nl' ? 'Geregistreerde uren' : language === 'pl' ? 'Zarejestrowane godziny' : 'Hours tracked' },
+    { value: '500+', label: language === 'nl' ? 'Projecten' : language === 'pl' ? 'Projekty' : 'Projects' },
+    { value: '99.9%', label: language === 'nl' ? 'Uptime' : language === 'pl' ? 'Dostępność' : 'Uptime' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-100 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <img src="/image copy copy.png" alt="GouweBouw" className="h-10" />
-              <span className="text-xl font-bold text-gray-800">WerkWise</span>
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center">
+                <Briefcase className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
+                WerkWise
+              </span>
             </div>
             <div className="flex items-center space-x-4">
-              {/* Language selector */}
-              <div className="flex space-x-1">
+              <div className="hidden sm:flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
                     onClick={() => setLanguage(lang.code)}
-                    className={`px-2 py-1 rounded text-sm transition-colors ${
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                       language === lang.code
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-white text-indigo-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    {lang.flag}
+                    {lang.flag} {lang.name}
                   </button>
                 ))}
               </div>
               <Link
                 to="/demo"
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-all font-medium text-sm flex items-center space-x-2 shadow-lg shadow-indigo-200"
               >
-                <span>{language === 'nl' ? 'Naar Demo' : language === 'pl' ? 'Do Demo' : 'Go to Demo'}</span>
+                <span>{language === 'nl' ? 'Naar App' : language === 'pl' ? 'Do aplikacji' : 'Go to App'}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -174,187 +201,211 @@ const LandingPage: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text content */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left: Content */}
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                {language === 'nl'
-                  ? 'Urenregistratie & Projectbeheer'
-                  : language === 'pl'
-                  ? 'Rejestracja godzin i zarządzanie projektami'
-                  : 'Time Registration & Project Management'}
+              <div className="inline-flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <Zap className="h-4 w-4" />
+                <span>{language === 'nl' ? 'Slim werken, beter presteren' : language === 'pl' ? 'Pracuj mądrze, osiągaj więcej' : 'Work smart, perform better'}</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                {language === 'nl' ? (
+                  <>Alles voor je <span className="text-indigo-600">workforce</span> in één platform</>
+                ) : language === 'pl' ? (
+                  <>Wszystko dla Twojej <span className="text-indigo-600">firmy</span> na jednej platformie</>
+                ) : (
+                  <>Everything for your <span className="text-indigo-600">workforce</span> in one platform</>
+                )}
               </h1>
-              <p className="text-xl text-gray-600 mb-8">
+
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                 {language === 'nl'
-                  ? 'De complete oplossing voor bouwbedrijven. Registreer uren, beheer projecten en houd voorraad bij - allemaal in één platform.'
+                  ? 'WerkWise is de complete oplossing voor urenregistratie, projectbeheer en voorraadbeheer. Speciaal ontwikkeld voor de bouw- en installatiebranche.'
                   : language === 'pl'
-                  ? 'Kompletne rozwiązanie dla firm budowlanych. Rejestruj godziny, zarządzaj projektami i śledź zapasy - wszystko na jednej platformie.'
-                  : 'The complete solution for construction companies. Register hours, manage projects and track inventory - all in one platform.'}
+                  ? 'WerkWise to kompletne rozwiązanie do rejestracji godzin, zarządzania projektami i zapasami. Specjalnie zaprojektowane dla branży budowlanej i instalacyjnej.'
+                  : 'WerkWise is the complete solution for time tracking, project management and inventory control. Specially designed for construction and installation companies.'}
               </p>
 
-              {/* Benefits list */}
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700 text-sm">{benefit}</span>
+              {/* Stats */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-8 mb-10">
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center lg:text-left">
+                    <div className="text-3xl font-bold text-indigo-600">{stat.value}</div>
+                    <div className="text-sm text-gray-500">{stat.label}</div>
                   </div>
                 ))}
               </div>
 
-              <Link
-                to="/demo"
-                className="inline-flex items-center space-x-2 bg-red-600 text-white px-8 py-4 rounded-lg hover:bg-red-700 transition-colors text-lg font-semibold"
-              >
-                <span>{language === 'nl' ? 'Bekijk de Demo' : language === 'pl' ? 'Zobacz Demo' : 'View the Demo'}</span>
-                <ArrowRight className="h-5 w-5" />
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link
+                  to="/demo"
+                  className="inline-flex items-center justify-center space-x-2 bg-indigo-600 text-white px-8 py-4 rounded-xl hover:bg-indigo-700 transition-all text-lg font-semibold shadow-xl shadow-indigo-200 hover:shadow-2xl hover:shadow-indigo-300 hover:-translate-y-0.5"
+                >
+                  <span>{language === 'nl' ? 'Start Demo' : language === 'pl' ? 'Rozpocznij Demo' : 'Start Demo'}</span>
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <a
+                  href="#features"
+                  className="inline-flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 px-8 py-4 rounded-xl hover:bg-gray-200 transition-all text-lg font-semibold"
+                >
+                  <span>{language === 'nl' ? 'Meer informatie' : language === 'pl' ? 'Więcej informacji' : 'Learn more'}</span>
+                </a>
+              </div>
             </div>
 
-            {/* Right: Register form */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  {t('createAccount')}
-                </h2>
-                <p className="text-gray-600">
-                  {language === 'nl'
-                    ? 'Maak een gratis account aan om de demo te testen'
-                    : language === 'pl'
-                    ? 'Utwórz darmowe konto, aby przetestować demo'
-                    : 'Create a free account to test the demo'}
-                </p>
-              </div>
-
-              <form onSubmit={handleRegister} className="space-y-4">
-                {error && (
-                  <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
-                    {error}
+            {/* Right: Register Form */}
+            <div className="lg:pl-8">
+              <div className="bg-white rounded-2xl shadow-2xl shadow-gray-200 border border-gray-100 p-8 max-w-md mx-auto lg:ml-auto">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <User className="h-8 w-8 text-white" />
                   </div>
-                )}
-                {success && (
-                  <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-md text-sm flex items-start space-x-2">
-                    <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                    <span>{success}</span>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('fullName')}
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      placeholder={t('fullNamePlaceholder')}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {t('createAccount')}
+                  </h2>
+                  <p className="text-gray-600">
+                    {language === 'nl'
+                      ? 'Maak een gratis account aan'
+                      : language === 'pl'
+                      ? 'Utwórz darmowe konto'
+                      : 'Create a free account'}
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('emailAddress')}
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={t('emailPlaceholder')}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('password')}
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      placeholder={t('choosePassword')}
-                      className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-red-600 text-white py-3 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>{t('registering')}</span>
+                <form onSubmit={handleRegister} className="space-y-5">
+                  {error && (
+                    <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm">
+                      {error}
                     </div>
-                  ) : (
-                    t('createAccount')
                   )}
-                </button>
+                  {success && (
+                    <div className="p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl text-sm flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                      <span>{success}</span>
+                    </div>
+                  )}
 
-                <p className="text-center text-sm text-gray-600">
-                  {language === 'nl'
-                    ? 'Al een account?'
-                    : language === 'pl'
-                    ? 'Masz już konto?'
-                    : 'Already have an account?'}{' '}
-                  <Link to="/demo" className="text-red-600 hover:text-red-700 font-medium">
-                    {t('login')}
-                  </Link>
-                </p>
-              </form>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('fullName')}
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        placeholder={t('fullNamePlaceholder')}
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('emailAddress')}
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder={t('emailPlaceholder')}
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('password')}
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder={t('choosePassword')}
+                        className="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-indigo-600 text-white py-3.5 px-4 rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg shadow-lg shadow-indigo-200"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>{t('registering')}</span>
+                      </div>
+                    ) : (
+                      t('createAccount')
+                    )}
+                  </button>
+
+                  <p className="text-center text-sm text-gray-600">
+                    {language === 'nl'
+                      ? 'Al een account?'
+                      : language === 'pl'
+                      ? 'Masz już konto?'
+                      : 'Already have an account?'}{' '}
+                    <Link to="/demo" className="text-indigo-600 hover:text-indigo-700 font-semibold">
+                      {t('login')}
+                    </Link>
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section id="features" className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {language === 'nl'
                 ? 'Alles wat je nodig hebt'
                 : language === 'pl'
                 ? 'Wszystko, czego potrzebujesz'
                 : 'Everything you need'}
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               {language === 'nl'
-                ? 'Eén platform voor al je bedrijfsprocessen'
+                ? 'Eén platform voor al je bedrijfsprocessen, van urenregistratie tot voorraadbeheer.'
                 : language === 'pl'
-                ? 'Jedna platforma dla wszystkich procesów biznesowych'
-                : 'One platform for all your business processes'}
+                ? 'Jedna platforma dla wszystkich procesów biznesowych, od rejestracji godzin po zarządzanie zapasami.'
+                : 'One platform for all your business processes, from time tracking to inventory management.'}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-red-600" />
+              <div
+                key={index}
+                className="bg-white rounded-2xl p-8 hover:shadow-xl transition-all duration-300 border border-gray-100 group hover:-translate-y-1"
+              >
+                <div className="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors">
+                  <feature.icon className="h-7 w-7 text-indigo-600 group-hover:text-white transition-colors" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -362,42 +413,52 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-red-600">
+      <section className="py-24 bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             {language === 'nl'
-              ? 'Klaar om te beginnen?'
+              ? 'Klaar om efficiënter te werken?'
               : language === 'pl'
-              ? 'Gotowy, aby zacząć?'
-              : 'Ready to get started?'}
+              ? 'Gotowy do wydajniejszej pracy?'
+              : 'Ready to work more efficiently?'}
           </h2>
-          <p className="text-xl text-red-100 mb-8">
+          <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto">
             {language === 'nl'
-              ? 'Probeer de demo en ontdek hoe WerkWise je bedrijf kan helpen.'
+              ? 'Probeer WerkWise vandaag nog en ontdek hoe je bedrijf kan profiteren van slimmer werken.'
               : language === 'pl'
-              ? 'Wypróbuj demo i odkryj, jak WerkWise może pomóc Twojej firmie.'
-              : 'Try the demo and discover how WerkWise can help your business.'}
+              ? 'Wypróbuj WerkWise już dziś i odkryj, jak Twoja firma może skorzystać z mądrzejszej pracy.'
+              : 'Try WerkWise today and discover how your business can benefit from smarter working.'}
           </p>
           <Link
             to="/demo"
-            className="inline-flex items-center space-x-2 bg-white text-red-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors text-lg font-semibold"
+            className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-10 py-4 rounded-xl hover:bg-gray-100 transition-all text-lg font-bold shadow-2xl hover:-translate-y-0.5"
           >
-            <span>{language === 'nl' ? 'Start de Demo' : language === 'pl' ? 'Uruchom Demo' : 'Start the Demo'}</span>
+            <span>{language === 'nl' ? 'Start Nu Gratis' : language === 'pl' ? 'Zacznij za darmo' : 'Start Free Now'}</span>
             <ArrowRight className="h-5 w-5" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8">
+      <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <img src="/image copy copy.png" alt="GouweBouw" className="h-8 brightness-0 invert" />
-              <span className="text-lg font-bold">WerkWise</span>
+            <div className="flex items-center space-x-3 mb-6 md:mb-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Briefcase className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold">WerkWise</span>
+            </div>
+            <div className="flex items-center space-x-6 mb-6 md:mb-0">
+              <a href="#features" className="text-gray-400 hover:text-white transition-colors">
+                {language === 'nl' ? 'Features' : language === 'pl' ? 'Funkcje' : 'Features'}
+              </a>
+              <Link to="/demo" className="text-gray-400 hover:text-white transition-colors">
+                Demo
+              </Link>
             </div>
             <div className="text-gray-400 text-sm">
-              © 2025 GouweBouw. {t('allRightsReserved')}
+              © 2025 WerkWise. {t('allRightsReserved')}
             </div>
           </div>
         </div>

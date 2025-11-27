@@ -16,7 +16,7 @@ export const translations = {
     uitloggen: 'Uitloggen',
     
     // Login & Welcome
-    welcomeToGouweBouw: 'Welkom bij GouweBouw',
+    welcomeToGouweBouw: 'Welkom bij WerkWise',
     loginToContinue: 'Log in om door te gaan',
     login: 'Inloggen',
     register: 'Registreren',
@@ -318,7 +318,7 @@ export const translations = {
     uitloggen: 'Logout',
     
     // Login & Welcome
-    welcomeToGouweBouw: 'Welcome to GouweBouw',
+    welcomeToGouweBouw: 'Welcome to WerkWise',
     loginToContinue: 'Login to continue',
     login: 'Login',
     register: 'Register',
@@ -621,7 +621,7 @@ export const translations = {
     uitloggen: 'Wyloguj',
     
     // Login & Welcome
-    welcomeToGouweBouw: 'Witamy w GouweBouw',
+    welcomeToGouweBouw: 'Witamy w WerkWise',
     loginToContinue: 'Zaloguj się, aby kontynuować',
     login: 'Zaloguj',
     register: 'Zarejestruj',
