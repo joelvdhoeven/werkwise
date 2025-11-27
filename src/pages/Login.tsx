@@ -3,12 +3,16 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { AuthSwitch } from '../components/ui/auth-switch';
+import { ThemeToggle } from '../components/ui/theme-toggle';
 
 const Login: React.FC = () => {
   const { login } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -124,26 +128,38 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Back to Home Link */}
-        <div className="mb-6">
+    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-500 ${
+      isDark
+        ? 'bg-gray-950'
+        : 'bg-gradient-to-br from-violet-50 via-white to-fuchsia-50'
+    }`}>
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-violet-900/20' : 'bg-violet-200/50'}`} />
+        <div className={`absolute top-1/2 -left-40 w-80 h-80 rounded-full blur-3xl ${isDark ? 'bg-fuchsia-900/20' : 'bg-fuchsia-200/50'}`} />
+        <div className={`absolute bottom-0 right-1/4 w-64 h-64 rounded-full blur-3xl ${isDark ? 'bg-pink-900/10' : 'bg-pink-200/30'}`} />
+      </div>
+
+      <div className="max-w-md w-full relative z-10">
+        {/* Back to Home Link + Theme Toggle */}
+        <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center space-x-2 text-gray-600 hover:text-indigo-600 transition-colors group"
+            className={`inline-flex items-center space-x-2 transition-colors group ${isDark ? 'text-gray-400 hover:text-violet-400' : 'text-gray-600 hover:text-violet-600'}`}
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span>{language === 'nl' ? 'Terug naar Home' : language === 'pl' ? 'Powrót do strony głównej' : 'Back to Home'}</span>
           </Link>
+          <ThemeToggle />
         </div>
 
         {showForgotPassword && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className={`rounded-2xl p-6 max-w-md w-full shadow-2xl ${isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
+              <h3 className={`text-lg font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
                 {language === 'nl' ? 'Wachtwoord vergeten?' : language === 'pl' ? 'Zapomniałeś hasła?' : 'Forgot password?'}
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className={`mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 {language === 'nl'
                   ? 'Neem contact op met een administrator om je wachtwoord te resetten.'
                   : language === 'pl'
@@ -152,7 +168,7 @@ const Login: React.FC = () => {
               </p>
               <button
                 onClick={() => setShowForgotPassword(false)}
-                className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white py-2.5 px-4 rounded-xl hover:from-violet-700 hover:to-fuchsia-700 transition-colors font-medium"
               >
                 {language === 'nl' ? 'Sluiten' : language === 'pl' ? 'Zamknij' : 'Close'}
               </button>
@@ -172,7 +188,7 @@ const Login: React.FC = () => {
 
         {/* Language Selection */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 mb-3">{t('selectLanguage')}</p>
+          <p className={`text-sm mb-3 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{t('selectLanguage')}</p>
           <div className="flex justify-center space-x-2">
             {languages.map((lang) => (
               <button
@@ -180,8 +196,12 @@ const Login: React.FC = () => {
                 onClick={() => setLanguage(lang.code)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm transition-all ${
                   language === lang.code
-                    ? 'bg-indigo-100 text-indigo-700 font-medium'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? isDark
+                      ? 'bg-violet-500/20 text-violet-400 font-medium'
+                      : 'bg-violet-100 text-violet-700 font-medium'
+                    : isDark
+                      ? 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 <span>{lang.flag}</span>
@@ -193,10 +213,10 @@ const Login: React.FC = () => {
 
         {/* Footer */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
+          <p className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>
             © 2025 WerkWise. {t('allRightsReserved')}
           </p>
-          <div className="mt-2 text-xs text-gray-400">
+          <div className={`mt-2 text-xs ${isDark ? 'text-gray-700' : 'text-gray-400'}`}>
             <span>{t('version')} 1.0.0</span>
           </div>
         </div>

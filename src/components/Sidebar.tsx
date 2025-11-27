@@ -13,13 +13,12 @@ import {
   Package,
   FileText,
   TrendingUp,
-  Ticket,
-  Briefcase
+  Ticket
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
-import ProtectedRoute from './ProtectedRoute';
 
 interface SidebarProps {
   activeSection: string;
@@ -31,6 +30,8 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOpen, onClose }) => {
   const { t } = useLanguage();
   const { hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [moduleSettings, setModuleSettings] = useState<any>(null);
 
   useEffect(() => {
@@ -115,30 +116,31 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       {/* Sidebar */}
       <div className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-72 bg-white border-r border-gray-100 h-screen flex flex-col
-        transform transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none
+        w-72 h-screen flex flex-col
+        transform transition-all duration-300 ease-in-out shadow-xl lg:shadow-none
+        ${isDark ? 'bg-gray-900 border-r border-gray-800' : 'bg-white border-r border-gray-100'}
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-100">
+        <div className={`p-6 border-b ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                <Briefcase className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
+                <span className="text-white font-bold">W</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent">
                   WerkWise
                 </h1>
-                <p className="text-xs text-gray-400">Workforce Management</p>
+                <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Workforce Management</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors"
+              className={`lg:hidden p-2 rounded-xl transition-colors ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
               aria-label="Close menu"
             >
-              <X size={20} className="text-gray-500" />
+              <X size={20} className={isDark ? 'text-gray-400' : 'text-gray-500'} />
             </button>
           </div>
         </div>
@@ -155,8 +157,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all ${
                       isActive
-                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25'
+                        : isDark
+                          ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
                     <Icon
@@ -172,8 +176,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100">
-          <div className="text-xs text-gray-400 text-center">
+        <div className={`p-4 border-t ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
+          <div className={`text-xs text-center ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
             © 2025 WerkWise
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
 import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -23,6 +24,8 @@ import TicketsOverzicht from './pages/TicketsOverzicht';
 
 function App() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -134,7 +137,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className={`min-h-screen flex transition-colors duration-300 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
       <Sidebar
         activeSection={activeSection}
         setActiveSection={(section) => {
