@@ -151,11 +151,7 @@ const LandingPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center space-x-2"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                <Briefcase className="h-5 w-5 text-white" />
-              </div>
               <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                 WerkWise
               </span>
@@ -637,12 +633,7 @@ const LandingPage: React.FC = () => {
       <footer className={`py-12 transition-colors duration-500 ${isDark ? 'bg-gray-950 border-t border-gray-800' : 'bg-gray-900'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Briefcase className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">WerkWise</span>
-            </div>
+            <span className="text-xl font-bold text-white">WerkWise</span>
             <div className="flex items-center gap-6">
               <a href="#features" className="text-gray-400 hover:text-white transition-colors">
                 {language === 'nl' ? 'Functies' : language === 'pl' ? 'Funkcje' : 'Features'}
