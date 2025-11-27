@@ -18,6 +18,7 @@ const LandingPage: React.FC = () => {
   const isDark = theme === 'dark';
   const [titleNumber, setTitleNumber] = useState(0);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [activePreviewScreen, setActivePreviewScreen] = useState(0);
 
   // Animated words for hero (Dutch only)
   const animatedWords = ['Urenregistratie', 'Projectbeheer', 'Voorraadbeheer', 'Administratie', 'Facturatie'];
@@ -234,7 +235,7 @@ const LandingPage: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Right: App Preview - Realistic Dashboard Mock */}
+            {/* Right: App Preview - Interactive Dashboard Mock */}
             <motion.div
               initial={{ opacity: 0, x: 40, rotateY: -10 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
@@ -254,172 +255,347 @@ const LandingPage: React.FC = () => {
                     <div className="w-3 h-3 rounded-full bg-green-500" />
                   </div>
                   <div className={`flex-1 mx-4 px-3 py-1 rounded-md text-xs ${isDark ? 'bg-gray-800 text-gray-500' : 'bg-gray-200 text-gray-500'}`}>
-                    app.werkwise.nl/dashboard
+                    app.werkwise.nl/{['dashboard', 'uren', 'projecten', 'voorraad', 'team', 'facturen'][activePreviewScreen]}
                   </div>
                 </div>
 
                 {/* App Content */}
                 <div className="flex">
-                  {/* Mini Sidebar */}
-                  <div className={`w-14 py-4 flex flex-col items-center gap-3 border-r ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                      <BarChart3 className="h-4 w-4 text-white" />
-                    </div>
-                    {[Clock, Building2, Package, Users, FileText].map((Icon, i) => (
-                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
-                        <Icon className={`h-4 w-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-                      </div>
+                  {/* Interactive Sidebar */}
+                  <div className={`w-14 py-4 flex flex-col items-center gap-2 border-r ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
+                    {[
+                      { icon: BarChart3, label: 'Dashboard' },
+                      { icon: Clock, label: 'Uren' },
+                      { icon: Building2, label: 'Projecten' },
+                      { icon: Package, label: 'Voorraad' },
+                      { icon: Users, label: 'Team' },
+                      { icon: FileText, label: 'Facturen' },
+                    ].map((item, i) => (
+                      <motion.button
+                        key={i}
+                        onClick={() => setActivePreviewScreen(i)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                          activePreviewScreen === i
+                            ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
+                            : isDark
+                              ? 'hover:bg-gray-800 text-gray-500 hover:text-gray-300'
+                              : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+                        }`}
+                        title={item.label}
+                      >
+                        <item.icon className="h-4 w-4" />
+                      </motion.button>
                     ))}
                   </div>
 
-                  {/* Main Content */}
-                  <div className="flex-1 p-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Dashboard</h3>
-                        <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>November 2025</p>
-                      </div>
-                      <div className={`flex items-center gap-2 px-2 py-1 rounded-lg text-xs ${isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'}`}>
-                        <Activity className="h-3 w-3" />
-                        Live
-                      </div>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      {[
-                        { icon: Building2, label: 'Projecten', value: '12', change: '+2', color: 'indigo' },
-                        { icon: Clock, label: 'Uren', value: '248', change: '+18', color: 'purple' },
-                        { icon: Euro, label: 'Omzet', value: '€24.5k', change: '+12%', color: 'emerald' },
-                        { icon: CheckCircle2, label: 'Goedgekeurd', value: '96%', change: '+4%', color: 'blue' },
-                      ].map((stat, i) => (
+                  {/* Main Content - Different screens */}
+                  <div className="flex-1 p-3 min-h-[300px]">
+                    <AnimatePresence mode="wait">
+                      {/* Dashboard Screen */}
+                      {activePreviewScreen === 0 && (
                         <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 + i * 0.1 }}
-                          className={`p-3 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                          key="dashboard"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                              stat.color === 'indigo' ? 'bg-indigo-500/20 text-indigo-500' :
-                              stat.color === 'purple' ? 'bg-purple-500/20 text-purple-500' :
-                              stat.color === 'emerald' ? 'bg-emerald-500/20 text-emerald-500' :
-                              'bg-blue-500/20 text-blue-500'
-                            }`}>
-                              <stat.icon className="h-3.5 w-3.5" />
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Dashboard</h3>
+                              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>November 2025</p>
                             </div>
-                            <span className="text-[10px] text-emerald-500 flex items-center gap-0.5">
-                              <ArrowUpRight className="h-2.5 w-2.5" />
-                              {stat.change}
-                            </span>
+                            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg text-xs ${isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'}`}>
+                              <Activity className="h-3 w-3" />
+                              Live
+                            </div>
                           </div>
-                          <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</div>
-                          <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{stat.label}</div>
+                          <div className="grid grid-cols-2 gap-2 mb-3">
+                            {[
+                              { label: 'Projecten', value: '12', change: '+2', color: 'indigo' },
+                              { label: 'Uren', value: '248', change: '+18', color: 'purple' },
+                              { label: 'Omzet', value: '€24.5k', change: '+12%', color: 'emerald' },
+                              { label: 'Goedgekeurd', value: '96%', change: '+4%', color: 'blue' },
+                            ].map((stat, i) => (
+                              <div key={i} className={`p-2.5 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{stat.label}</span>
+                                  <span className="text-[9px] text-emerald-500">{stat.change}</span>
+                                </div>
+                                <div className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className={`p-3 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                            <div className="flex items-end gap-1 h-10">
+                              {[65, 45, 80, 55, 90, 70, 40].map((height, i) => (
+                                <motion.div
+                                  key={i}
+                                  initial={{ height: 0 }}
+                                  animate={{ height: `${height}%` }}
+                                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                                  className={`flex-1 rounded-sm ${i === 4 ? 'bg-gradient-to-t from-indigo-500 to-purple-500' : isDark ? 'bg-gray-700' : 'bg-gray-200'}`}
+                                />
+                              ))}
+                            </div>
+                          </div>
                         </motion.div>
-                      ))}
-                    </div>
+                      )}
 
-                    {/* Mini Chart */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8 }}
-                      className={`p-3 rounded-xl mb-4 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <span className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Weekoverzicht</span>
-                        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Uren</span>
-                      </div>
-                      <div className="flex items-end gap-1 h-12">
-                        {[65, 45, 80, 55, 90, 70, 40].map((height, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ height: 0 }}
-                            animate={{ height: `${height}%` }}
-                            transition={{ delay: 0.9 + i * 0.05, duration: 0.4 }}
-                            className={`flex-1 rounded-sm ${
-                              i === 4
-                                ? 'bg-gradient-to-t from-indigo-500 to-purple-500'
-                                : isDark ? 'bg-gray-700' : 'bg-gray-200'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex justify-between mt-2">
-                        {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map((day, i) => (
-                          <span key={i} className={`text-[9px] flex-1 text-center ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{day}</span>
-                        ))}
-                      </div>
-                    </motion.div>
-
-                    {/* Recent Activity */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 1.0 }}
-                      className={`p-3 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Recente activiteit</span>
-                        <CalendarDays className={`h-3 w-3 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          { name: 'Jan de Vries', action: '8u geregistreerd', time: '2 min' },
-                          { name: 'Project Almere', action: 'Status: actief', time: '15 min' },
-                        ].map((item, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${
-                              i === 0
-                                ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white'
-                                : isDark ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
-                            }`}>
-                              {item.name[0]}
+                      {/* Uren Screen */}
+                      {activePreviewScreen === 1 && (
+                        <motion.div
+                          key="uren"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Urenregistratie</h3>
+                              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Week 48</p>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className={`text-[10px] font-medium truncate ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{item.name}</div>
-                              <div className={`text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{item.action}</div>
-                            </div>
-                            <span className={`text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{item.time}</span>
+                            <button className="px-2 py-1 rounded-lg text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                              + Nieuw
+                            </button>
                           </div>
-                        ))}
-                      </div>
-                    </motion.div>
+                          <div className="space-y-2">
+                            {[
+                              { date: 'Ma 25', hours: '8:00', project: 'Renovatie Centrum', status: 'approved' },
+                              { date: 'Di 26', hours: '8:30', project: 'Nieuwbouw Almere', status: 'approved' },
+                              { date: 'Wo 27', hours: '7:45', project: 'Onderhoud Station', status: 'pending' },
+                            ].map((entry, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`p-2.5 rounded-xl flex items-center justify-between ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                                    {entry.date.split(' ')[0]}
+                                  </div>
+                                  <div>
+                                    <div className={`text-[11px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{entry.project}</div>
+                                    <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{entry.hours} uur</div>
+                                  </div>
+                                </div>
+                                <div className={`w-2 h-2 rounded-full ${entry.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                              </motion.div>
+                            ))}
+                          </div>
+                          <div className={`mt-3 p-2.5 rounded-xl text-center ${isDark ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
+                            <span className={`text-xs font-medium ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}>Totaal deze week: 32:30 uur</span>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Projecten Screen */}
+                      {activePreviewScreen === 2 && (
+                        <motion.div
+                          key="projecten"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Projecten</h3>
+                              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>12 actief</p>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {[
+                              { name: 'Renovatie Centrum', progress: 75, budget: '€45.000', status: 'actief' },
+                              { name: 'Nieuwbouw Almere', progress: 30, budget: '€125.000', status: 'actief' },
+                              { name: 'Onderhoud Station', progress: 90, budget: '€18.500', status: 'actief' },
+                            ].map((project, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`p-3 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className={`text-[11px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.name}</span>
+                                  <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{project.budget}</span>
+                                </div>
+                                <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${project.progress}%` }}
+                                    transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
+                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between mt-1.5">
+                                  <span className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{project.progress}% voltooid</span>
+                                  <span className="text-[9px] text-emerald-500">{project.status}</span>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Voorraad Screen */}
+                      {activePreviewScreen === 3 && (
+                        <motion.div
+                          key="voorraad"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad</h3>
+                              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>3 locaties</p>
+                            </div>
+                            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                              <Bell className="h-3 w-3" />
+                              2 alerts
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {[
+                              { item: 'Schroeven 4x40mm', qty: 2500, min: 1000, location: 'Magazijn A' },
+                              { item: 'PVC Buis 110mm', qty: 45, min: 50, location: 'Magazijn B', alert: true },
+                              { item: 'Verf wit 10L', qty: 8, min: 15, location: 'Bus 12', alert: true },
+                            ].map((stock, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`p-2.5 rounded-xl flex items-center justify-between ${
+                                  stock.alert
+                                    ? isDark ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'
+                                    : isDark ? 'bg-gray-800/50' : 'bg-gray-50'
+                                }`}
+                              >
+                                <div>
+                                  <div className={`text-[11px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{stock.item}</div>
+                                  <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{stock.location}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className={`text-[11px] font-bold ${stock.alert ? 'text-amber-500' : isDark ? 'text-white' : 'text-gray-900'}`}>{stock.qty}</div>
+                                  <div className={`text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>min: {stock.min}</div>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Team Screen */}
+                      {activePreviewScreen === 4 && (
+                        <motion.div
+                          key="team"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Team</h3>
+                              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>8 medewerkers</p>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {[
+                              { name: 'Jan de Vries', role: 'Voorman', status: 'actief', project: 'Renovatie Centrum' },
+                              { name: 'Pieter Bakker', role: 'Timmerman', status: 'actief', project: 'Nieuwbouw Almere' },
+                              { name: 'Klaas Jansen', role: 'Elektricien', status: 'actief', project: 'Onderhoud Station' },
+                            ].map((member, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`p-2.5 rounded-xl flex items-center gap-3 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                              >
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                                  i === 0 ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                  {member.name.split(' ').map(n => n[0]).join('')}
+                                </div>
+                                <div className="flex-1">
+                                  <div className={`text-[11px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{member.name}</div>
+                                  <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{member.role} • {member.project}</div>
+                                </div>
+                                <div className={`w-2 h-2 rounded-full ${member.status === 'actief' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                              </motion.div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Facturen Screen */}
+                      {activePreviewScreen === 5 && (
+                        <motion.div
+                          key="facturen"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Facturen</h3>
+                              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>November 2025</p>
+                            </div>
+                            <button className="px-2 py-1 rounded-lg text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                              + Nieuw
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mb-3">
+                            <div className={`p-2.5 rounded-xl ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
+                              <div className={`text-[10px] ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>Betaald</div>
+                              <div className={`text-base font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>€18.450</div>
+                            </div>
+                            <div className={`p-2.5 rounded-xl ${isDark ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
+                              <div className={`text-[10px] ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>Openstaand</div>
+                              <div className={`text-base font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>€6.200</div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {[
+                              { nr: 'F-2025-089', client: 'Bouwbedrijf Noord', amount: '€4.250', status: 'betaald' },
+                              { nr: 'F-2025-090', client: 'Gemeente Almere', amount: '€12.800', status: 'betaald' },
+                              { nr: 'F-2025-091', client: 'Van den Berg BV', amount: '€6.200', status: 'open' },
+                            ].map((invoice, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`p-2.5 rounded-xl flex items-center justify-between ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                              >
+                                <div>
+                                  <div className={`text-[11px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{invoice.client}</div>
+                                  <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{invoice.nr}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className={`text-[11px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{invoice.amount}</div>
+                                  <div className={`text-[9px] ${invoice.status === 'betaald' ? 'text-emerald-500' : 'text-amber-500'}`}>{invoice.status}</div>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
-                {/* Floating badge */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, x: 20 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ delay: 1.2, type: "spring" }}
-                  className="absolute -right-3 top-20 px-3 py-2 rounded-xl shadow-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
-                >
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-medium">Live data</span>
-                  </div>
-                </motion.div>
-
-                {/* Floating notification */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ delay: 1.4, type: "spring" }}
-                  className={`absolute -left-3 bottom-16 px-3 py-2 rounded-xl shadow-lg ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    </div>
-                    <div>
-                      <div className={`text-[10px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Uren goedgekeurd</div>
-                      <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Zojuist</div>
-                    </div>
-                  </div>
-                </motion.div>
               </div>
             </motion.div>
           </div>
