@@ -5,6 +5,7 @@ import { registerLocale } from 'react-datepicker';
 import { nl } from 'date-fns/locale';
 import App from './App.tsx';
 import LandingPage from './pages/LandingPage.tsx';
+import Onboarding from './pages/Onboarding.tsx';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { SystemSettingsProvider } from './contexts/SystemSettingsContext';
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
           <SystemSettingsProvider>
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/demo/*" element={<App />} />
             </Routes>
           </SystemSettingsProvider>
