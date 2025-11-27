@@ -21,6 +21,7 @@ import VoorraadbeheerAfboeken from './pages/VoorraadbeheerAfboeken';
 import FactuurInstellingen from './pages/FactuurInstellingen';
 import TicketOmgeving from './pages/TicketOmgeving';
 import TicketsOverzicht from './pages/TicketsOverzicht';
+import ModuleBeheer from './pages/ModuleBeheer';
 
 function App() {
   const { user } = useAuth();
@@ -125,6 +126,12 @@ function App() {
         return (
           <ProtectedRoute permission="view_all_tickets">
             <TicketsOverzicht />
+          </ProtectedRoute>
+        );
+      case 'module-beheer':
+        return (
+          <ProtectedRoute permission="manage_settings">
+            <ModuleBeheer />
           </ProtectedRoute>
         );
       default:

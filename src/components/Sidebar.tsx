@@ -19,7 +19,8 @@ import {
   Briefcase,
   BoxesIcon,
   MessageSquare,
-  Shield
+  Shield,
+  Sliders
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -159,6 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
         { id: 'meldingen', label: 'Notificatie Beheer', icon: Bell, permission: 'manage_notifications', module: 'module_notifications' },
         { id: 'email-notificaties', label: 'E-mail Notificaties', icon: Mail, permission: 'manage_settings', module: 'module_email_notifications' },
         { id: 'factuur-instellingen', label: 'Factuur Instellingen', icon: FileText, permission: 'manage_settings', module: 'module_invoicing' },
+        { id: 'module-beheer', label: 'Systeeminstellingen', icon: Sliders, permission: 'manage_settings', module: null },
         { id: 'instellingen', label: t('instellingen'), icon: Settings, permission: 'view_dashboard', module: null },
       ]
     }
