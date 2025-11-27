@@ -37,70 +37,6 @@ const LandingPage: React.FC = () => {
     { code: 'pl' as const, name: 'PL', flag: '🇵🇱' },
   ];
 
-  // Features data based on actual WerkWise capabilities
-  const features = [
-    {
-      icon: Clock,
-      title: language === 'nl' ? 'Urenregistratie' : language === 'pl' ? 'Rejestracja godzin' : 'Time Registration',
-      description: language === 'nl'
-        ? 'Registreer werkuren per project met materialen, kilometers en voortgang. Automatische goedkeuringsflow.'
-        : language === 'pl'
-        ? 'Rejestruj godziny z materiałami, kilometrami i postępem. Automatyczny przepływ zatwierdzania.'
-        : 'Track work hours with materials, kilometers and progress. Automatic approval workflow.',
-      color: 'from-blue-500 to-indigo-600',
-    },
-    {
-      icon: Building2,
-      title: language === 'nl' ? 'Projectbeheer' : language === 'pl' ? 'Zarządzanie projektami' : 'Project Management',
-      description: language === 'nl'
-        ? 'Beheer projecten met voortgang, geschatte uren vs werkelijk en real-time inzicht.'
-        : language === 'pl'
-        ? 'Zarządzaj projektami z postępem, szacowanymi godzinami i wglądem w czasie rzeczywistym.'
-        : 'Manage projects with progress tracking, estimated vs actual hours and real-time insights.',
-      color: 'from-purple-500 to-pink-600',
-    },
-    {
-      icon: Package,
-      title: language === 'nl' ? 'Voorraadbeheer' : language === 'pl' ? 'Zarządzanie zapasami' : 'Inventory Management',
-      description: language === 'nl'
-        ? 'Multi-locatie voorraadbeheer met automatische afboekingen en lage voorraad alerts.'
-        : language === 'pl'
-        ? 'Zarządzanie zapasami w wielu lokalizacjach z automatycznymi odpisami i alertami.'
-        : 'Multi-location inventory with automatic deductions and low stock alerts.',
-      color: 'from-amber-500 to-orange-600',
-    },
-    {
-      icon: Wrench,
-      title: language === 'nl' ? 'Gereedschapsbeheer' : language === 'pl' ? 'Zarządzanie narzędziami' : 'Tool Management',
-      description: language === 'nl'
-        ? 'Track speciaal gereedschap met onderhoudschema\'s, locaties en beschikbaarheid.'
-        : language === 'pl'
-        ? 'Śledź narzędzia z harmonogramami konserwacji, lokalizacjami i dostępnością.'
-        : 'Track special tools with maintenance schedules, locations and availability.',
-      color: 'from-teal-500 to-cyan-600',
-    },
-    {
-      icon: TrendingUp,
-      title: language === 'nl' ? 'Financieel Dashboard' : language === 'pl' ? 'Panel finansowy' : 'Financial Dashboard',
-      description: language === 'nl'
-        ? 'Real-time inzicht in omzet, winst en KPI\'s met uitgebreide rapportages.'
-        : language === 'pl'
-        ? 'Wgląd w przychody, zyski i KPI z rozbudowanymi raportami.'
-        : 'Real-time revenue, profit and KPI insights with detailed reports.',
-      color: 'from-green-500 to-emerald-600',
-    },
-    {
-      icon: Bell,
-      title: language === 'nl' ? 'Notificaties & E-mail' : language === 'pl' ? 'Powiadomienia i e-mail' : 'Notifications & Email',
-      description: language === 'nl'
-        ? 'Automatische meldingen voor goedkeuringen, lage voorraad en deadlines.'
-        : language === 'pl'
-        ? 'Automatyczne powiadomienia o zatwierdzeniach, niskich zapasach i terminach.'
-        : 'Automatic alerts for approvals, low stock and deadlines.',
-      color: 'from-rose-500 to-red-600',
-    },
-  ];
-
   const stats = [
     { value: '50%', label: language === 'nl' ? 'Tijdsbesparing' : language === 'pl' ? 'Oszczędność czasu' : 'Time Saved' },
     { value: '100%', label: language === 'nl' ? 'Digitaal' : language === 'pl' ? 'Cyfrowo' : 'Digital' },
@@ -357,10 +293,11 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-gray-50 relative">
+      {/* Features Section - Bento Grid */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-100 rounded-full blur-3xl opacity-30" />
+          <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-indigo-100/50 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-100/50 rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -370,43 +307,211 @@ const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <span className="inline-block bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-              {language === 'nl' ? 'Functies' : language === 'pl' ? 'Funkcje' : 'Features'}
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
               {language === 'nl'
-                ? 'Alles voor je bedrijfsadministratie'
+                ? 'Eén platform, alles geregeld'
                 : language === 'pl'
-                ? 'Wszystko dla administracji firmy'
-                : 'Everything for your business administration'}
+                ? 'Jedna platforma, wszystko załatwione'
+                : 'One platform, everything sorted'}
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
               {language === 'nl'
-                ? 'Van urenregistratie tot financieel overzicht - WerkWise doet het allemaal.'
+                ? 'Stop met schakelen tussen apps. WerkWise doet alles.'
                 : language === 'pl'
-                ? 'Od rejestracji godzin po przegląd finansowy - WerkWise robi to wszystko.'
-                : 'From time tracking to financial overview - WerkWise does it all.'}
+                ? 'Przestań przełączać się między aplikacjami.'
+                : 'Stop switching between apps. WerkWise does it all.'}
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-8 hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500 border border-gray-100 group hover:-translate-y-2"
-              >
-                <div className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="h-7 w-7 text-white" />
+          {/* Bento Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {/* Large Card - Urenregistratie */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 relative overflow-hidden group cursor-pointer"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl" />
+
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
+                  <Clock className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-              </motion.div>
-            ))}
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-3">
+                  {language === 'nl' ? 'Urenregistratie' : language === 'pl' ? 'Rejestracja godzin' : 'Time Tracking'}
+                </h3>
+                <p className="text-indigo-100 text-lg mb-8 max-w-md">
+                  {language === 'nl'
+                    ? 'Registreer uren in seconden. Voeg materialen, kilometers en foto\'s toe met één klik.'
+                    : language === 'pl'
+                    ? 'Rejestruj godziny w sekundach. Dodawaj materiały, kilometry i zdjęcia jednym kliknięciem.'
+                    : 'Track hours in seconds. Add materials, kilometers and photos with one click.'}
+                </p>
+
+                {/* Mini UI Preview */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white/80 text-sm">{language === 'nl' ? 'Vandaag gewerkt' : language === 'pl' ? 'Przepracowane dziś' : 'Worked today'}</span>
+                    <span className="text-white font-bold">8:30</span>
+                  </div>
+                  <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: '85%' }}
+                      transition={{ duration: 1, delay: 0.5 }}
+                      className="h-full bg-white rounded-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Projectbeheer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all duration-500 group"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Building2 className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                {language === 'nl' ? 'Projectbeheer' : language === 'pl' ? 'Projekty' : 'Projects'}
+              </h3>
+              <p className="text-gray-500 text-sm">
+                {language === 'nl' ? 'Real-time voortgang & budgetten' : language === 'pl' ? 'Postęp i budżety w czasie rzeczywistym' : 'Real-time progress & budgets'}
+              </p>
+            </motion.div>
+
+            {/* Voorraadbeheer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:border-amber-200 transition-all duration-500 group"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Package className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                {language === 'nl' ? 'Voorraad' : language === 'pl' ? 'Magazyn' : 'Inventory'}
+              </h3>
+              <p className="text-gray-500 text-sm">
+                {language === 'nl' ? 'Automatisch bijhouden & alerts' : language === 'pl' ? 'Automatyczne śledzenie i alerty' : 'Auto tracking & alerts'}
+              </p>
+            </motion.div>
+
+            {/* Wide Card - Financieel Dashboard */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="lg:col-span-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 relative overflow-hidden group cursor-pointer"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6">
+                <div className="flex-1">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {language === 'nl' ? 'Financieel Dashboard' : language === 'pl' ? 'Panel finansowy' : 'Financial Dashboard'}
+                  </h3>
+                  <p className="text-emerald-100">
+                    {language === 'nl' ? 'Omzet, winst en KPI\'s in één overzicht' : language === 'pl' ? 'Przychody, zyski i KPI w jednym widoku' : 'Revenue, profit and KPIs at a glance'}
+                  </p>
+                </div>
+
+                {/* Mini Chart */}
+                <div className="flex items-end gap-1.5 h-16">
+                  {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ height: 0 }}
+                      whileInView={{ height: `${height}%` }}
+                      transition={{ duration: 0.5, delay: 0.1 * i }}
+                      className="w-4 bg-white/30 rounded-t-sm"
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Gereedschap */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl" />
+
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Wrench className="h-6 w-6 text-cyan-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  {language === 'nl' ? 'Gereedschap' : language === 'pl' ? 'Narzędzia' : 'Tools'}
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  {language === 'nl' ? 'Track locaties & onderhoud' : language === 'pl' ? 'Śledź lokalizacje i konserwację' : 'Track locations & maintenance'}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Notificaties */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:border-rose-200 transition-all duration-500 group relative overflow-hidden"
+            >
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-rose-100 rounded-full blur-xl" />
+
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-red-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Bell className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  {language === 'nl' ? 'Notificaties' : language === 'pl' ? 'Powiadomienia' : 'Notifications'}
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  {language === 'nl' ? 'Mis nooit een deadline' : language === 'pl' ? 'Nigdy nie przegap terminu' : 'Never miss a deadline'}
+                </p>
+
+                {/* Notification dot */}
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute top-4 right-4 w-3 h-3 bg-rose-500 rounded-full"
+                />
+              </div>
+            </motion.div>
           </div>
+
+          {/* Bottom CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Link to="/demo">
+              <Button variant="outline" size="lg" className="gap-2 group">
+                {language === 'nl' ? 'Bekijk alles in de demo' : language === 'pl' ? 'Zobacz wszystko w demo' : 'See everything in the demo'}
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
