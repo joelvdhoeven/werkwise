@@ -147,16 +147,25 @@ const Onboarding: React.FC = () => {
                 transition={{ delay: 0.5 }}
                 className={`mt-12 pt-8 border-t ${isDark ? 'border-gray-800' : 'border-gray-200'}`}
               >
-                <p className={`text-sm mb-4 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                  Vertrouwd door 100+ bedrijven
+                <p className={`text-sm mb-6 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  Vertrouwd door bedrijven zoals
                 </p>
-                <div className="flex items-center justify-center lg:justify-start gap-6">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className={`w-16 h-8 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-200'}`}
-                    />
-                  ))}
+                <div className="flex items-center justify-center lg:justify-start gap-8">
+                  <img
+                    src="/logo-gouwebouw.png"
+                    alt="GouweBouw"
+                    className={`h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
+                  />
+                  <img
+                    src="/logo-jobsurfing.png"
+                    alt="JobSurfing"
+                    className={`h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
+                  />
+                  <img
+                    src="/logo_vdsb.png"
+                    alt="VDSB"
+                    className={`h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
+                  />
                 </div>
               </motion.div>
             </motion.div>
