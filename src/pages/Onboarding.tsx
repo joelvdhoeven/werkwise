@@ -65,11 +65,11 @@ const Onboarding: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-gray-950' : 'bg-gradient-to-br from-indigo-50 via-white to-purple-50'}`}>
+    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-gray-950' : 'bg-gradient-to-br from-violet-50 via-white to-fuchsia-50'}`}>
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-indigo-900/20' : 'bg-indigo-200/50'}`} />
-        <div className={`absolute top-1/2 -left-40 w-80 h-80 rounded-full blur-3xl ${isDark ? 'bg-purple-900/20' : 'bg-purple-200/50'}`} />
+        <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-violet-900/20' : 'bg-violet-200/50'}`} />
+        <div className={`absolute top-1/2 -left-40 w-80 h-80 rounded-full blur-3xl ${isDark ? 'bg-fuchsia-900/20' : 'bg-fuchsia-200/50'}`} />
         <div className={`absolute bottom-0 right-1/4 w-64 h-64 rounded-full blur-3xl ${isDark ? 'bg-pink-900/10' : 'bg-pink-200/30'}`} />
       </div>
 
@@ -78,7 +78,7 @@ const Onboarding: React.FC = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link
             to="/"
-            className={`inline-flex items-center space-x-2 transition-colors group ${isDark ? 'text-gray-400 hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600'}`}
+            className={`inline-flex items-center space-x-2 transition-colors group ${isDark ? 'text-gray-400 hover:text-violet-400' : 'text-gray-600 hover:text-violet-600'}`}
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-medium">Terug naar Home</span>
@@ -86,9 +86,14 @@ const Onboarding: React.FC = () => {
 
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-              WerkWise
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-lg flex items-center justify-center shadow-lg shadow-violet-500/25">
+                <span className="text-white font-bold text-sm">W</span>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent">
+                WerkWise
+              </span>
+            </div>
           </div>
         </div>
       </nav>
@@ -108,7 +113,7 @@ const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${isDark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-100 text-indigo-700'}`}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${isDark ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-100 text-violet-700'}`}
               >
                 <Sparkles className="h-4 w-4" />
                 Gratis proefperiode
@@ -185,19 +190,16 @@ const Onboarding: React.FC = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     className={`rounded-3xl shadow-2xl p-8 sm:p-10 border relative overflow-hidden ${
                       isDark
-                        ? 'bg-gray-900 border-gray-800 shadow-indigo-500/5'
+                        ? 'bg-gray-900 border-gray-800 shadow-violet-500/5'
                         : 'bg-white border-gray-100 shadow-gray-200/50'
                     }`}
                   >
                     {/* Decorative gradient */}
-                    <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-70 ${isDark ? 'bg-indigo-500/10' : 'bg-gradient-to-br from-indigo-100 to-purple-100'}`} />
+                    <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-70 ${isDark ? 'bg-violet-500/10' : 'bg-gradient-to-br from-violet-100 to-fuchsia-100'}`} />
 
                     <div className="relative z-10">
                       {/* Form Header */}
                       <div className="text-center mb-8">
-                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/25">
-                          <Building2 className="h-8 w-8 text-white" />
-                        </div>
                         <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           Je bedrijfsgegevens
                         </h2>
@@ -221,7 +223,7 @@ const Onboarding: React.FC = () => {
                                 if (errors.companyName) setErrors({ ...errors, companyName: '' });
                               }}
                               placeholder="Bijv. Bouwbedrijf De Vries"
-                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
                                 errors.companyName
                                   ? 'border-red-300 bg-red-50'
                                   : isDark
@@ -256,7 +258,7 @@ const Onboarding: React.FC = () => {
                                 if (errors.email) setErrors({ ...errors, email: '' });
                               }}
                               placeholder="info@jouwbedrijf.nl"
-                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
                                 errors.email
                                   ? 'border-red-300 bg-red-50'
                                   : isDark
@@ -293,7 +295,7 @@ const Onboarding: React.FC = () => {
                                 setFormData({ ...formData, website: e.target.value })
                               }
                               placeholder="www.jouwbedrijf.nl"
-                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
                                 isDark
                                   ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
                                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -336,7 +338,7 @@ const Onboarding: React.FC = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className={`rounded-3xl shadow-2xl p-8 sm:p-10 border text-center ${
                       isDark
-                        ? 'bg-gray-900 border-gray-800 shadow-indigo-500/5'
+                        ? 'bg-gray-900 border-gray-800 shadow-violet-500/5'
                         : 'bg-white border-gray-100 shadow-gray-200/50'
                     }`}
                   >

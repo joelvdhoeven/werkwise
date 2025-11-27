@@ -70,9 +70,12 @@ export function AuthSwitch({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="mb-3"
+          className="mb-3 flex items-center justify-center gap-3"
         >
-          <span className="text-4xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+          <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
+            <span className="text-white font-bold text-lg">W</span>
+          </div>
+          <span className="text-4xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent">
             WerkWise
           </span>
         </motion.div>
@@ -177,7 +180,7 @@ export function AuthSwitch({
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder={t.fullNamePlaceholder}
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
                         isDark
                           ? 'bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500'
                           : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -199,7 +202,7 @@ export function AuthSwitch({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.emailPlaceholder}
-                  className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
                     isDark
                       ? 'bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500'
                       : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -220,7 +223,7 @@ export function AuthSwitch({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isLogin ? t.passwordPlaceholder : t.choosePassword}
-                  className={`w-full pl-10 pr-11 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-10 pr-11 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
                     isDark
                       ? 'bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500'
                       : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -241,7 +244,7 @@ export function AuthSwitch({
               <div className="text-right">
                 <button
                   type="button"
-                  className={`text-xs font-medium ${isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'}`}
+                  className={`text-xs font-medium ${isDark ? 'text-violet-400 hover:text-violet-300' : 'text-violet-600 hover:text-violet-700'}`}
                 >
                   {t.forgotPassword}
                 </button>

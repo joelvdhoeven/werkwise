@@ -115,8 +115,12 @@ const LandingPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2"
             >
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+              <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-lg flex items-center justify-center shadow-lg shadow-violet-500/25">
+                <span className="text-white font-bold text-sm">W</span>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent">
                 WerkWise
               </span>
             </motion.div>
@@ -144,8 +148,8 @@ const LandingPage: React.FC = () => {
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-500 ${isDark ? 'bg-indigo-900/30' : 'bg-indigo-100 opacity-50'}`} />
-          <div className={`absolute top-60 -left-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-500 ${isDark ? 'bg-purple-900/30' : 'bg-purple-100 opacity-50'}`} />
+          <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-500 ${isDark ? 'bg-violet-900/30' : 'bg-violet-100 opacity-50'}`} />
+          <div className={`absolute top-60 -left-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-500 ${isDark ? 'bg-fuchsia-900/30' : 'bg-fuchsia-100 opacity-50'}`} />
         </div>
 
         <div className="max-w-7xl mx-auto relative">
@@ -158,7 +162,7 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5 }}
               >
                 <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${
-                  isDark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-700'
+                  isDark ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-700'
                 }`}>
                   <Zap className="h-4 w-4" />
                   De slimme keuze voor je bedrijf
@@ -183,7 +187,7 @@ const LandingPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -40 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="absolute text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent"
+                    className="absolute text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent"
                   >
                     {animatedWords[titleNumber]}
                   </motion.span>
@@ -228,7 +232,7 @@ const LandingPage: React.FC = () => {
               >
                 {stats.map((stat, index) => (
                   <div key={index} className="text-center lg:text-left">
-                    <div className="text-2xl sm:text-3xl font-bold text-indigo-500">{stat.value}</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-violet-500">{stat.value}</div>
                     <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{stat.label}</div>
                   </div>
                 ))}
@@ -278,7 +282,7 @@ const LandingPage: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                           activePreviewScreen === i
-                            ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
+                            ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30'
                             : isDark
                               ? 'hover:bg-gray-800 text-gray-500 hover:text-gray-300'
                               : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
@@ -336,7 +340,7 @@ const LandingPage: React.FC = () => {
                                   initial={{ height: 0 }}
                                   animate={{ height: `${height}%` }}
                                   transition={{ delay: i * 0.05, duration: 0.3 }}
-                                  className={`flex-1 rounded-sm ${i === 4 ? 'bg-gradient-to-t from-indigo-500 to-purple-500' : isDark ? 'bg-gray-700' : 'bg-gray-200'}`}
+                                  className={`flex-1 rounded-sm ${i === 4 ? 'bg-gradient-to-t from-violet-600 to-fuchsia-600' : isDark ? 'bg-gray-700' : 'bg-gray-200'}`}
                                 />
                               ))}
                             </div>
@@ -358,7 +362,7 @@ const LandingPage: React.FC = () => {
                               <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Urenregistratie</h3>
                               <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Week 48</p>
                             </div>
-                            <button className="px-2 py-1 rounded-lg text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                            <button className="px-2 py-1 rounded-lg text-xs bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
                               + Nieuw
                             </button>
                           </div>
@@ -388,8 +392,8 @@ const LandingPage: React.FC = () => {
                               </motion.div>
                             ))}
                           </div>
-                          <div className={`mt-3 p-2.5 rounded-xl text-center ${isDark ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
-                            <span className={`text-xs font-medium ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}>Totaal deze week: 32:30 uur</span>
+                          <div className={`mt-3 p-2.5 rounded-xl text-center ${isDark ? 'bg-violet-500/10' : 'bg-violet-50'}`}>
+                            <span className={`text-xs font-medium ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>Totaal deze week: 32:30 uur</span>
                           </div>
                         </motion.div>
                       )}
@@ -431,7 +435,7 @@ const LandingPage: React.FC = () => {
                                     initial={{ width: 0 }}
                                     animate={{ width: `${project.progress}%` }}
                                     transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                                    className="h-full bg-gradient-to-r from-violet-600 to-fuchsia-600"
                                   />
                                 </div>
                                 <div className="flex items-center justify-between mt-1.5">
@@ -523,7 +527,7 @@ const LandingPage: React.FC = () => {
                                 className={`p-2.5 rounded-xl flex items-center gap-3 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
                               >
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold ${
-                                  i === 0 ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
+                                  i === 0 ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
                                 }`}>
                                   {member.name.split(' ').map(n => n[0]).join('')}
                                 </div>
@@ -552,7 +556,7 @@ const LandingPage: React.FC = () => {
                               <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Facturen</h3>
                               <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>November 2025</p>
                             </div>
-                            <button className="px-2 py-1 rounded-lg text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                            <button className="px-2 py-1 rounded-lg text-xs bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
                               + Nieuw
                             </button>
                           </div>
@@ -605,8 +609,8 @@ const LandingPage: React.FC = () => {
       {/* Features Section - Interactive Showcase */}
       <section className={`py-24 relative overflow-hidden transition-colors duration-500 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute top-20 right-0 w-[500px] h-[500px] rounded-full blur-3xl ${isDark ? 'bg-indigo-900/20' : 'bg-indigo-100/50'}`} />
-          <div className={`absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-3xl ${isDark ? 'bg-purple-900/20' : 'bg-purple-100/50'}`} />
+          <div className={`absolute top-20 right-0 w-[500px] h-[500px] rounded-full blur-3xl ${isDark ? 'bg-violet-900/20' : 'bg-violet-100/50'}`} />
+          <div className={`absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-3xl ${isDark ? 'bg-fuchsia-900/20' : 'bg-fuchsia-100/50'}`} />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -639,8 +643,8 @@ const LandingPage: React.FC = () => {
                   className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 ${
                     activeFeature === index
                       ? isDark
-                        ? 'bg-indigo-500/10 border border-indigo-500/30'
-                        : 'bg-white border border-indigo-100 shadow-lg shadow-indigo-100/50'
+                        ? 'bg-violet-500/10 border border-violet-500/30'
+                        : 'bg-white border border-violet-100 shadow-lg shadow-violet-100/50'
                       : isDark
                         ? 'bg-gray-800/50 border border-gray-800 hover:bg-gray-800'
                         : 'bg-white/50 border border-gray-100 hover:bg-white hover:shadow-md'
@@ -649,7 +653,7 @@ const LandingPage: React.FC = () => {
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                       activeFeature === index
-                        ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white'
+                        ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white'
                         : isDark
                           ? 'bg-gray-700 text-gray-400'
                           : 'bg-gray-100 text-gray-500'
@@ -668,7 +672,7 @@ const LandingPage: React.FC = () => {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center"
+                        className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center"
                       >
                         <Check className="h-4 w-4 text-white" />
                       </motion.div>
@@ -698,7 +702,7 @@ const LandingPage: React.FC = () => {
                       : 'bg-white border border-gray-100 shadow-xl shadow-gray-200/50'
                   }`}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center mb-6">
                     {React.createElement(features[activeFeature].icon, { className: "h-8 w-8 text-white" })}
                   </div>
                   <h3 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -723,7 +727,7 @@ const LandingPage: React.FC = () => {
                         initial={{ width: 0 }}
                         animate={{ width: `${60 + activeFeature * 7}%` }}
                         transition={{ duration: 0.5 }}
-                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                        className="h-full bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-full"
                       />
                     </div>
                   </div>
@@ -770,14 +774,14 @@ const LandingPage: React.FC = () => {
                 transition={{ delay: index * 0.15 }}
                 className="relative"
               >
-                <div className={`text-8xl font-bold absolute -top-4 -left-2 ${isDark ? 'text-gray-800' : 'text-indigo-100'}`}>{step.num}</div>
+                <div className={`text-8xl font-bold absolute -top-4 -left-2 ${isDark ? 'text-gray-800' : 'text-violet-100'}`}>{step.num}</div>
                 <div className="relative pt-8 pl-4">
                   <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{step.title}</h3>
                   <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>{step.desc}</p>
                 </div>
                 {index < steps.length - 1 && (
                   <div className="hidden md:block absolute top-12 right-0 translate-x-1/2">
-                    <ChevronRight className={`h-8 w-8 ${isDark ? 'text-gray-700' : 'text-indigo-200'}`} />
+                    <ChevronRight className={`h-8 w-8 ${isDark ? 'text-gray-700' : 'text-violet-200'}`} />
                   </div>
                 )}
               </motion.div>
@@ -787,10 +791,10 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
@@ -802,12 +806,12 @@ const LandingPage: React.FC = () => {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
               Klaar om je administratie te vereenvoudigen?
             </h2>
-            <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto">
+            <p className="text-xl text-violet-100 mb-10 max-w-2xl mx-auto">
               Begin vandaag nog en bespaar uren per week op administratief werk.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/onboarding">
-                <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 shadow-2xl w-full sm:w-auto gap-2">
+                <Button size="lg" className="bg-white text-violet-600 hover:bg-gray-100 shadow-2xl w-full sm:w-auto gap-2">
                   <Sparkles className="h-5 w-5" />
                   Wordt Klant
                 </Button>
