@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
-  Briefcase, Clock, Package,
+  Clock, Package,
   Wrench, Zap, Play, ChevronRight,
-  Building2, TrendingUp, Bell, Sparkles, Check
+  Building2, TrendingUp, Bell, Sparkles, Check,
+  Users, BarChart3, CalendarDays, CheckCircle2,
+  ArrowUpRight, Activity, FileText, Euro
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from '../components/ui/button';
@@ -232,88 +234,192 @@ const LandingPage: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Right: App Preview */}
+            {/* Right: App Preview - Realistic Dashboard Mock */}
             <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="lg:pl-8"
+              initial={{ opacity: 0, x: 40, rotateY: -10 }}
+              animate={{ opacity: 1, x: 0, rotateY: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="lg:pl-4 perspective-1000"
             >
-              <div className={`rounded-3xl shadow-2xl p-8 max-w-lg mx-auto lg:ml-auto relative overflow-hidden ${
+              <div className={`rounded-2xl shadow-2xl overflow-hidden max-w-xl mx-auto lg:ml-auto relative ${
                 isDark
-                  ? 'bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 shadow-indigo-500/10'
-                  : 'bg-gradient-to-br from-indigo-600 to-purple-700 shadow-indigo-300/50'
+                  ? 'bg-gray-900 border border-gray-800 shadow-black/50'
+                  : 'bg-white border border-gray-200 shadow-gray-300/50'
               }`}>
-                {/* Decorative elements */}
-                <div className={`absolute top-0 right-0 w-40 h-40 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 ${isDark ? 'bg-indigo-500/10' : 'bg-white/10'}`} />
-                <div className={`absolute bottom-0 left-0 w-32 h-32 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 ${isDark ? 'bg-purple-500/10' : 'bg-purple-400/20'}`} />
-
-                <div className="relative">
-                  {/* Mock Dashboard Preview */}
-                  <div className={`backdrop-blur-sm rounded-2xl p-6 mb-6 border ${
-                    isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-white/10 border-white/20'
-                  }`}>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-indigo-500/20' : 'bg-white/20'}`}>
-                        <Briefcase className={`h-5 w-5 ${isDark ? 'text-indigo-400' : 'text-white'}`} />
-                      </div>
-                      <div>
-                        <div className={`font-semibold ${isDark ? 'text-white' : 'text-white'}`}>Dashboard</div>
-                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-indigo-200'}`}>
-                          Real-time overzicht
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Mock stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className={`rounded-xl p-4 ${isDark ? 'bg-gray-700/50' : 'bg-white/10'}`}>
-                        <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-white'}`}>12</div>
-                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-indigo-200'}`}>
-                          Actieve projecten
-                        </div>
-                      </div>
-                      <div className={`rounded-xl p-4 ${isDark ? 'bg-gray-700/50' : 'bg-white/10'}`}>
-                        <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-white'}`}>248</div>
-                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-indigo-200'}`}>
-                          Uren deze maand
-                        </div>
-                      </div>
-                    </div>
+                {/* Browser-like header */}
+                <div className={`px-4 py-3 flex items-center gap-2 border-b ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
                   </div>
+                  <div className={`flex-1 mx-4 px-3 py-1 rounded-md text-xs ${isDark ? 'bg-gray-800 text-gray-500' : 'bg-gray-200 text-gray-500'}`}>
+                    app.werkwise.nl/dashboard
+                  </div>
+                </div>
 
-                  {/* Feature highlights */}
-                  <div className="space-y-3">
-                    {[
-                      { icon: Clock, text: 'Urenregistratie in seconden' },
-                      { icon: Building2, text: 'Projectvoortgang real-time' },
-                      { icon: Package, text: 'Automatisch voorraadbeheer' },
-                    ].map((item, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
-                        className={`flex items-center gap-3 ${isDark ? 'text-gray-300' : 'text-white'}`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-indigo-500/20' : 'bg-white/20'}`}>
-                          <item.icon className="h-4 w-4" />
-                        </div>
-                        <span className="text-sm">{item.text}</span>
-                      </motion.div>
+                {/* App Content */}
+                <div className="flex">
+                  {/* Mini Sidebar */}
+                  <div className={`w-14 py-4 flex flex-col items-center gap-3 border-r ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-100'}`}>
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-white" />
+                    </div>
+                    {[Clock, Building2, Package, Users, FileText].map((Icon, i) => (
+                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
+                        <Icon className={`h-4 w-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+                      </div>
                     ))}
                   </div>
 
-                  {/* CTA */}
-                  <div className={`mt-6 pt-6 border-t ${isDark ? 'border-gray-700' : 'border-white/20'}`}>
-                    <Link to="/onboarding" className="block">
-                      <Button size="lg" className={`w-full gap-2 ${isDark ? '' : 'bg-white text-indigo-600 hover:bg-gray-100'}`}>
-                        <Sparkles className="h-5 w-5" />
-                        Start Nu - Gratis
-                      </Button>
-                    </Link>
+                  {/* Main Content */}
+                  <div className="flex-1 p-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Dashboard</h3>
+                        <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>November 2025</p>
+                      </div>
+                      <div className={`flex items-center gap-2 px-2 py-1 rounded-lg text-xs ${isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-50 text-green-600'}`}>
+                        <Activity className="h-3 w-3" />
+                        Live
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {[
+                        { icon: Building2, label: 'Projecten', value: '12', change: '+2', color: 'indigo' },
+                        { icon: Clock, label: 'Uren', value: '248', change: '+18', color: 'purple' },
+                        { icon: Euro, label: 'Omzet', value: '€24.5k', change: '+12%', color: 'emerald' },
+                        { icon: CheckCircle2, label: 'Goedgekeurd', value: '96%', change: '+4%', color: 'blue' },
+                      ].map((stat, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 + i * 0.1 }}
+                          className={`p-3 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                              stat.color === 'indigo' ? 'bg-indigo-500/20 text-indigo-500' :
+                              stat.color === 'purple' ? 'bg-purple-500/20 text-purple-500' :
+                              stat.color === 'emerald' ? 'bg-emerald-500/20 text-emerald-500' :
+                              'bg-blue-500/20 text-blue-500'
+                            }`}>
+                              <stat.icon className="h-3.5 w-3.5" />
+                            </div>
+                            <span className="text-[10px] text-emerald-500 flex items-center gap-0.5">
+                              <ArrowUpRight className="h-2.5 w-2.5" />
+                              {stat.change}
+                            </span>
+                          </div>
+                          <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stat.value}</div>
+                          <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{stat.label}</div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Mini Chart */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8 }}
+                      className={`p-3 rounded-xl mb-4 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Weekoverzicht</span>
+                        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Uren</span>
+                      </div>
+                      <div className="flex items-end gap-1 h-12">
+                        {[65, 45, 80, 55, 90, 70, 40].map((height, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ height: 0 }}
+                            animate={{ height: `${height}%` }}
+                            transition={{ delay: 0.9 + i * 0.05, duration: 0.4 }}
+                            className={`flex-1 rounded-sm ${
+                              i === 4
+                                ? 'bg-gradient-to-t from-indigo-500 to-purple-500'
+                                : isDark ? 'bg-gray-700' : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex justify-between mt-2">
+                        {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map((day, i) => (
+                          <span key={i} className={`text-[9px] flex-1 text-center ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{day}</span>
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    {/* Recent Activity */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.0 }}
+                      className={`p-3 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Recente activiteit</span>
+                        <CalendarDays className={`h-3 w-3 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { name: 'Jan de Vries', action: '8u geregistreerd', time: '2 min' },
+                          { name: 'Project Almere', action: 'Status: actief', time: '15 min' },
+                        ].map((item, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${
+                              i === 0
+                                ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white'
+                                : isDark ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
+                            }`}>
+                              {item.name[0]}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className={`text-[10px] font-medium truncate ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{item.name}</div>
+                              <div className={`text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{item.action}</div>
+                            </div>
+                            <span className={`text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{item.time}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
+
+                {/* Floating badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ delay: 1.2, type: "spring" }}
+                  className="absolute -right-3 top-20 px-3 py-2 rounded-xl shadow-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    <span className="text-xs font-medium">Live data</span>
+                  </div>
+                </motion.div>
+
+                {/* Floating notification */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 1.4, type: "spring" }}
+                  className={`absolute -left-3 bottom-16 px-3 py-2 rounded-xl shadow-lg ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    </div>
+                    <div>
+                      <div className={`text-[10px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Uren goedgekeurd</div>
+                      <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Zojuist</div>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>
