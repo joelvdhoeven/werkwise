@@ -13,7 +13,13 @@ import {
   Package,
   FileText,
   TrendingUp,
-  Ticket
+  Ticket,
+  ChevronDown,
+  LayoutDashboard,
+  Briefcase,
+  BoxesIcon,
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,12 +33,28 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: any;
+  permission: string;
+  module: string | null;
+}
+
+interface MenuGroup {
+  id: string;
+  label: string;
+  icon: any;
+  items: MenuItem[];
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOpen, onClose }) => {
   const { t } = useLanguage();
   const { hasPermission } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [moduleSettings, setModuleSettings] = useState<any>(null);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['overzicht', 'werk']);
 
   useEffect(() => {
     loadModuleSettings();
@@ -77,31 +99,99 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
     }
   };
 
-  const allMenuItems = [
-    { id: 'dashboard', label: t('dashboard'), icon: Home, permission: 'view_dashboard', module: null },
-    { id: 'financieel-dashboard', label: 'Financieel Dashboard', icon: TrendingUp, permission: 'manage_settings', module: 'module_financial_dashboard' },
-    { id: 'urenregistratie', label: t('urenregistratie'), icon: Clock, permission: 'register_hours', module: 'module_time_registration' },
-    { id: 'mijn-notificaties', label: 'Notificaties', icon: Bell, permission: 'register_hours', module: 'module_notifications' },
-    { id: 'voorraad-afboeken', label: 'Voorraad Afboeken', icon: Package, permission: 'view_dashboard', module: 'module_inventory' },
-    { id: 'voorraadbeheer', label: 'Voorraadbeheer', icon: Package, permission: 'manage_settings', module: 'module_inventory' },
-    { id: 'speciaal-gereedschap', label: t('specialGereedschap'), icon: Wrench, permission: 'view_tools', module: 'module_special_tools' },
-    { id: 'projecten', label: t('projecten'), icon: FolderOpen, permission: 'view_projects', module: null },
-    { id: 'schademeldingen', label: t('schademeldingen'), icon: AlertTriangle, permission: 'view_damage_reports', module: 'module_damage_reports' },
-    { id: 'ticket-omgeving', label: 'Ticket Omgeving', icon: Ticket, permission: 'create_tickets', module: null },
-    { id: 'tickets-overzicht', label: 'Tickets Overzicht', icon: Ticket, permission: 'view_all_tickets', module: null },
-    { id: 'gebruikers', label: t('gebruikers'), icon: Users, permission: 'manage_users', module: null },
-    { id: 'meldingen', label: t('meldingen'), icon: Bell, permission: 'manage_notifications', module: 'module_notifications' },
-    { id: 'email-notificaties', label: 'E-mail Notificaties', icon: Mail, permission: 'manage_settings', module: 'module_email_notifications' },
-    { id: 'factuur-instellingen', label: 'Factuur Instellingen', icon: FileText, permission: 'manage_settings', module: 'module_invoicing' },
-    { id: 'instellingen', label: t('instellingen'), icon: Settings, permission: 'view_dashboard', module: null },
+  // Define menu groups with their items
+  const menuGroups: MenuGroup[] = [
+    {
+      id: 'overzicht',
+      label: 'Overzicht',
+      icon: LayoutDashboard,
+      items: [
+        { id: 'dashboard', label: t('dashboard'), icon: Home, permission: 'view_dashboard', module: null },
+        { id: 'financieel-dashboard', label: 'Financieel Dashboard', icon: TrendingUp, permission: 'manage_settings', module: 'module_financial_dashboard' },
+      ]
+    },
+    {
+      id: 'werk',
+      label: 'Werk',
+      icon: Briefcase,
+      items: [
+        { id: 'urenregistratie', label: t('urenregistratie'), icon: Clock, permission: 'register_hours', module: 'module_time_registration' },
+        { id: 'projecten', label: t('projecten'), icon: FolderOpen, permission: 'view_projects', module: null },
+      ]
+    },
+    {
+      id: 'voorraad',
+      label: 'Voorraad & Gereedschap',
+      icon: BoxesIcon,
+      items: [
+        { id: 'voorraad-afboeken', label: 'Voorraad Afboeken', icon: Package, permission: 'view_dashboard', module: 'module_inventory' },
+        { id: 'voorraadbeheer', label: 'Voorraadbeheer', icon: Package, permission: 'manage_settings', module: 'module_inventory' },
+        { id: 'speciaal-gereedschap', label: t('specialGereedschap'), icon: Wrench, permission: 'view_tools', module: 'module_special_tools' },
+      ]
+    },
+    {
+      id: 'meldingen',
+      label: 'Meldingen & Support',
+      icon: MessageSquare,
+      items: [
+        { id: 'mijn-notificaties', label: 'Mijn Notificaties', icon: Bell, permission: 'register_hours', module: 'module_notifications' },
+        { id: 'schademeldingen', label: t('schademeldingen'), icon: AlertTriangle, permission: 'view_damage_reports', module: 'module_damage_reports' },
+        { id: 'ticket-omgeving', label: 'Ticket Omgeving', icon: Ticket, permission: 'create_tickets', module: null },
+        { id: 'tickets-overzicht', label: 'Tickets Overzicht', icon: Ticket, permission: 'view_all_tickets', module: null },
+      ]
+    },
+    {
+      id: 'beheer',
+      label: 'Beheer',
+      icon: Shield,
+      items: [
+        { id: 'gebruikers', label: t('gebruikers'), icon: Users, permission: 'manage_users', module: null },
+        { id: 'meldingen', label: 'Notificatie Beheer', icon: Bell, permission: 'manage_notifications', module: 'module_notifications' },
+        { id: 'email-notificaties', label: 'E-mail Notificaties', icon: Mail, permission: 'manage_settings', module: 'module_email_notifications' },
+        { id: 'factuur-instellingen', label: 'Factuur Instellingen', icon: FileText, permission: 'manage_settings', module: 'module_invoicing' },
+        { id: 'instellingen', label: t('instellingen'), icon: Settings, permission: 'view_dashboard', module: null },
+      ]
+    }
   ];
 
-  // Filter menu items based on user permissions AND module settings
-  const menuItems = allMenuItems.filter(item => {
+  // Filter items based on permissions and module settings
+  const isItemVisible = (item: MenuItem) => {
     const hasPerms = hasPermission(item.permission);
     const moduleEnabled = !item.module || !moduleSettings || moduleSettings[item.module] !== false;
     return hasPerms && moduleEnabled;
-  });
+  };
+
+  // Filter groups to only show those with visible items
+  const visibleGroups = menuGroups
+    .map(group => ({
+      ...group,
+      items: group.items.filter(isItemVisible)
+    }))
+    .filter(group => group.items.length > 0);
+
+  // Toggle group expansion
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups(prev =>
+      prev.includes(groupId)
+        ? prev.filter(id => id !== groupId)
+        : [...prev, groupId]
+    );
+  };
+
+  // Check if any item in a group is active
+  const isGroupActive = (group: MenuGroup) => {
+    return group.items.some(item => item.id === activeSection);
+  };
+
+  // Auto-expand group when an item in it becomes active
+  useEffect(() => {
+    const activeGroup = visibleGroups.find(group =>
+      group.items.some(item => item.id === activeSection)
+    );
+    if (activeGroup && !expandedGroups.includes(activeGroup.id)) {
+      setExpandedGroups(prev => [...prev, activeGroup.id]);
+    }
+  }, [activeSection]);
 
   return (
     <>
@@ -147,32 +237,77 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
 
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
-          <ul className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeSection === item.id;
+          <div className="space-y-2">
+            {visibleGroups.map((group) => {
+              const GroupIcon = group.icon;
+              const isExpanded = expandedGroups.includes(group.id);
+              const groupActive = isGroupActive(group);
+
               return (
-                <li key={item.id}>
+                <div key={group.id} className="space-y-1">
+                  {/* Group Header */}
                   <button
-                    onClick={() => setActiveSection(item.id)}
-                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25'
+                    onClick={() => toggleGroup(group.id)}
+                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all ${
+                      groupActive
+                        ? isDark
+                          ? 'bg-violet-500/10 text-violet-400'
+                          : 'bg-violet-50 text-violet-700'
                         : isDark
-                          ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                          ? 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
-                    <Icon
-                      size={20}
-                      className={item.id === 'schademeldingen' && !isActive ? 'text-amber-500' : ''}
+                    <div className="flex items-center space-x-3">
+                      <GroupIcon size={18} />
+                      <span className="text-sm font-semibold">{group.label}</span>
+                    </div>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                     />
-                    <span className="text-sm font-medium">{item.label}</span>
                   </button>
-                </li>
+
+                  {/* Group Items */}
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                      isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <ul className="pl-4 space-y-1 pt-1">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeSection === item.id;
+                        return (
+                          <li key={item.id}>
+                            <button
+                              onClick={() => {
+                                setActiveSection(item.id);
+                                onClose();
+                              }}
+                              className={`w-full text-left px-4 py-2.5 rounded-xl flex items-center space-x-3 transition-all ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25'
+                                  : isDark
+                                    ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              }`}
+                            >
+                              <Icon
+                                size={18}
+                                className={item.id === 'schademeldingen' && !isActive ? 'text-amber-500' : ''}
+                              />
+                              <span className="text-sm font-medium">{item.label}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
               );
             })}
-          </ul>
+          </div>
         </nav>
 
         {/* Footer */}
