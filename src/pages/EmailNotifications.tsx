@@ -445,7 +445,7 @@ const EmailNotifications: React.FC = () => {
                         <div className="flex space-x-2 ml-4">
                           <button
                             onClick={() => handleEditTemplate(template)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-violet-600 hover:text-violet-900"
                           >
                             <Edit size={16} />
                           </button>
@@ -535,7 +535,7 @@ const EmailNotifications: React.FC = () => {
                           <button
                             onClick={() => handleSendTestEmail(schedule)}
                             disabled={sendingTestEmail === schedule.id}
-                            className="flex items-center space-x-1 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            className="flex items-center space-x-1 px-3 py-1 bg-violet-500 text-white rounded-md hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             title="Verstuur test email nu"
                           >
                             {sendingTestEmail === schedule.id ? (
@@ -547,7 +547,7 @@ const EmailNotifications: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleEditSchedule(schedule)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-violet-600 hover:text-violet-900"
                           >
                             <Edit size={16} />
                           </button>

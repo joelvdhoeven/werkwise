@@ -3,6 +3,7 @@ import { ChevronDown, LogOut, Bell, Menu } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { ThemeToggle } from './ui/theme-toggle';
 import { Language, Notification } from '../types';
 import { useSupabaseQuery } from '../hooks/useSupabase';
 
@@ -67,6 +68,9 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
         </button>
         <div className="flex-1 lg:flex-none"></div>
         <div className="flex items-center space-x-2 md:space-x-4">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Language Selector */}
           <div className="relative group">
             <button className={`flex items-center space-x-1 md:space-x-2 text-sm transition-colors px-3 py-2 rounded-xl ${

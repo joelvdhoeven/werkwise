@@ -1,120 +1,149 @@
-import React, { useState } from 'react';
-import { Search, Plus, Wrench, CreditCard as Edit, Trash2, Calendar, MapPin, Camera } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Wrench, CreditCard as Edit, Trash2, Calendar, MapPin, Camera, Loader2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { nl } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { SpeciaalGereedschap, Project } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
+import { supabase } from '../lib/supabase';
 import { formatDate } from '../utils/dateUtils';
 import Modal from '../components/Modal';
 
+interface SpecialTool {
+  id: string;
+  naam: string;
+  beschrijving: string;
+  status: 'beschikbaar' | 'in-gebruik' | 'onderhoud';
+  locatie: string;
+  laatste_onderhoud: string | null;
+  volgende_onderhoud: string | null;
+  project_id: string | null;
+  foto_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Project {
+  id: string;
+  naam: string;
+  status: string;
+}
+
 const SpeciaalGereedschapPage: React.FC = () => {
   const { t } = useLanguage();
-  const [gereedschappen, setGereedschappen] = useLocalStorage<SpeciaalGereedschap[]>('speciaalGereedschap', [
-    {
-      id: '1',
-      naam: 'Hijskraan 50 ton',
-      beschrijving: 'Mobiele hijskraan voor zware constructiewerken',
-      status: 'beschikbaar',
-      locatie: 'Hoofddepot',
-      laatsteOnderhoud: '2024-01-10',
-      volgendeOnderhoud: '2024-04-10',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      naam: 'Betonmixer 500L',
-      beschrijving: 'Professionele betonmixer voor grote projecten',
-      status: 'in-gebruik',
-      locatie: 'Project Amsterdam',
-      projectId: '1',
-      laatsteOnderhoud: '2024-01-05',
-      volgendeOnderhoud: '2024-03-05',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      naam: 'Lasapparaat TIG 300A',
-      beschrijving: 'Professioneel TIG lasapparaat voor precisiewerk',
-      status: 'onderhoud',
-      locatie: 'Werkplaats',
-      laatsteOnderhoud: '2024-01-20',
-      volgendeOnderhoud: '2024-02-20',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ]);
-  const [projecten] = useLocalStorage<Project[]>('projecten', []);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const [gereedschappen, setGereedschappen] = useState<SpecialTool[]>([]);
+  const [projecten, setProjecten] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [editingItem, setEditingItem] = useState<SpeciaalGereedschap | null>(null);
+  const [editingItem, setEditingItem] = useState<SpecialTool | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     naam: '',
     beschrijving: '',
     status: 'beschikbaar' as const,
     locatie: '',
-    laatsteOnderhoud: '',
-    volgendeOnderhoud: '',
-    projectId: '',
-    fotoUrl: '',
+    laatste_onderhoud: '',
+    volgende_onderhoud: '',
+    project_id: '',
+    foto_url: '',
   });
+
+  // Load data from Supabase
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Load special tools
+      const { data: toolsData, error: toolsError } = await supabase
+        .from('special_tools')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (toolsError) throw toolsError;
+      setGereedschappen(toolsData || []);
+
+      // Load projects for dropdown
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('id, naam, status')
+        .eq('status', 'actief');
+
+      if (projectsError) throw projectsError;
+      setProjecten(projectsData || []);
+    } catch (err: any) {
+      console.error('Error loading data:', err);
+      setError(err.message || 'Fout bij laden van gegevens');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.naam || !formData.beschrijving || !formData.locatie) {
       alert(t('vulVerplichtVelden'));
       return;
     }
-    
-    if (editingItem) {
-      // Update existing item
-      const updatedItem: SpeciaalGereedschap = {
-        ...editingItem,
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const toolData = {
         naam: formData.naam,
         beschrijving: formData.beschrijving,
         status: formData.status,
         locatie: formData.locatie,
-        laatsteOnderhoud: formData.laatsteOnderhoud || undefined,
-        volgendeOnderhoud: formData.volgendeOnderhoud || undefined,
-        projectId: formData.projectId || undefined,
-        fotoUrl: formData.fotoUrl || undefined,
-        updatedAt: new Date().toISOString(),
+        laatste_onderhoud: formData.laatste_onderhoud || null,
+        volgende_onderhoud: formData.volgende_onderhoud || null,
+        project_id: formData.project_id || null,
+        foto_url: formData.foto_url || null,
       };
-      
-      setGereedschappen(prev => prev.map(item => item.id === editingItem.id ? updatedItem : item));
-    } else {
-      // Create new item
-      const newItem: SpeciaalGereedschap = {
-        id: Date.now().toString(),
-        naam: formData.naam,
-        beschrijving: formData.beschrijving,
-        status: formData.status,
-        locatie: formData.locatie,
-        laatsteOnderhoud: formData.laatsteOnderhoud || undefined,
-        volgendeOnderhoud: formData.volgendeOnderhoud || undefined,
-        projectId: formData.projectId || undefined,
-        fotoUrl: formData.fotoUrl || undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      setGereedschappen(prev => [newItem, ...prev]);
+
+      if (editingItem) {
+        // Update existing item
+        const { error: updateError } = await supabase
+          .from('special_tools')
+          .update({ ...toolData, updated_at: new Date().toISOString() })
+          .eq('id', editingItem.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new item
+        const { error: insertError } = await supabase
+          .from('special_tools')
+          .insert(toolData);
+
+        if (insertError) throw insertError;
+      }
+
+      await loadData();
+      resetForm();
+      setShowModal(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (err: any) {
+      console.error('Error saving tool:', err);
+      setError(err.message || 'Fout bij opslaan');
+    } finally {
+      setSaving(false);
     }
-    
-    resetForm();
-    setShowModal(false);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
   };
 
   const resetForm = () => {
@@ -123,32 +152,43 @@ const SpeciaalGereedschapPage: React.FC = () => {
       beschrijving: '',
       status: 'beschikbaar',
       locatie: '',
-      laatsteOnderhoud: '',
-      volgendeOnderhoud: '',
-      projectId: '',
-      fotoUrl: '',
+      laatste_onderhoud: '',
+      volgende_onderhoud: '',
+      project_id: '',
+      foto_url: '',
     });
     setEditingItem(null);
   };
 
-  const handleEditItem = (item: SpeciaalGereedschap) => {
+  const handleEditItem = (item: SpecialTool) => {
     setFormData({
       naam: item.naam,
       beschrijving: item.beschrijving,
       status: item.status,
       locatie: item.locatie,
-      laatsteOnderhoud: item.laatsteOnderhoud || '',
-      volgendeOnderhoud: item.volgendeOnderhoud || '',
-      projectId: item.projectId || '',
-      fotoUrl: item.fotoUrl || '',
+      laatste_onderhoud: item.laatste_onderhoud || '',
+      volgende_onderhoud: item.volgende_onderhoud || '',
+      project_id: item.project_id || '',
+      foto_url: item.foto_url || '',
     });
     setEditingItem(item);
     setShowModal(true);
   };
 
-  const handleDeleteItem = (id: string) => {
+  const handleDeleteItem = async (id: string) => {
     if (window.confirm(t('weetJeZeker'))) {
-      setGereedschappen(prev => prev.filter(item => item.id !== id));
+      try {
+        const { error: deleteError } = await supabase
+          .from('special_tools')
+          .delete()
+          .eq('id', id);
+
+        if (deleteError) throw deleteError;
+        await loadData();
+      } catch (err: any) {
+        console.error('Error deleting tool:', err);
+        setError(err.message || 'Fout bij verwijderen');
+      }
     }
   };
 
@@ -168,22 +208,30 @@ const SpeciaalGereedschapPage: React.FC = () => {
       case 'beschikbaar':
         return 'bg-green-100 text-green-800';
       case 'in-gebruik':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-violet-100 text-violet-800';
       case 'onderhoud':
-        return 'bg-red-100 text-red-800';
+        return 'bg-amber-100 text-amber-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const isMaintenanceDue = (nextMaintenance?: string) => {
+  const isMaintenanceDue = (nextMaintenance?: string | null) => {
     if (!nextMaintenance) return false;
     const today = new Date();
     const maintenanceDate = new Date(nextMaintenance);
     const diffTime = maintenanceDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 7; // Due within 7 days
+    return diffDays <= 7;
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="animate-spin h-8 w-8 text-violet-600" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -192,15 +240,21 @@ const SpeciaalGereedschapPage: React.FC = () => {
           {t('gereedschapOpgeslagen')}
         </div>
       )}
-      
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center space-x-3">
-          <Wrench className="text-red-600" />
+        <h1 className={`text-2xl font-bold flex items-center space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+          <Wrench className="text-violet-600" />
           <span>{t('specialGereedschap')}</span>
         </h1>
-        <button 
+        <button
           onClick={handleNewItem}
-          className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors shadow-lg shadow-violet-500/25"
         >
           <Plus size={16} />
           <span>{t('nieuwGereedschap')}</span>
@@ -208,7 +262,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg shadow mb-6 p-4">
+      <div className={`rounded-lg shadow mb-6 p-4 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
@@ -216,28 +270,32 @@ const SpeciaalGereedschapPage: React.FC = () => {
             placeholder={t('zoekGereedschap')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${
+              isDark
+                ? 'bg-gray-700 border-gray-600 text-white placeholder:text-gray-400'
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           />
         </div>
       </div>
 
       {/* Tools Overview */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">{t('specialGereedschapOverzicht')}</h2>
-          <p className="text-sm text-gray-600">{t('beheerSpecialGereedschap')}</p>
+      <div className={`rounded-lg shadow ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+          <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('specialGereedschapOverzicht')}</h2>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('beheerSpecialGereedschap')}</p>
         </div>
         <div className="p-6">
           {filteredItems.length === 0 ? (
             <div className="text-center py-12">
-              <Wrench className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">{t('geenSpecialGereedschap')}</p>
-              <p className="text-gray-400 text-sm mt-2">
+              <Wrench className={`mx-auto h-12 w-12 mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+              <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t('geenSpecialGereedschap')}</p>
+              <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                 {t('nieuwGereedschap')}
               </p>
-              <button 
+              <button
                 onClick={handleNewItem}
-                className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
               >
                 <Plus size={16} />
                 <span>{t('nieuwGereedschap')}</span>
@@ -246,25 +304,25 @@ const SpeciaalGereedschapPage: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className={isDark ? 'bg-gray-700' : 'bg-gray-50'}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Naam</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Beschrijving</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Locatie</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Onderhoud</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('acties')}</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Naam</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Beschrijving</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Status</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Locatie</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Project</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Onderhoud</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>{t('acties')}</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                   {filteredItems.map((item) => (
-                    <tr key={item.id}>
+                    <tr key={item.id} className={isDark ? 'bg-gray-800' : 'bg-white'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {item.fotoUrl && (
-                            <img 
-                              src={item.fotoUrl} 
+                          {item.foto_url && (
+                            <img
+                              src={item.foto_url}
                               alt={item.naam}
                               className="h-10 w-10 rounded-full object-cover mr-3"
                               onError={(e) => {
@@ -273,11 +331,11 @@ const SpeciaalGereedschapPage: React.FC = () => {
                             />
                           )}
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{item.naam}</div>
+                            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.naam}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                      <td className={`px-6 py-4 text-sm max-w-xs ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                         <div className="break-words">{item.beschrijving}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -287,24 +345,24 @@ const SpeciaalGereedschapPage: React.FC = () => {
                            item.status === 'onderhoud' ? t('onderhoud') : item.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                         <div className="flex items-center">
                           <MapPin size={14} className="mr-1 text-gray-400" />
                           {item.locatie}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.projectId ? 
-                          projecten.find(p => p.id === item.projectId)?.naam || 'Onbekend project' : 
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+                        {item.project_id ?
+                          projecten.find(p => p.id === item.project_id)?.naam || 'Onbekend project' :
                           '-'
                         }
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.volgendeOnderhoud ? (
-                          <div className={`flex items-center ${isMaintenanceDue(item.volgendeOnderhoud) ? 'text-red-600' : 'text-gray-600'}`}>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+                        {item.volgende_onderhoud ? (
+                          <div className={`flex items-center ${isMaintenanceDue(item.volgende_onderhoud) ? 'text-red-600' : isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                             <Calendar size={14} className="mr-1" />
-                            {formatDate(item.volgendeOnderhoud)}
-                            {isMaintenanceDue(item.volgendeOnderhoud) && (
+                            {formatDate(item.volgende_onderhoud)}
+                            {isMaintenanceDue(item.volgende_onderhoud) && (
                               <span className="ml-1 text-xs bg-red-100 text-red-800 px-1 rounded">!</span>
                             )}
                           </div>
@@ -314,7 +372,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditItem(item)}
-                            className="text-blue-600 hover:text-blue-900 flex items-center space-x-1"
+                            className="text-violet-600 hover:text-violet-900 flex items-center space-x-1"
                           >
                             <Edit size={16} />
                             <span>{t('bewerken')}</span>
@@ -336,7 +394,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       {/* New/Edit Tool Modal */}
       <Modal
         isOpen={showModal}
@@ -354,7 +412,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="Bijv. Hijskraan 50 ton"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
             </div>
             <div>
@@ -364,7 +422,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 value={formData.status}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               >
                 <option value="beschikbaar">{t('beschikbaar')}</option>
                 <option value="in-gebruik">{t('inGebruik')}</option>
@@ -372,7 +430,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
               </select>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('gereedschapBeschrijving')} *</label>
             <textarea
@@ -382,7 +440,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
               rows={3}
               required
               placeholder="Beschrijf het gereedschap en zijn gebruik..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
             />
           </div>
 
@@ -396,19 +454,19 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="Bijv. Hoofddepot, Werkplaats"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('gekoppeldProject')}</label>
               <select
-                name="projectId"
-                value={formData.projectId}
+                name="project_id"
+                value={formData.project_id}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               >
                 <option value="">{t('selecteerProject')}</option>
-                {projecten.filter(p => p.status === 'actief').map(project => (
+                {projecten.map(project => (
                   <option key={project.id} value={project.id}>{project.naam}</option>
                 ))}
               </select>
@@ -419,13 +477,29 @@ const SpeciaalGereedschapPage: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('laatsteOnderhoud')}</label>
               <DatePicker
-                selected={formData.laatsteOnderhoud ? new Date(formData.laatsteOnderhoud) : null}
+                selected={formData.laatste_onderhoud ? new Date(formData.laatste_onderhoud) : null}
                 onChange={(date) => {
                   const dateString = date ? date.toISOString().split('T')[0] : '';
-                  setFormData(prev => ({ ...prev, laatsteOnderhoud: dateString }));
+                  setFormData(prev => ({ ...prev, laatste_onderhoud: dateString }));
                 }}
                 dateFormat="dd/MM/yyyy"
-                className="w-full"
+                locale={nl}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                wrapperClassName="w-full"
+                portalId="root-portal"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('volgendeOnderhoud')}</label>
+              <DatePicker
+                selected={formData.volgende_onderhoud ? new Date(formData.volgende_onderhoud) : null}
+                onChange={(date) => {
+                  const dateString = date ? date.toISOString().split('T')[0] : '';
+                  setFormData(prev => ({ ...prev, volgende_onderhoud: dateString }));
+                }}
+                dateFormat="dd/MM/yyyy"
+                locale={nl}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                 wrapperClassName="w-full"
                 portalId="root-portal"
               />
@@ -437,11 +511,11 @@ const SpeciaalGereedschapPage: React.FC = () => {
             <div className="flex">
               <input
                 type="url"
-                name="fotoUrl"
-                value={formData.fotoUrl}
+                name="foto_url"
+                value={formData.foto_url}
                 onChange={handleInputChange}
                 placeholder="https://example.com/foto.jpg"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
               />
               <div className="px-3 py-2 bg-gray-50 border border-l-0 border-gray-300 rounded-r-md flex items-center">
                 <Camera size={16} className="text-gray-400" />
@@ -450,18 +524,20 @@ const SpeciaalGereedschapPage: React.FC = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               onClick={() => setShowModal(false)}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
             >
               {t('annuleren')}
             </button>
-            <button 
+            <button
               type="submit"
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              disabled={saving}
+              className="px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
             >
-              {editingItem ? t('opslaan') : t('nieuwGereedschap')}
+              {saving && <Loader2 size={16} className="animate-spin" />}
+              <span>{editingItem ? t('opslaan') : t('nieuwGereedschap')}</span>
             </button>
           </div>
         </form>

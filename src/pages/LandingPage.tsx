@@ -318,7 +318,7 @@ const LandingPage: React.FC = () => {
                           </div>
                           <div className="grid grid-cols-2 gap-2 mb-3">
                             {[
-                              { label: 'Projecten', value: '12', change: '+2', color: 'indigo' },
+                              { label: 'Projecten', value: '12', change: '+2', color: 'violet' },
                               { label: 'Uren', value: '248', change: '+18', color: 'purple' },
                               { label: 'Omzet', value: '€24.5k', change: '+12%', color: 'emerald' },
                               { label: 'Goedgekeurd', value: '96%', change: '+4%', color: 'blue' },
