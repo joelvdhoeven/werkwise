@@ -82,23 +82,79 @@ const FloatingTimerButton: React.FC = () => {
       {/* Floating Timer Button (always visible when collapsed) */}
       <AnimatePresence>
         {!timerState.isOpen && (
-          <motion.button
+          <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            onClick={toggleOpen}
-            className={`fixed left-4 bottom-4 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all ${
-              timerState.isRunning
-                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
-                : isDark
-                  ? 'bg-gray-800 text-white border border-gray-700'
-                  : 'bg-white text-gray-900 border border-gray-200'
-            }`}
+            className="fixed left-4 bottom-4 z-50"
           >
-            <Clock className={`h-5 w-5 ${timerState.isRunning && !timerState.isPaused ? 'animate-pulse' : ''}`} />
-            <span className="font-mono font-bold">{formatTime(timerState.elapsedSeconds)}</span>
-            <ChevronRight className="h-4 w-4" />
-          </motion.button>
+            {/* Glow effect when running */}
+            {timerState.isRunning && !timerState.isPaused && (
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute inset-0 bg-red-500 rounded-2xl blur-xl"
+              />
+            )}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleOpen}
+              className={`relative flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl transition-all ${
+                timerState.isRunning
+                  ? 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white'
+                  : isDark
+                    ? 'bg-gray-800 text-white border border-gray-700'
+                    : 'bg-white text-gray-900 border border-gray-200'
+              }`}
+              style={{
+                boxShadow: timerState.isRunning
+                  ? '0 20px 40px -10px rgba(239, 68, 68, 0.5), 0 0 0 1px rgba(239, 68, 68, 0.3)'
+                  : undefined
+              }}
+            >
+              {/* Animated clock icon */}
+              <motion.div
+                animate={timerState.isRunning && !timerState.isPaused ? { rotate: 360 } : {}}
+                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                className={`p-2 rounded-xl ${
+                  timerState.isRunning
+                    ? 'bg-white/20'
+                    : isDark ? 'bg-gray-700' : 'bg-gray-100'
+                }`}
+              >
+                <Clock className="h-6 w-6" />
+              </motion.div>
+
+              {/* Timer display */}
+              <div className="flex flex-col items-start">
+                <span className="text-xs opacity-70 font-medium">
+                  {timerState.isRunning ? (timerState.isPaused ? 'Gepauzeerd' : 'Loopt...') : 'Timer'}
+                </span>
+                <span className="font-mono font-bold text-xl tracking-wider">
+                  {formatTime(timerState.elapsedSeconds)}
+                </span>
+              </div>
+
+              {/* Arrow indicator */}
+              <motion.div
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className={`ml-1 ${timerState.isRunning ? 'text-white/70' : ''}`}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </motion.div>
+
+              {/* Live indicator dot when running */}
+              {timerState.isRunning && !timerState.isPaused && (
+                <motion.div
+                  animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-lg"
+                />
+              )}
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
 
