@@ -100,6 +100,9 @@ const VoorraadbeheerAfboeken: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
+  const [showProjectSearch, setShowProjectSearch] = useState(false);
+  const [projectSearchTerm, setProjectSearchTerm] = useState('');
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,15 +170,17 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsRes, locationsRes, projectsRes] = await Promise.all([
+      const [productsRes, locationsRes, projectsRes, allProjectsRes] = await Promise.all([
         supabase.from('inventory_products').select('*').order('name'),
         supabase.from('inventory_locations').select('*').order('name'),
-        supabase.from('projects').select('id, naam, project_nummer').eq('status', 'actief').order('naam')
+        supabase.from('projects').select('id, naam, project_nummer').eq('status', 'actief').order('naam'),
+        supabase.from('projects').select('id, naam, project_nummer').order('naam')
       ]);
 
       if (productsRes.data) setProducts(productsRes.data);
       if (locationsRes.data) setLocations(locationsRes.data);
       if (projectsRes.data) setProjects(projectsRes.data);
+      if (allProjectsRes.data) setAllProjects(allProjectsRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -273,6 +278,21 @@ const VoorraadbeheerAfboeken: React.FC = () => {
       p.sku.toLowerCase().includes(search) ||
       (p.ean && p.ean.toLowerCase().includes(search))
     ).slice(0, 5);
+  };
+
+  const getFilteredProjects = () => {
+    if (!projectSearchTerm) return allProjects;
+    const search = projectSearchTerm.toLowerCase();
+    return allProjects.filter(p =>
+      p.naam.toLowerCase().includes(search) ||
+      (p.project_nummer && p.project_nummer.toLowerCase().includes(search))
+    );
+  };
+
+  const selectProjectFromSearch = (project: Project) => {
+    setSelectedProject(project.id);
+    setShowProjectSearch(false);
+    setProjectSearchTerm('');
   };
 
   const updateLineQuantity = (index: number, delta: number) => {
@@ -914,18 +934,32 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Project *</label>
-            <select
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
-            >
-              <option value="">Selecteer project</option>
-              {projects.map(project => (
-                <option key={project.id} value={project.id}>
-                  {project.naam} {project.project_nummer ? `(#${project.project_nummer})` : ''}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+              >
+                <option value="">Selecteer project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.naam} {project.project_nummer ? `(#${project.project_nummer})` : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => setShowProjectSearch(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                title="Zoek in alle projecten"
+              >
+                <Search size={20} />
+              </button>
+            </div>
+            {selectedProject && (
+              <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                Geselecteerd: {allProjects.find(p => p.id === selectedProject)?.naam || projects.find(p => p.id === selectedProject)?.naam}
+              </p>
+            )}
           </div>
 
         </div>
@@ -1486,6 +1520,79 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               >
                 Verwijderen
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Search Modal */}
+      {showProjectSearch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Zoek Project</h2>
+              <button
+                onClick={() => {
+                  setShowProjectSearch(false);
+                  setProjectSearchTerm('');
+                }}
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className={`p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="relative">
+                <Search className={`absolute left-3 top-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={20} />
+                <input
+                  type="text"
+                  placeholder="Zoek op projectnaam of nummer..."
+                  value={projectSearchTerm}
+                  onChange={(e) => setProjectSearchTerm(e.target.value)}
+                  autoFocus
+                  className={`w-full pl-10 pr-4 py-3 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg`}
+                />
+              </div>
+              <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                {getFilteredProjects().length} projecten gevonden
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {getFilteredProjects().length === 0 ? (
+                <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Geen projecten gevonden
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {getFilteredProjects().map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => selectProjectFromSearch(project)}
+                      className={`w-full p-4 border ${
+                        selectedProject === project.id
+                          ? isDark ? 'border-red-500 bg-red-900/30' : 'border-red-500 bg-red-50'
+                          : isDark ? 'border-gray-700 hover:border-red-500 hover:bg-gray-700' : 'border-gray-200 hover:border-red-500 hover:bg-red-50'
+                      } rounded-lg text-left transition-colors`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.naam}</div>
+                          {project.project_nummer && (
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              Project #{project.project_nummer}
+                            </div>
+                          )}
+                        </div>
+                        {selectedProject === project.id && (
+                          <CheckCircle className="text-red-600" size={24} />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
