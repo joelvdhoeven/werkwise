@@ -1,5 +1,6 @@
 import React from 'react';
-import { ChevronDown, LogOut, Bell, Menu } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronDown, LogOut, Bell, Menu, Rocket } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -68,6 +69,16 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
         </button>
         <div className="flex-1 lg:flex-none"></div>
         <div className="flex items-center space-x-2 md:space-x-4">
+          {/* CTA Button */}
+          <Link
+            to="/onboarding"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all group"
+          >
+            <Rocket className="h-4 w-4 group-hover:animate-bounce" />
+            <span className="hidden lg:inline">Probeer 31 dagen gratis!</span>
+            <span className="lg:hidden">Gratis proberen</span>
+          </Link>
+
           {/* Theme Toggle */}
           <ThemeToggle />
 
