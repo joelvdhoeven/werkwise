@@ -884,8 +884,14 @@ const LandingPage: React.FC = () => {
             </div>
             <ThemeToggle />
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            © 2025 WerkWise. Alle rechten voorbehouden.
+          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col items-center gap-3">
+            <p className="text-gray-400 text-sm">© 2025 WerkWise. Alle rechten voorbehouden.</p>
+            <Link
+              to="/agent"
+              className="text-xs text-gray-500 hover:text-violet-400 transition-colors"
+            >
+              Sales Login →
+            </Link>
           </div>
         </div>
       </footer>
