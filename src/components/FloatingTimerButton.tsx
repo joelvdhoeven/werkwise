@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Play, Pause, Square, X, ChevronRight, Check } from 'lucide-react';
+import { Clock, Play, Pause, Square, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../contexts/TimerContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -75,16 +75,13 @@ const FloatingTimerButton: React.FC = () => {
     { value: 'overig', label: 'Overig' },
   ];
 
-  // Don't show if timer never started and has 0 seconds
-  if (!timerState.isRunning && timerState.elapsedSeconds === 0 && !timerState.isOpen) {
-    return null;
-  }
+  // Always show the timer button (collapsed or expanded)
 
   return (
     <>
-      {/* Floating Timer Button (always visible when timer is running) */}
+      {/* Floating Timer Button (always visible when collapsed) */}
       <AnimatePresence>
-        {!timerState.isOpen && (timerState.isRunning || timerState.elapsedSeconds > 0) && (
+        {!timerState.isOpen && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -127,11 +124,9 @@ const FloatingTimerButton: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className={`p-2 rounded-lg transition-colors ${
-                  isDark ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
-                }`}
+                className="p-2 rounded-lg transition-colors bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 shadow-md"
               >
-                <X className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
             </div>
 
