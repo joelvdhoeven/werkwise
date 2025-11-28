@@ -378,14 +378,14 @@ const Gebruikers: React.FC = () => {
         operation="INSERT"
       />
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className={`text-2xl font-bold flex items-center space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
-          <Users className="text-red-600" />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className={`text-xl sm:text-2xl font-bold flex items-center space-x-2 sm:space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+          <Users className="text-red-600 h-6 w-6 sm:h-7 sm:w-7" />
           <span>{t('userOverview')}</span>
         </h1>
         <button
           onClick={handleNewUser}
-          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors w-full sm:w-auto justify-center"
         >
           <Plus size={16} />
           <span>{t('addNewUser')}</span>

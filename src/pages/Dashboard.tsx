@@ -200,9 +200,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className={`space-y-8 ${isDark ? 'text-white' : ''}`}>
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className={`text-3xl font-bold bg-gradient-to-r ${isDark ? 'from-white to-gray-300' : 'from-gray-900 to-gray-600'} bg-clip-text text-transparent`}>
+          <h1 className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${isDark ? 'from-white to-gray-300' : 'from-gray-900 to-gray-600'} bg-clip-text text-transparent`}>
             {t('dashboard')}
           </h1>
           <p className={`mt-1 flex items-center gap-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -210,9 +210,9 @@ const Dashboard: React.FC = () => {
             {t('welkomTerug')}, {user?.naam}
           </p>
         </div>
-        <div className={`text-right px-6 py-3 rounded-xl border ${isDark ? 'bg-gradient-to-br from-red-900/30 to-rose-900/30 border-red-700' : 'bg-gradient-to-br from-red-50 to-rose-50 border-red-100'}`}>
+        <div className={`text-left sm:text-right px-4 sm:px-6 py-2 sm:py-3 rounded-xl border w-full sm:w-auto ${isDark ? 'bg-gradient-to-br from-red-900/30 to-rose-900/30 border-red-700' : 'bg-gradient-to-br from-red-50 to-rose-50 border-red-100'}`}>
           <p className={`text-xs font-medium uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t('vandaag')}</p>
-          <p className={`text-lg font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+          <p className={`text-base sm:text-lg font-bold mt-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>
             {new Date().toLocaleDateString('nl-NL', {
               weekday: 'long',
               day: 'numeric',
@@ -333,34 +333,34 @@ const Dashboard: React.FC = () => {
 
       {isAdminOrOffice && (
         <div className={`rounded-2xl shadow-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-          <div className={`px-6 py-5 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-gray-800 to-gray-800' : 'border-gray-100 bg-gradient-to-r from-gray-50 to-white'}`}>
-            <div className="flex justify-between items-center">
+          <div className={`px-4 sm:px-6 py-4 sm:py-5 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-gray-800 to-gray-800' : 'border-gray-100 bg-gradient-to-r from-gray-50 to-white'}`}>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
                   <Users className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('medewerkerActiviteitOverzicht')}</h3>
-                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Activiteit van de afgelopen 7 dagen</p>
+                  <h3 className={`text-base sm:text-lg font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('medewerkerActiviteitOverzicht')}</h3>
+                  <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Activiteit van de afgelopen 7 dagen</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className={`flex items-center gap-4 text-sm border-r pr-4 ${isDark ? 'border-gray-600' : ''}`}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
+                <div className={`flex items-center gap-3 sm:gap-4 text-sm sm:border-r sm:pr-4 ${isDark ? 'border-gray-600' : ''}`}>
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4 text-red-500" />
-                    <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Actief: {employeeActivity.length - inactiveEmployees.length}</span>
+                    <span className={`font-medium text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Actief: {employeeActivity.length - inactiveEmployees.length}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-red-500" />
-                    <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Inactief: {inactiveEmployees.length}</span>
+                    <span className={`font-medium text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Inactief: {inactiveEmployees.length}</span>
                   </div>
                 </div>
-                <div className={`flex items-center gap-2 border rounded-lg px-3 py-2 ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
+                <div className={`flex items-center gap-2 border rounded-lg px-3 py-2 w-full sm:w-auto ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
                   <Filter className={`h-4 w-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                   <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    className={`text-sm font-medium bg-transparent border-none outline-none cursor-pointer ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+                    className={`text-sm font-medium bg-transparent border-none outline-none cursor-pointer flex-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
                   >
                     <option value="medewerker">Medewerkers</option>
                     <option value="zzper">ZZP'ers</option>

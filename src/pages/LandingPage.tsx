@@ -215,7 +215,7 @@ const LandingPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
-                className={`grid grid-cols-4 gap-4 mt-12 pt-8 border-t ${isDark ? 'border-gray-800' : 'border-gray-100'}`}
+                className={`grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t ${isDark ? 'border-gray-800' : 'border-gray-100'}`}
               >
                 {stats.map((stat, index) => (
                   <div key={index} className="text-center lg:text-left">
@@ -231,7 +231,7 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, x: 40, rotateY: -10 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="lg:pl-4 perspective-1000"
+              className="hidden lg:block lg:pl-4 perspective-1000"
             >
               <div className={`rounded-2xl shadow-2xl overflow-hidden max-w-xl mx-auto lg:ml-auto relative ${
                 isDark
@@ -587,6 +587,38 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
+              </div>
+            </motion.div>
+
+            {/* Mobile-only simplified features preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="lg:hidden mt-8"
+            >
+              <div className={`rounded-2xl p-6 ${isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200 shadow-lg'}`}>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { icon: Clock, label: 'Uren' },
+                    { icon: Building2, label: 'Projecten' },
+                    { icon: Package, label: 'Voorraad' },
+                    { icon: Wrench, label: 'Gereedschap' },
+                    { icon: TrendingUp, label: 'Financieel' },
+                    { icon: Bell, label: 'Alerts' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex flex-col items-center">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 ${
+                        i === 0
+                          ? 'bg-gradient-to-br from-red-600 to-rose-600 text-white'
+                          : isDark ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           </div>

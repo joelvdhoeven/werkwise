@@ -878,13 +878,13 @@ const Urenregistratie: React.FC = () => {
       {/* Quick Actions for Admin Users */}
       {canViewAll && (
         <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <div>
-              <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
-                <Clock className="h-7 w-7 text-red-600" />
+              <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2 sm:gap-3`}>
+                <Clock className="h-6 w-6 sm:h-7 sm:w-7 text-red-600" />
                 {t('urenregistratie')}
               </h1>
-              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Beheer alle urenregistraties</p>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Beheer alle urenregistraties</p>
             </div>
           </div>
 

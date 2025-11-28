@@ -1068,13 +1068,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
-            <Package className="h-7 w-7 text-red-600" />
+          <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2 sm:gap-3`}>
+            <Package className="h-6 w-6 sm:h-7 sm:w-7 text-red-600" />
             Voorraadbeheer
           </h1>
-          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Beheer voorraad en boek materiaal af op projecten</p>
+          <p className={`text-sm sm:text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Beheer voorraad en boek materiaal af op projecten</p>
         </div>
       </div>
 

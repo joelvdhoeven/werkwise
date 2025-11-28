@@ -292,13 +292,13 @@ const Instellingen: React.FC = () => {
         </div>
       )}
 
-      <div className="flex justify-between items-center">
-        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('instellingen')}</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('instellingen')}</h1>
       </div>
 
       {/* Tabs */}
-      <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-        <nav className="-mb-px flex space-x-8">
+      <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} overflow-x-auto`}>
+        <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
           <button
             onClick={() => setActiveTab('profiel')}
             className={`${

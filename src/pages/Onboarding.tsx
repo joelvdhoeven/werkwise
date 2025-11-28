@@ -113,9 +113,9 @@ const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-lg font-bold mb-6 shadow-lg ${isDark ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-red-500/30' : 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-red-500/30'}`}
+                className={`inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl text-base sm:text-lg font-bold mb-6 shadow-lg ${isDark ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-red-500/30' : 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-red-500/30'}`}
               >
-                <Sparkles className="h-5 w-5" />
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
                 31 Dagen Gratis Uitproberen!
               </motion.div>
 
@@ -155,21 +155,21 @@ const Onboarding: React.FC = () => {
                 <p className={`text-sm mb-6 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                   Vertrouwd door bedrijven zoals
                 </p>
-                <div className="flex items-center justify-center lg:justify-start gap-8">
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-8">
                   <img
                     src="/logo-gouwebouw.png"
                     alt="GouweBouw"
-                    className={`h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
+                    className={`h-8 sm:h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
                   />
                   <img
                     src="/logo-jobsurfing.png"
                     alt="JobSurfing"
-                    className={`h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
+                    className={`h-8 sm:h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
                   />
                   <img
                     src="/logo_vdsb.png"
                     alt="VDSB"
-                    className={`h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
+                    className={`h-8 sm:h-10 object-contain ${isDark ? 'brightness-0 invert opacity-60 hover:opacity-100' : 'opacity-60 hover:opacity-100'} transition-opacity`}
                   />
                 </div>
               </motion.div>
