@@ -6,9 +6,7 @@ import {
   FolderOpen,
   AlertTriangle,
   Users,
-  Bell,
   Settings,
-  Mail,
   X,
   Package,
   FileText,
@@ -145,7 +143,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       label: 'Meldingen & Support',
       icon: MessageSquare,
       items: [
-        { id: 'mijn-notificaties', label: 'Mijn Notificaties', icon: Bell, permission: 'register_hours', module: 'module_notifications' },
         { id: 'schademeldingen', label: t('schademeldingen'), icon: AlertTriangle, permission: 'view_damage_reports', module: 'module_damage_reports' },
         { id: 'ticket-omgeving', label: 'Ticket Omgeving', icon: Ticket, permission: 'create_tickets', module: null },
         { id: 'tickets-overzicht', label: 'Tickets Overzicht', icon: Ticket, permission: 'view_all_tickets', module: null },
@@ -157,8 +154,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       icon: Shield,
       items: [
         { id: 'gebruikers', label: t('gebruikers'), icon: Users, permission: 'manage_users', module: null },
-        { id: 'meldingen', label: 'Notificatie Beheer', icon: Bell, permission: 'manage_notifications', module: 'module_notifications' },
-        { id: 'email-notificaties', label: 'E-mail Notificaties', icon: Mail, permission: 'manage_settings', module: 'module_email_notifications' },
         { id: 'factuur-instellingen', label: 'Factuur Instellingen', icon: FileText, permission: 'manage_settings', module: 'module_invoicing' },
         { id: 'module-beheer', label: 'Systeeminstellingen', icon: Sliders, permission: 'manage_settings', module: null },
         { id: 'instellingen', label: t('instellingen'), icon: Settings, permission: 'view_dashboard', module: null },

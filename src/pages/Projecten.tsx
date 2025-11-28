@@ -57,6 +57,7 @@ const Projecten: React.FC = () => {
   const [formData, setFormData] = useState({
     naam: '',
     beschrijving: '',
+    locatie: '',
     startDatum: '',
     status: 'actief' as const,
     project_nummer: '',
@@ -72,7 +73,7 @@ const Projecten: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.naam || !formData.beschrijving || !formData.startDatum) {
+    if (!formData.naam || !formData.beschrijving || !formData.locatie || !formData.startDatum) {
       alert(t('vulVerplichtVelden'));
       return;
     }
@@ -80,6 +81,7 @@ const Projecten: React.FC = () => {
     const baseProjectData = {
       naam: formData.naam,
       beschrijving: formData.beschrijving,
+      locatie: formData.locatie,
       start_datum: formData.startDatum,
       status: formData.status,
       estimated_hours: null,
@@ -131,6 +133,7 @@ const Projecten: React.FC = () => {
     setFormData({
       naam: '',
       beschrijving: '',
+      locatie: '',
       startDatum: new Date().toISOString().split('T')[0],
       status: 'actief',
       project_nummer: '',
@@ -145,6 +148,7 @@ const Projecten: React.FC = () => {
     setFormData({
       naam: project.naam,
       beschrijving: project.beschrijving,
+      locatie: project.locatie || '',
       startDatum: project.start_datum,
       status: project.status,
       project_nummer: project.project_nummer || '',
@@ -605,6 +609,19 @@ const Projecten: React.FC = () => {
               rows={4}
               required
               placeholder={t('beschrijfProject')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('locatie')} *</label>
+            <input
+              type="text"
+              name="locatie"
+              value={formData.locatie}
+              onChange={handleInputChange}
+              required
+              placeholder="bijv. Amsterdam, Noord-Holland"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>

@@ -10,6 +10,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { SystemSettingsProvider } from './contexts/SystemSettingsContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { TimerProvider } from './contexts/TimerContext';
 import './index.css';
 
 // Register Dutch locale for DatePicker
@@ -22,11 +23,13 @@ createRoot(document.getElementById('root')!).render(
         <LanguageProvider>
           <AuthProvider>
             <SystemSettingsProvider>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/demo/*" element={<App />} />
-              </Routes>
+              <TimerProvider>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/demo/*" element={<App />} />
+                </Routes>
+              </TimerProvider>
             </SystemSettingsProvider>
           </AuthProvider>
         </LanguageProvider>

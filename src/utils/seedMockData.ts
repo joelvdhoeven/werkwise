@@ -145,11 +145,24 @@ export async function seedMockData() {
   const createdLocationIds: string[] = [];
 
   try {
-    // 1. Create mock users
+    // 1. Create mock users - First try to get existing users
     console.log('Creating mock users...');
     for (const userData of mockUsers) {
       try {
-        // Create auth user
+        // First check if profile already exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', userData.email)
+          .single();
+
+        if (existingProfile) {
+          createdUserIds.push(existingProfile.id);
+          results.success.push(`User ${userData.naam} already exists`);
+          continue;
+        }
+
+        // Create auth user if not exists
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: userData.email,
           password: userData.password,
@@ -162,16 +175,19 @@ export async function seedMockData() {
         });
 
         if (authError) {
-          if (authError.message.includes('already registered')) {
-            // Get existing user
-            const { data: existingProfile } = await supabase
+          // Check various error messages for existing user
+          if (authError.message.includes('already') ||
+              authError.message.includes('registered') ||
+              authError.message.includes('exists')) {
+            // Try to get from profiles again
+            const { data: profile } = await supabase
               .from('profiles')
               .select('id')
               .eq('email', userData.email)
               .single();
 
-            if (existingProfile) {
-              createdUserIds.push(existingProfile.id);
+            if (profile) {
+              createdUserIds.push(profile.id);
               results.success.push(`User ${userData.naam} already exists`);
             }
             continue;
@@ -201,6 +217,14 @@ export async function seedMockData() {
         results.errors.push(`Error creating user ${userData.naam}: ${error.message}`);
       }
     }
+
+    // If we have no user IDs, we can't continue
+    if (createdUserIds.length === 0) {
+      results.errors.push('No user IDs available - cannot create related data');
+      return results;
+    }
+
+    console.log(`Found/created ${createdUserIds.length} users: ${createdUserIds.join(', ')}`);
 
     // 2. Create projects
     console.log('Creating projects...');

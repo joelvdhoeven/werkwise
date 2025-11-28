@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
+import FloatingTimerButton from './components/FloatingTimerButton';
 import Dashboard from './pages/Dashboard';
 import FinancieelDashboard from './pages/FinancieelDashboard';
 import Urenregistratie from './pages/Urenregistratie';
@@ -165,6 +166,8 @@ function App() {
           </div>
         </main>
       </div>
+      {/* Floating Timer - persists across page navigation */}
+      <FloatingTimerButton />
     </div>
   );
 }
