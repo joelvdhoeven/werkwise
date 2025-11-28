@@ -89,6 +89,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
 
   const steps = isAdmin ? adminSteps : medewerkerSteps;
   const isLastStep = currentStep === steps.length - 1;
+  const [showCompletion, setShowCompletion] = useState(false);
 
   // Save state to localStorage
   useEffect(() => {
@@ -105,11 +106,17 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+    } else if (isLastStep) {
+      // Show completion screen after the last step
+      setShowCompletion(true);
     }
   };
 
   const handlePrev = () => {
-    if (currentStep > 0) {
+    if (showCompletion) {
+      // Go back from completion screen to last step
+      setShowCompletion(false);
+    } else if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -136,6 +143,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
 
       // Reset tour state
       setCurrentStep(0);
+      setShowCompletion(false);
       setHasCompletedTour(false);
       localStorage.removeItem('werkwise_tour_completed');
     } catch (error) {
@@ -252,7 +260,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
                     animate={{ scaleX: 1 }}
                     transition={{ delay: index * 0.05 }}
                     className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                      index <= currentStep
+                      showCompletion || index <= currentStep
                         ? 'bg-white shadow-lg shadow-white/50'
                         : 'bg-white/30'
                     }`}
@@ -260,7 +268,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
                 ))}
               </div>
               <p className="text-white/60 text-xs mt-2 text-center">
-                Stap {currentStep + 1} van {steps.length}
+                {showCompletion ? 'Voltooid!' : `Stap ${currentStep + 1} van ${steps.length}`}
               </p>
             </div>
           </div>
@@ -269,7 +277,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
         {/* Content */}
         <div className="p-5">
           <AnimatePresence mode="wait">
-            {!isLastStep ? (
+            {!showCompletion ? (
               <motion.div
                 key={currentStep}
                 initial={{ opacity: 0, x: 20 }}
@@ -329,7 +337,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
                     onClick={handleNext}
                     className="flex-1 py-3 px-4 rounded-xl text-sm font-medium bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all flex items-center justify-center gap-2 group"
                   >
-                    Volgende
+                    {isLastStep ? 'Voltooien' : 'Volgende'}
                     <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </motion.button>
                 </div>
@@ -444,13 +452,18 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
           {steps.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentStep(index)}
+              onClick={() => {
+                setShowCompletion(false);
+                setCurrentStep(index);
+              }}
               className={`w-2 h-2 rounded-full transition-all ${
-                index === currentStep
-                  ? 'w-6 bg-gradient-to-r from-red-500 to-rose-500'
-                  : index < currentStep
-                    ? isDark ? 'bg-gray-600' : 'bg-gray-300'
-                    : isDark ? 'bg-gray-800' : 'bg-gray-200'
+                showCompletion
+                  ? isDark ? 'bg-gray-600' : 'bg-gray-300'
+                  : index === currentStep
+                    ? 'w-6 bg-gradient-to-r from-red-500 to-rose-500'
+                    : index < currentStep
+                      ? isDark ? 'bg-gray-600' : 'bg-gray-300'
+                      : isDark ? 'bg-gray-800' : 'bg-gray-200'
               }`}
             />
           ))}
