@@ -17,11 +17,7 @@ import {
   Sparkles,
   Target,
   Award,
-  Zap,
-  ChevronDown,
-  ChevronUp,
-  TrendingDown,
-  Box
+  Zap
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -497,203 +493,55 @@ const Dashboard: React.FC = () => {
       )}
 
       {isAdminOrOffice && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                  <Package className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Lage Voorraad</p>
-                  <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{lowStockItems.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                  <Wrench className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beschikbare Tools</p>
-                  <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{availableTools.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Schademeldingen</p>
-                  <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{pendingDamageReports.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                  <Award className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Retourboekingen</p>
-                  <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{pendingReturns.length}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className={`rounded-2xl shadow-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-            <div className={`px-8 py-6 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-red-900/20 to-gray-800' : 'border-gray-100 bg-gradient-to-r from-red-50 to-white'}`}>
-              <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
                 <Package className="h-6 w-6 text-red-600" />
-                Magazijn Overzicht
-              </h3>
-            </div>
-            <div className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div className={`rounded-xl p-6 border-2 border-red-600 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
-                      <Package className="h-5 w-5 text-red-600" />
-                    </div>
-                    <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Waarde</p>
-                  </div>
-                  <p className="text-3xl font-bold text-red-600">€{totalInventoryValue.toLocaleString()}</p>
-                </div>
-                <div className={`rounded-xl p-6 border-2 border-red-600 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
-                      <Box className="h-5 w-5 text-red-600" />
-                    </div>
-                    <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Items</p>
-                  </div>
-                  <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{inventoryItems.length}</p>
-                </div>
-                <div className={`rounded-xl p-6 border-2 border-red-600 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
-                      <TrendingDown className="h-5 w-5 text-red-600" />
-                    </div>
-                    <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Lage Voorraad</p>
-                  </div>
-                  <p className="text-3xl font-bold text-orange-600">{lowStockItems.length}</p>
-                </div>
-                <div className={`rounded-xl p-6 border-2 border-red-600 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
-                      <CheckCircle className="h-5 w-5 text-red-600" />
-                    </div>
-                    <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Op Voorraad</p>
-                  </div>
-                  <p className="text-3xl font-bold text-green-600">{inventoryItems.length - lowStockItems.length}</p>
-                </div>
               </div>
-
-              {lowStockItems.length > 0 && (
-                <div className={`rounded-xl border ${isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-200'}`}>
-                  <button
-                    onClick={() => setShowLowStockDetails(!showLowStockDetails)}
-                    className={`w-full px-6 py-4 flex items-center justify-between transition-colors rounded-xl ${isDark ? 'hover:bg-red-900/30' : 'hover:bg-red-100'}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isDark ? 'bg-red-800/50' : 'bg-red-200'}`}>
-                        <AlertTriangle className="h-5 w-5 text-red-700" />
-                      </div>
-                      <div className="text-left">
-                        <h4 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>Low Stock Alerts</h4>
-                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{lowStockItems.length} items onder minimum voorraad</p>
-                      </div>
-                    </div>
-                    {showLowStockDetails ? (
-                      <ChevronUp className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
-                    ) : (
-                      <ChevronDown className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
-                    )}
-                  </button>
-
-                  {showLowStockDetails && (
-                    <div className="px-6 pb-6">
-                      <div className={`rounded-lg border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-red-200'}`}>
-                        <table className={`min-w-full divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                          <thead className={isDark ? 'bg-gray-700' : 'bg-gray-50'}>
-                            <tr>
-                              <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                                Product
-                              </th>
-                              <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                                Huidige Voorraad
-                              </th>
-                              <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                                Minimum
-                              </th>
-                              <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                                Status
-                              </th>
-                              <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                                Waarde
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className={`divide-y ${isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'}`}>
-                            {lowStockItems.slice(0, 10).map((item) => (
-                              <tr key={item.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 whitespace-nowrap">
-                                  <div className="flex items-center gap-2">
-                                    <Package className="h-4 w-4 text-gray-400" />
-                                    <div>
-                                      <div className="text-sm font-semibold text-gray-900">{item.name}</div>
-                                      <div className="text-xs text-gray-500">{item.category || 'Algemeen'}</div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap">
-                                  <span className="text-sm font-bold text-red-600">{Math.floor(item.voorraad)} {item.unit}</span>
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap">
-                                  <span className="text-sm text-gray-700">{item.minimum_voorraad} {item.unit}</span>
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
-                                    <TrendingDown className="h-3 w-3 mr-1" />
-                                    Kritiek
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                  €{((item.prijs || 0) * item.voorraad).toFixed(2)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                        {lowStockItems.length > 10 && (
-                          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 text-center">
-                            <p className="text-sm text-gray-600">
-                              En nog {lowStockItems.length - 10} items meer...
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {lowStockItems.length === 0 && (
-                <div className="bg-green-50 rounded-xl border border-green-200 p-6 text-center">
-                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                  <h4 className="font-bold text-gray-800 mb-1">Alle voorraad op peil!</h4>
-                  <p className="text-sm text-gray-600">Er zijn geen items met lage voorraad</p>
-                </div>
-              )}
+              <div>
+                <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Lage Voorraad</p>
+                <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{lowStockItems.length}</p>
+              </div>
             </div>
           </div>
-        </>
+
+          <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                <Wrench className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beschikbare Tools</p>
+                <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{availableTools.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Schademeldingen</p>
+                <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{pendingDamageReports.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                <Award className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Retourboekingen</p>
+                <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{pendingReturns.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

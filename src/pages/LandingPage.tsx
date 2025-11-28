@@ -146,10 +146,30 @@ const LandingPage: React.FC = () => {
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative">
-        {/* Background decorations */}
+        {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-500 ${isDark ? 'bg-red-900/30' : 'bg-red-100 opacity-50'}`} />
-          <div className={`absolute top-60 -left-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-500 ${isDark ? 'bg-rose-900/30' : 'bg-rose-100 opacity-50'}`} />
+          {/* Gradient mesh background */}
+          <div className={`absolute inset-0 transition-opacity duration-500 ${isDark ? 'opacity-100' : 'opacity-60'}`}>
+            <div className={`absolute top-0 left-0 w-full h-full ${isDark ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950' : 'bg-gradient-to-br from-red-50/50 via-white to-rose-50/50'}`} />
+          </div>
+
+          {/* Animated blobs */}
+          <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl animate-blob ${isDark ? 'bg-red-900/20' : 'bg-red-200/40'}`} />
+          <div className={`absolute top-40 -left-40 w-96 h-96 rounded-full blur-3xl animate-blob-slow ${isDark ? 'bg-violet-900/20' : 'bg-violet-200/40'}`} />
+          <div className={`absolute bottom-0 right-1/4 w-80 h-80 rounded-full blur-3xl animate-blob ${isDark ? 'bg-rose-900/20' : 'bg-rose-200/30'}`} />
+
+          {/* Grid pattern overlay */}
+          <div className={`absolute inset-0 ${isDark ? 'opacity-5' : 'opacity-[0.03]'}`} style={{
+            backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
+          }} />
+
+          {/* Floating shapes */}
+          <div className={`absolute top-1/4 right-1/4 w-4 h-4 rounded-full animate-float-slow ${isDark ? 'bg-red-500/30' : 'bg-red-400/40'}`} />
+          <div className={`absolute top-1/3 left-1/4 w-3 h-3 rounded-full animate-float-medium ${isDark ? 'bg-violet-500/30' : 'bg-violet-400/40'}`} />
+          <div className={`absolute bottom-1/4 right-1/3 w-2 h-2 rounded-full animate-float-fast ${isDark ? 'bg-rose-500/30' : 'bg-rose-400/40'}`} />
+          <div className={`absolute top-1/2 left-1/6 w-5 h-5 rounded-sm rotate-45 animate-float-slow ${isDark ? 'bg-red-500/20' : 'bg-red-300/30'}`} />
+          <div className={`absolute bottom-1/3 left-1/3 w-3 h-3 rounded-sm rotate-12 animate-float-medium ${isDark ? 'bg-violet-500/20' : 'bg-violet-300/30'}`} />
         </div>
 
         <div className="max-w-7xl mx-auto relative">

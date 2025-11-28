@@ -33,6 +33,26 @@ export default {
           900: '#134e4a',
         }
       },
+      animation: {
+        'float-slow': 'float 8s ease-in-out infinite',
+        'float-medium': 'float 6s ease-in-out infinite 1s',
+        'float-fast': 'float 4s ease-in-out infinite 0.5s',
+        'blob': 'blob 7s infinite',
+        'blob-slow': 'blob 10s infinite 2s',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        blob: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
+        },
+      },
     },
   },
   plugins: [],
