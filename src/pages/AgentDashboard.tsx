@@ -91,8 +91,8 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLeadClick }) => {
       label: 'Totaal Leads',
       value: stats.totalLeads,
       icon: Users,
-      color: 'violet',
-      gradient: 'from-violet-500 to-purple-500'
+      color: 'red',
+      gradient: 'from-red-500 to-rose-500'
     },
     {
       label: 'Nieuwe Leads',
@@ -137,7 +137,7 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLeadClick }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -179,14 +179,14 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLeadClick }) => {
 
       {/* Commission Card (for sales agents) */}
       {!isAdmin() && agent && (
-        <div className={`rounded-2xl p-6 ${isDark ? 'bg-gradient-to-br from-violet-900/50 to-purple-900/50 border border-violet-800' : 'bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200'}`}>
+        <div className={`rounded-2xl p-6 ${isDark ? 'bg-gradient-to-br from-red-900/50 to-rose-900/50 border border-red-800' : 'bg-gradient-to-br from-red-50 to-rose-50 border border-red-200'}`}>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-500/25">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center shadow-lg shadow-red-500/25">
               <DollarSign className="h-7 w-7 text-white" />
             </div>
             <div>
-              <p className={isDark ? 'text-violet-300' : 'text-violet-700'}>Je Commissie Percentage</p>
-              <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-violet-900'}`}>
+              <p className={isDark ? 'text-red-300' : 'text-red-700'}>Je Commissie Percentage</p>
+              <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-red-900'}`}>
                 {agent.commission_percentage}%
               </p>
             </div>
@@ -202,7 +202,7 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLeadClick }) => {
           </h2>
           <button
             onClick={() => onLeadClick('')}
-            className={`text-sm font-medium ${isDark ? 'text-violet-400 hover:text-violet-300' : 'text-violet-600 hover:text-violet-700'}`}
+            className={`text-sm font-medium ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'}`}
           >
             Bekijk alle →
           </button>
@@ -226,9 +226,9 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ onLeadClick }) => {
                 }`}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  isDark ? 'bg-violet-500/20' : 'bg-violet-100'
+                  isDark ? 'bg-red-500/20' : 'bg-red-100'
                 }`}>
-                  <Building2 className={isDark ? 'h-6 w-6 text-violet-400' : 'h-6 w-6 text-violet-600'} />
+                  <Building2 className={isDark ? 'h-6 w-6 text-red-400' : 'h-6 w-6 text-red-600'} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`font-medium truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>

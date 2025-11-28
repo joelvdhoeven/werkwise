@@ -6,6 +6,8 @@ import AgentDashboard from './AgentDashboard';
 import AgentLeads from './AgentLeads';
 import AgentLeadDetail from './AgentLeadDetail';
 import AgentSalesUsers from './AgentSalesUsers';
+import AgentRanking from './AgentRanking';
+import AgentFinance from './AgentFinance';
 import {
   LayoutDashboard,
   Users,
@@ -13,7 +15,9 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Trophy,
+  Wallet
 } from 'lucide-react';
 import { ThemeToggle } from '../components/ui/theme-toggle';
 
@@ -32,6 +36,8 @@ const AgentApp: React.FC = () => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'leads', label: 'Leads', icon: Users },
+    { id: 'ranking', label: 'Ranglijst', icon: Trophy },
+    { id: 'finance', label: 'Financieel', icon: Wallet },
     ...(isAdmin() ? [{ id: 'sales-users', label: 'Medewerkers', icon: UserCog }] : [])
   ];
 
@@ -57,6 +63,10 @@ const AgentApp: React.FC = () => {
         ) : (
           <AgentLeads onLeadSelect={handleLeadSelect} />
         );
+      case 'ranking':
+        return <AgentRanking />;
+      case 'finance':
+        return <AgentFinance />;
       case 'sales-users':
         return isAdmin() ? <AgentSalesUsers /> : <AgentDashboard onLeadClick={handleLeadSelect} />;
       default:
@@ -83,11 +93,11 @@ const AgentApp: React.FC = () => {
           <div className={`p-6 border-b ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">
                   <span className="text-white font-bold text-lg">W</span>
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-lg font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
                     Sales Portal
                   </h1>
                   <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>WerkWise</p>
@@ -115,8 +125,8 @@ const AgentApp: React.FC = () => {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                   activeSection === item.id || (activeSection === 'lead-detail' && item.id === 'leads')
                     ? isDark
-                      ? 'bg-violet-500/20 text-violet-400'
-                      : 'bg-violet-50 text-violet-700'
+                      ? 'bg-red-500/20 text-red-400'
+                      : 'bg-red-50 text-red-700'
                     : isDark
                       ? 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -135,7 +145,7 @@ const AgentApp: React.FC = () => {
           <div className={`p-4 border-t ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
             <div className={`p-4 rounded-xl ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center text-white font-semibold">
                   {agent.naam.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -177,10 +187,10 @@ const AgentApp: React.FC = () => {
             <Menu className="h-6 w-6" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-rose-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">W</span>
             </div>
-            <span className="font-bold text-violet-600">Sales Portal</span>
+            <span className="font-bold text-red-600">Sales Portal</span>
           </div>
           <ThemeToggle />
         </header>
