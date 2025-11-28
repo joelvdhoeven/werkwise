@@ -21,7 +21,7 @@ const MijnNotificaties: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -48,7 +48,7 @@ const MijnNotificaties: React.FC = () => {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-violet-600" />
+                  <Mail className="h-5 w-5 text-red-600" />
                   <div>
                     <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{notification.subject}</h3>
                     <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDate(notification.created_at)}</p>
@@ -80,7 +80,7 @@ const MijnNotificaties: React.FC = () => {
                 </span>
               </div>
               <div className={`text-sm line-clamp-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`} dangerouslySetInnerHTML={{ __html: notification.body_html || '' }} />
-              <button className="mt-3 text-sm text-violet-600 hover:text-violet-700 font-medium">
+              <button className="mt-3 text-sm text-red-600 hover:text-red-700 font-medium">
                 Lees meer →
               </button>
             </div>
@@ -118,7 +118,7 @@ const MijnNotificaties: React.FC = () => {
             <div className={`p-6 border-t flex justify-end ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <button
                 onClick={() => setSelectedNotification(null)}
-                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
               >
                 Sluiten
               </button>

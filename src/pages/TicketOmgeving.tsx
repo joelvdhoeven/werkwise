@@ -315,7 +315,7 @@ const TicketOmgeving: React.FC = () => {
           {(profile?.role === 'admin' || profile?.role === 'kantoorpersoneel') && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700"
             >
               <Plus size={20} />
               Nieuw Ticket
@@ -334,13 +334,13 @@ const TicketOmgeving: React.FC = () => {
                 placeholder="Zoek tickets..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="all">Alle Statussen</option>
               <option value="open">Open</option>
@@ -351,7 +351,7 @@ const TicketOmgeving: React.FC = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="all">Alle Prioriteiten</option>
               <option value="urgent">Urgent</option>
@@ -391,7 +391,7 @@ const TicketOmgeving: React.FC = () => {
                       e.stopPropagation();
                       openTicketDetails(ticket);
                     }}
-                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded ${isDark ? 'text-violet-400 hover:bg-violet-900/30' : 'text-violet-600 hover:bg-violet-50'}`}
+                    className={`flex items-center gap-1 px-3 py-1 text-sm rounded ${isDark ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'}`}
                   >
                     <MessageSquare size={16} />
                     Chat
@@ -419,7 +419,7 @@ const TicketOmgeving: React.FC = () => {
                   type="text"
                   value={newTicket.title}
                   onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                   placeholder="Korte omschrijving van het probleem"
                 />
               </div>
@@ -432,7 +432,7 @@ const TicketOmgeving: React.FC = () => {
                   value={newTicket.description}
                   onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                   rows={6}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                   placeholder="Gedetailleerde beschrijving van het probleem"
                 />
               </div>
@@ -444,7 +444,7 @@ const TicketOmgeving: React.FC = () => {
                 <select
                   value={newTicket.category}
                   onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 >
                   <option value="">Selecteer categorie</option>
                   <option value="bug">Bug / Fout</option>
@@ -462,7 +462,7 @@ const TicketOmgeving: React.FC = () => {
                 <select
                   value={newTicket.priority}
                   onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 >
                   <option value="">Selecteer prioriteit</option>
                   <option value="low">Laag</option>
@@ -477,7 +477,7 @@ const TicketOmgeving: React.FC = () => {
                   Bijlagen (optioneel)
                 </label>
                 <div className="space-y-2">
-                  <label className={`flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-md cursor-pointer transition-colors ${isDark ? 'border-gray-600 hover:border-violet-500' : 'border-gray-300 hover:border-violet-400'}`}>
+                  <label className={`flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-md cursor-pointer transition-colors ${isDark ? 'border-gray-600 hover:border-red-500' : 'border-gray-300 hover:border-red-400'}`}>
                     <Paperclip size={20} className={isDark ? 'text-gray-500 mr-2' : 'text-gray-400 mr-2'} />
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Klik om bestanden of screenshots te uploaden</span>
                     <input
@@ -502,7 +502,7 @@ const TicketOmgeving: React.FC = () => {
                           </div>
                           <button
                             onClick={() => removeAttachment(index)}
-                            className={`p-1 rounded ${isDark ? 'text-violet-400 hover:bg-violet-900/30' : 'text-violet-600 hover:bg-violet-50'}`}
+                            className={`p-1 rounded ${isDark ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'}`}
                           >
                             <X size={16} />
                           </button>
@@ -528,7 +528,7 @@ const TicketOmgeving: React.FC = () => {
               <button
                 onClick={handleCreateTicket}
                 disabled={uploading}
-                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? 'Uploaden...' : 'Ticket Aanmaken'}
               </button>
@@ -579,13 +579,13 @@ const TicketOmgeving: React.FC = () => {
                       key={comment.id}
                       className={`flex ${isOwnComment ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-[70%] ${isOwnComment ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white' : isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg p-3 shadow-sm`}>
+                      <div className={`max-w-[70%] ${isOwnComment ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg p-3 shadow-sm`}>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs font-semibold ${isOwnComment ? 'text-violet-100' : isDark ? 'text-white' : 'text-gray-900'}`}>
+                          <span className={`text-xs font-semibold ${isOwnComment ? 'text-red-100' : isDark ? 'text-white' : 'text-gray-900'}`}>
                             {comment.user_name}
                             {isSuperUser && ' (SuperUser)'}
                           </span>
-                          <span className={`text-xs ${isOwnComment ? 'text-violet-200' : isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <span className={`text-xs ${isOwnComment ? 'text-red-200' : isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                             {new Date(comment.created_at).toLocaleString('nl-NL', {
                               day: '2-digit',
                               month: '2-digit',
@@ -617,13 +617,13 @@ const TicketOmgeving: React.FC = () => {
                   }}
                   placeholder="Typ een bericht..."
                   rows={2}
-                  className={`flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                   disabled={sendingComment}
                 />
                 <button
                   onClick={sendComment}
                   disabled={sendingComment || !newComment.trim()}
-                  className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <Send size={18} />
                   Verstuur

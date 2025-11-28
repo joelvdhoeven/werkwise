@@ -764,16 +764,16 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               onClick={() => handleSelectOption('scannen')}
               className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
                 isDark
-                  ? 'bg-gradient-to-br from-violet-900/50 to-fuchsia-900/50 border-2 border-violet-600/50 hover:border-violet-500'
-                  : 'bg-gradient-to-br from-violet-50 to-fuchsia-50 border-2 border-violet-200 hover:border-violet-400'
+                  ? 'bg-gradient-to-br from-red-900/50 to-rose-900/50 border-2 border-red-600/50 hover:border-red-500'
+                  : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-200 hover:border-red-400'
               }`}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
                   isDark
-                    ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/30'
-                    : 'bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                    ? 'bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-500/30'
+                    : 'bg-gradient-to-br from-red-500 to-rose-500 shadow-lg shadow-red-500/30'
                 }`}>
                   <Scan className="h-10 w-10 text-white" />
                 </div>
@@ -783,7 +783,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Scan een barcode om een product af te boeken
                 </p>
-                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                   <span>Start Scanner</span>
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -865,7 +865,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             </div>
             <button
               onClick={() => setShowOverview(true)}
-              className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
             >
               <FileText size={20} />
               Overzicht
@@ -882,9 +882,9 @@ const VoorraadbeheerAfboeken: React.FC = () => {
       )}
 
       {errorMessage && (
-        <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="text-violet-600" size={20} />
-          <span className="text-violet-800">{errorMessage}</span>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="text-red-600" size={20} />
+          <span className="text-red-800">{errorMessage}</span>
         </div>
       )}
 
@@ -900,7 +900,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 <X size={24} />
               </button>
             </div>
-            <div className="relative border-2 border-violet-500 rounded-lg overflow-hidden">
+            <div className="relative border-2 border-red-500 rounded-lg overflow-hidden">
               <div id="qr-reader" className="w-full"></div>
             </div>
           </div>
@@ -917,7 +917,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <select
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="">Selecteer project</option>
               {projects.map(project => (
@@ -947,7 +947,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   <select
                     value={line.location}
                     onChange={(e) => updateLineLocation(index, e.target.value)}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Selecteer locatie</option>
                     {locations.map(location => (
@@ -970,7 +970,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                         setBookingLines(newLines);
                       }
                     }}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   {line.showDropdown && getFilteredProducts(line.searchValue).length > 0 && (
                     <div className={`absolute z-10 w-full mt-1 ${isDark ? 'bg-gray-800' : 'bg-white'} border ${isDark ? 'border-gray-700' : 'border-gray-300'} rounded-md shadow-lg max-h-60 overflow-y-auto`}>
@@ -998,14 +998,14 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 <button
                   onClick={() => startScanning(index)}
                   disabled={scanning}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                 >
                   <Scan size={20} />
                 </button>
                 {bookingLines.length > 1 && (
                   <button
                     onClick={() => removeLine(index)}
-                    className={`px-3 py-2 text-violet-600 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-violet-50'} rounded-md`}
+                    className={`px-3 py-2 text-red-600 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-red-50'} rounded-md`}
                   >
                     <Trash2 size={20} />
                   </button>
@@ -1051,7 +1051,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
         <button
           onClick={addLine}
-          className="w-full px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center gap-2"
         >
           <Plus size={20} />
           Voeg regel toe
@@ -1070,7 +1070,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
           <button
             onClick={handleBookProducts}
             disabled={!selectedProject || bookingLines.filter(l => l.product && l.location).length === 0}
-            className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Afboeken
           </button>
@@ -1101,7 +1101,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     placeholder="Zoek op project, medewerker, product, locatie..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <div className="flex gap-2">
@@ -1125,7 +1125,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                       <button
                         onClick={handleExportTransactions}
                         disabled={filteredTransactions.length === 0}
-                        className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                       >
                         <Download size={20} />
                         Export
@@ -1136,7 +1136,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     <button
                       onClick={handleExportTransactions}
                       disabled={filteredTransactions.length === 0}
-                      className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                     >
                       <Download size={20} />
                       Export
@@ -1146,13 +1146,13 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               </div>
 
               {(userRole === 'admin' || userRole === 'kantoor_medewerker') && selectedTransactions.size > 0 && (
-                <div className="flex items-center justify-between bg-violet-50 border border-violet-200 rounded-lg p-3">
-                  <span className="text-sm text-violet-800 font-medium">
+                <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-3">
+                  <span className="text-sm text-red-800 font-medium">
                     {selectedTransactions.size} {selectedTransactions.size === 1 ? 'afboeking' : 'afboekingen'} geselecteerd
                   </span>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                   >
                     <Trash2 size={18} />
                     Verwijderen
@@ -1166,7 +1166,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   <select
                     value={dateFilter}
                     onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="vandaag">Vandaag</option>
                     <option value="deze_week">Deze Week</option>
@@ -1184,7 +1184,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                       />
                     </div>
                     <div>
@@ -1193,7 +1193,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                       />
                     </div>
                   </>
@@ -1221,7 +1221,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
               {loadingTransactions ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
                 </div>
               ) : filteredTransactions.length === 0 ? (
                 <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -1239,7 +1239,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                                 type="checkbox"
                                 checked={selectedTransactions.size === filteredTransactions.length && filteredTransactions.length > 0}
                                 onChange={toggleSelectAll}
-                                className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                               />
                             </th>
                           )}
@@ -1262,7 +1262,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                                   type="checkbox"
                                   checked={selectedTransactions.has(transaction.id)}
                                   onChange={() => toggleSelectTransaction(transaction.id)}
-                                  className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                                  className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                                 />
                               </td>
                             )}
@@ -1344,7 +1344,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 </ul>
                 <button
                   onClick={downloadTemplate}
-                  className="text-sm text-violet-600 hover:text-violet-700 flex items-center gap-2"
+                  className="text-sm text-red-600 hover:text-red-700 flex items-center gap-2"
                 >
                   <FileSpreadsheet size={16} />
                   Download CSV sjabloon
@@ -1361,7 +1361,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className={`w-full px-4 py-3 border-2 border-dashed ${isDark ? 'border-gray-700 text-gray-300 hover:border-violet-500 hover:text-violet-400' : 'border-gray-300 text-gray-600 hover:border-violet-400 hover:text-violet-600'} rounded-lg flex items-center justify-center gap-2`}
+                  className={`w-full px-4 py-3 border-2 border-dashed ${isDark ? 'border-gray-700 text-gray-300 hover:border-red-500 hover:text-red-400' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-600'} rounded-lg flex items-center justify-center gap-2`}
                 >
                   <Upload size={20} />
                   {importFile ? importFile.name : 'Selecteer CSV bestand'}
@@ -1414,7 +1414,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <div className="p-6">
               {loadingStock ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
                 </div>
               ) : locationStock.length === 0 ? (
                 <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -1426,7 +1426,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     <button
                       key={stockItem.product_id}
                       onClick={() => selectProductFromStock(stockItem)}
-                      className={`w-full p-4 border ${isDark ? 'border-gray-700 hover:border-violet-500 hover:bg-gray-700' : 'border-gray-200 hover:border-violet-500 hover:bg-violet-50'} rounded-lg text-left transition-colors`}
+                      className={`w-full p-4 border ${isDark ? 'border-gray-700 hover:border-red-500 hover:bg-gray-700' : 'border-gray-200 hover:border-red-500 hover:bg-red-50'} rounded-lg text-left transition-colors`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -1456,8 +1456,8 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center">
-                <AlertCircle className="text-violet-600" size={24} />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="text-red-600" size={24} />
               </div>
               <div>
                 <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Afboekingen Verwijderen</h3>
@@ -1482,7 +1482,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               </button>
               <button
                 onClick={handleDeleteSelected}
-                className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Verwijderen
               </button>

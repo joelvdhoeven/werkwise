@@ -328,7 +328,7 @@ const Projecten: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -349,7 +349,7 @@ const Projecten: React.FC = () => {
       
       <div className="flex justify-between items-center mb-6">
         <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center space-x-3`}>
-          <FolderOpen className="text-violet-600" />
+          <FolderOpen className="text-red-600" />
           <span>{t('projecten')}</span>
         </h1>
         <div className="flex items-center space-x-2">
@@ -362,7 +362,7 @@ const Projecten: React.FC = () => {
           </button>
           <button
             onClick={handleNewProject}
-            className="flex items-center space-x-2 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
           >
             <Plus size={16} />
             <span>{t('nieuwProject')}</span>
@@ -387,7 +387,7 @@ const Projecten: React.FC = () => {
                 placeholder="Zoek project op naam, nummer of beschrijving..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
             {searchTerm && (
@@ -408,7 +408,7 @@ const Projecten: React.FC = () => {
               </p>
               <button
                 onClick={handleNewProject}
-                className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 <Plus size={16} />
                 <span>{t('nieuwProject')}</span>
@@ -431,7 +431,7 @@ const Projecten: React.FC = () => {
 
                 return (
                   <div key={project.id} className={`rounded-lg p-6 hover:shadow-md transition-shadow ${
-                    incomplete ? (isDark ? 'bg-violet-900/20 border-2 border-violet-500' : 'bg-violet-50 border-2 border-violet-200') : (isDark ? 'bg-gray-700' : 'bg-gray-50')
+                    incomplete ? (isDark ? 'bg-red-900/20 border-2 border-red-500' : 'bg-red-50 border-2 border-red-200') : (isDark ? 'bg-gray-700' : 'bg-gray-50')
                   }`}>
                     <div className="flex justify-between items-start mb-4">
                       <div>
@@ -448,7 +448,7 @@ const Projecten: React.FC = () => {
                     </div>
 
                     {incomplete && hasPermission('view_reports') && (
-                      <div className={`mb-3 p-2 ${isDark ? 'bg-violet-900/40 border-violet-500' : 'bg-violet-100 border-violet-300'} border rounded text-xs ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
+                      <div className={`mb-3 p-2 ${isDark ? 'bg-red-900/40 border-red-500' : 'bg-red-100 border-red-300'} border rounded text-xs ${isDark ? 'text-red-300' : 'text-red-700'}`}>
                         ⚠️ Ontbrekende velden: {getMissingFields(project).join(', ')}
                       </div>
                     )}
@@ -477,7 +477,7 @@ const Projecten: React.FC = () => {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-violet-600 h-2 rounded-full transition-all duration-300"
+                              className="bg-red-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${project.progress_percentage}%` }}
                             ></div>
                           </div>
@@ -488,7 +488,7 @@ const Projecten: React.FC = () => {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => setSelectedProjectForDetails(project)}
-                        className="flex items-center space-x-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors text-sm"
+                        className="flex items-center space-x-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
                       >
                         <Eye size={16} />
                         <span>Bekijk details</span>
@@ -519,7 +519,7 @@ const Projecten: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="Bijv. Renovatie kantoorpand"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
             <div>
@@ -530,7 +530,7 @@ const Projecten: React.FC = () => {
                 value={formData.project_nummer}
                 onChange={handleInputChange}
                 placeholder="Bijv. 2024-001"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
           </div>
@@ -545,7 +545,7 @@ const Projecten: React.FC = () => {
                   value={formData.startDatum}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
                 <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
               </div>
@@ -559,7 +559,7 @@ const Projecten: React.FC = () => {
               value={formData.status}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="actief">{t('actief')}</option>
               <option value="gepauzeerd">{t('gepauzeerd')}</option>
@@ -577,7 +577,7 @@ const Projecten: React.FC = () => {
               min="0"
               max="100"
               placeholder="0-100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
             <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
           </div>
@@ -591,7 +591,7 @@ const Projecten: React.FC = () => {
               onChange={handleInputChange}
               min="0"
               placeholder="Geschatte uren voor dit project"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
             <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel: vul in hoeveel uren je verwacht nodig te hebben voor dit project</p>
           </div>
@@ -605,7 +605,7 @@ const Projecten: React.FC = () => {
               rows={4}
               required
               placeholder={t('beschrijfProject')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
           <div className="flex flex-col space-y-3 pt-4">
@@ -634,7 +634,7 @@ const Projecten: React.FC = () => {
               <button
                 type="submit"
                 disabled={mutationLoading}
-                className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 {mutationLoading ? 'Opslaan...' : t('opslaan')}
               </button>
@@ -655,7 +655,7 @@ const Projecten: React.FC = () => {
               <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Weet je zeker dat je dit project wilt verwijderen?
               </p>
-              <p className={`${isDark ? 'text-violet-400' : 'text-violet-600'} font-medium text-sm`}>
+              <p className={`${isDark ? 'text-red-400' : 'text-red-600'} font-medium text-sm`}>
                 Let op: Alle urenregistraties die aan dit project gekoppeld zijn worden ook permanent verwijderd. Deze actie kan niet ongedaan worden gemaakt.
               </p>
             </div>
@@ -668,7 +668,7 @@ const Projecten: React.FC = () => {
               </button>
               <button
                 onClick={() => handleDeleteProject(deleteConfirmProject)}
-                className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 Verwijderen
               </button>
@@ -714,7 +714,7 @@ const Projecten: React.FC = () => {
               placeholder="Zoek in gearchiveerde projecten..."
               value={archiveSearchTerm}
               onChange={(e) => setArchiveSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
 
@@ -835,7 +835,7 @@ const Projecten: React.FC = () => {
                           setSelectedProjectForDetails(project);
                           setShowArchive(false);
                         }}
-                        className="flex-1 px-3 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors text-sm flex items-center justify-center space-x-1"
+                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm flex items-center justify-center space-x-1"
                       >
                         <Eye size={16} />
                         <span>Details</span>

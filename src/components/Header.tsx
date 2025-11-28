@@ -92,8 +92,8 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
                   className={`w-full text-left px-4 py-3 text-sm flex items-center space-x-3 transition-colors ${
                     language === lang.code
                       ? isDark
-                        ? 'bg-violet-500/20 text-violet-400'
-                        : 'bg-violet-50 text-violet-600'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-red-50 text-red-600'
                       : isDark
                         ? 'text-gray-300 hover:bg-gray-700'
                         : 'text-gray-700 hover:bg-gray-50'
@@ -117,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
           >
             <Bell size={20} />
             {unreadNotifications.length > 0 && (
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-full min-w-[20px]">
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gradient-to-r from-red-600 to-rose-600 rounded-full min-w-[20px]">
                 {unreadNotifications.length}
               </span>
             )}
@@ -135,9 +135,9 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
               />
             ) : (
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                isDark ? 'bg-violet-500/20' : 'bg-violet-100'
+                isDark ? 'bg-red-500/20' : 'bg-red-100'
               }`}>
-                <span className={`font-semibold text-sm ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                <span className={`font-semibold text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                   {user?.naam?.charAt(0).toUpperCase()}
                 </span>
               </div>

@@ -1000,7 +1000,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -1046,7 +1046,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 onClick={() => setActiveTab(tab as any)}
                 className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   activeTab === tab
-                    ? 'bg-violet-600 text-white'
+                    ? 'bg-red-600 text-white'
                     : `${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
                 }`}
               >
@@ -1089,7 +1089,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           </button>
                           <button
                             onClick={() => setShowBulkDeleteConfirm(true)}
-                            className="px-3 py-1.5 text-sm bg-violet-600 text-white rounded hover:bg-violet-700 flex items-center gap-1"
+                            className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"
                           >
                             <Trash2 size={16} />
                             Verwijderen
@@ -1103,7 +1103,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               <div className={`flex justify-between items-center gap-2 pb-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowBookingModal(true)}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                 >
                   <ScanLine size={18} />
                   Materiaal Boeken
@@ -1113,14 +1113,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     <>
                       <button
                         onClick={() => setShowAddProductModal(true)}
-                        className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                       >
                         <Plus size={18} />
                         Product Toevoegen
                       </button>
                       <button
                         onClick={() => setShowAddLocationModal(true)}
-                        className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                       >
                         <Plus size={18} />
                         Locatie Toevoegen
@@ -1129,14 +1129,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   )}
                   <button
                     onClick={exportToCSV}
-                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                   >
                     <Download size={18} />
                     Export Voorraad
                   </button>
                   {canManage && (
                     <div className="flex flex-col items-end gap-1">
-                      <label className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2 cursor-pointer">
+                      <label className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2 cursor-pointer">
                         <Upload size={18} />
                         Import Voorraad
                         <input
@@ -1164,13 +1164,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     placeholder="Zoek op naam of SKU..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Alle Categorieën</option>
                   {categories.map(cat => (
@@ -1180,7 +1180,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Alle Locaties</option>
                   {locations.map(loc => (
@@ -1198,7 +1198,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           type="checkbox"
                           checked={filteredStock.length > 0 && selectedStockIds.size === filteredStock.length}
                           onChange={(e) => e.target.checked ? selectAllStock() : deselectAllStock()}
-                          className="w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500"
+                          className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                         />
                       </th>
                       <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Product</th>
@@ -1223,7 +1223,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleSelectStock(stockId)}
-                              className="w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500"
+                              className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                             />
                           </td>
                           <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.product?.name}</td>
@@ -1281,7 +1281,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                               {canManage && (
                                 <button
                                   onClick={() => handleDeleteProduct(item.product_id)}
-                                  className="p-1 text-violet-600 hover:bg-violet-50 rounded"
+                                  className="p-1 text-red-600 hover:bg-red-50 rounded"
                                   title="Verwijder product"
                                 >
                                   <Trash2 size={16} />
@@ -1308,12 +1308,12 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     placeholder="Zoek op naam, SKU of categorie..."
                     value={productSearchTerm}
                     onChange={(e) => setProductSearchTerm(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 {canManage && (
                   <>
-                    <label className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2 cursor-pointer">
+                    <label className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2 cursor-pointer">
                       <Upload size={18} />
                       Import CSV
                       <input
@@ -1325,14 +1325,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     </label>
                     <button
                       onClick={exportProductsToCSV}
-                      className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                     >
                       <Download size={18} />
                       Export CSV
                     </button>
                     <button
                       onClick={() => setShowAddProductModal(true)}
-                      className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                     >
                       <Plus size={18} />
                       Product Toevoegen
@@ -1363,7 +1363,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteProduct(product.id)}
-                              className="p-1 text-violet-600 hover:bg-violet-50 rounded"
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
                               title="Verwijder product"
                             >
                               <Trash2 size={16} />
@@ -1395,7 +1395,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={() => setShowAddLocationModal(true)}
-                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                   >
                     <Plus size={18} />
                     Locatie Toevoegen
@@ -1441,7 +1441,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteLocation(location.id)}
-                              className="p-1 text-violet-600 hover:bg-violet-50 rounded"
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
                               title="Verwijder locatie"
                             >
                               <Trash2 size={16} />
@@ -1453,14 +1453,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
                         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => exportLocationToCSV(location)}
-                            className="flex-1 px-3 py-1.5 bg-violet-600 text-white text-sm rounded hover:bg-violet-700 flex items-center justify-center gap-1"
+                            className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                           >
                             <Download size={14} />
                             Export
                           </button>
                           <button
                             onClick={() => handleImportLocation(location.id)}
-                            className="flex-1 px-3 py-1.5 bg-violet-600 text-white text-sm rounded hover:bg-violet-700 flex items-center justify-center gap-1"
+                            className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 flex items-center justify-center gap-1"
                           >
                             <Upload size={14} />
                             Import
@@ -1495,7 +1495,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     min="0"
                     value={editFormData.minimum_stock}
                     onChange={(e) => setEditFormData({ ...editFormData, minimum_stock: parseInt(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -1506,7 +1506,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={editFormData.ean}
                     onChange={(e) => setEditFormData({ ...editFormData, ean: e.target.value })}
                     placeholder="EAN barcode"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -1518,7 +1518,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     step="0.01"
                     value={editFormData.purchase_price}
                     onChange={(e) => setEditFormData({ ...editFormData, purchase_price: parseFloat(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -1530,7 +1530,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     step="0.01"
                     value={editFormData.sale_price}
                     onChange={(e) => setEditFormData({ ...editFormData, sale_price: parseFloat(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -1541,7 +1541,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={editFormData.supplier}
                     onChange={(e) => setEditFormData({ ...editFormData, supplier: e.target.value })}
                     placeholder="Leverancier naam"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
               </div>
@@ -1591,7 +1591,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSaveProductEdit}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
                   Opslaan
                 </button>
@@ -1618,7 +1618,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   <select
                     value={selectedProject}
                     onChange={(e) => setSelectedProject(e.target.value)}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Selecteer project</option>
                     {projects.map(project => (
@@ -1632,7 +1632,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   <select
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Selecteer locatie</option>
                     {locations.map(location => (
@@ -1651,11 +1651,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     onChange={(e) => setScanInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleScan()}
                     placeholder="Scan barcode of zoek op naam/SKU"
-                    className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   <button
                     onClick={handleScan}
-                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                   >
                     <Search size={20} />
                   </button>
@@ -1709,7 +1709,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           <td className="px-4 py-3 text-center">
                             <button
                               onClick={() => setBookingProducts(bookingProducts.filter((_, i) => i !== idx))}
-                              className="text-violet-600 hover:text-violet-700"
+                              className="text-red-600 hover:text-red-700"
                             >
                               <X size={18} />
                             </button>
@@ -1731,7 +1731,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <button
                   onClick={handleBookProducts}
                   disabled={!selectedProject || !selectedLocation || bookingProducts.length === 0}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Boek Producten Af
                 </button>
@@ -1758,7 +1758,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   type="text"
                   value={stockEditFormData.product_name}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, product_name: e.target.value })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1769,7 +1769,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   min="0"
                   value={stockEditFormData.quantity}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, quantity: parseInt(e.target.value) || 0 })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1780,7 +1780,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   min="0"
                   value={stockEditFormData.minimum_stock}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, minimum_stock: parseInt(e.target.value) || 0 })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1790,7 +1790,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   type="text"
                   value={stockEditFormData.ean}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, ean: e.target.value })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1803,7 +1803,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     step="0.01"
                     value={stockEditFormData.purchase_price}
                     onChange={(e) => setStockEditFormData({ ...stockEditFormData, purchase_price: parseFloat(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <div>
@@ -1814,7 +1814,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     step="0.01"
                     value={stockEditFormData.sale_price}
                     onChange={(e) => setStockEditFormData({ ...stockEditFormData, sale_price: parseFloat(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
               </div>
@@ -1824,7 +1824,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={stockEditFormData.location_id}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, location_id: e.target.value })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   {locations.map(loc => (
                     <option key={loc.id} value={loc.id}>{loc.name}</option>
@@ -1835,7 +1835,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               <div className={`flex justify-between items-center pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => handleDeleteProductConfirm(editingStock.product_id)}
-                  className="px-4 py-2 bg-violet-100 text-violet-700 rounded-md hover:bg-violet-200 flex items-center gap-2"
+                  className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 flex items-center gap-2"
                 >
                   <Trash2 size={18} />
                   Verwijder Product
@@ -1849,7 +1849,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   </button>
                   <button
                     onClick={handleSaveStockEdit}
-                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                   >
                     Opslaan
                   </button>
@@ -1878,7 +1878,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   value={newLocationData.name}
                   onChange={(e) => setNewLocationData({ ...newLocationData, name: e.target.value })}
                   placeholder="Bijv. Magazijn A, Bus 1"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1887,7 +1887,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={newLocationData.type}
                   onChange={(e) => setNewLocationData({ ...newLocationData, type: e.target.value as 'magazijn' | 'bus' })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="magazijn">Magazijn</option>
                   <option value="bus">Bus</option>
@@ -1901,7 +1901,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   value={newLocationData.license_plate}
                   onChange={(e) => setNewLocationData({ ...newLocationData, license_plate: e.target.value })}
                   placeholder="Bijv. XX-123-YY"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1912,7 +1912,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   onChange={(e) => setNewLocationData({ ...newLocationData, description: e.target.value })}
                   rows={3}
                   placeholder="Extra informatie over deze locatie"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -1925,7 +1925,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </button>
                 <button
                   onClick={handleAddLocation}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
                   Toevoegen
                 </button>
@@ -2061,7 +2061,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   value={editLocationData.name}
                   onChange={(e) => setEditLocationData({ ...editLocationData, name: e.target.value })}
                   placeholder="Bijv. Magazijn A, Bus 1"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -2070,7 +2070,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={editLocationData.type}
                   onChange={(e) => setEditLocationData({ ...editLocationData, type: e.target.value as 'magazijn' | 'bus' })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="magazijn">Magazijn</option>
                   <option value="bus">Bus</option>
@@ -2084,7 +2084,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   value={editLocationData.license_plate}
                   onChange={(e) => setEditLocationData({ ...editLocationData, license_plate: e.target.value })}
                   placeholder="Bijv. XX-123-YY"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -2095,7 +2095,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   onChange={(e) => setEditLocationData({ ...editLocationData, description: e.target.value })}
                   rows={3}
                   placeholder="Extra informatie over deze locatie"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -2108,7 +2108,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSaveLocationEdit}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
                   Opslaan
                 </button>
@@ -2149,7 +2149,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   type="file"
                   accept=".csv"
                   onChange={handleImportCSV}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -2191,7 +2191,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={newProductData.name}
                     onChange={(e) => setNewProductData({ ...newProductData, name: e.target.value })}
                     placeholder="Bijv. Cement 25kg"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2202,7 +2202,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={newProductData.sku}
                     onChange={(e) => setNewProductData({ ...newProductData, sku: e.target.value })}
                     placeholder="Bijv. CEM-001"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2213,7 +2213,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={newProductData.category}
                     onChange={(e) => setNewProductData({ ...newProductData, category: e.target.value })}
                     placeholder="Bijv. Bouwmateriaal"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2224,7 +2224,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={newProductData.unit}
                     onChange={(e) => setNewProductData({ ...newProductData, unit: e.target.value })}
                     placeholder="Bijv. stuks, kg, m"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2235,7 +2235,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     min="0"
                     value={newProductData.minimum_stock}
                     onChange={(e) => setNewProductData({ ...newProductData, minimum_stock: parseInt(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2246,7 +2246,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={newProductData.ean}
                     onChange={(e) => setNewProductData({ ...newProductData, ean: e.target.value })}
                     placeholder="EAN barcode"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2258,7 +2258,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     step="0.01"
                     value={newProductData.purchase_price}
                     onChange={(e) => setNewProductData({ ...newProductData, purchase_price: parseFloat(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2270,7 +2270,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     step="0.01"
                     value={newProductData.sale_price}
                     onChange={(e) => setNewProductData({ ...newProductData, sale_price: parseFloat(e.target.value) || 0 })}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
@@ -2281,7 +2281,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     value={newProductData.supplier}
                     onChange={(e) => setNewProductData({ ...newProductData, supplier: e.target.value })}
                     placeholder="Leverancier naam"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
               </div>
@@ -2293,7 +2293,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   onChange={(e) => setNewProductData({ ...newProductData, description: e.target.value })}
                   rows={3}
                   placeholder="Extra informatie over dit product"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
@@ -2306,7 +2306,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </button>
                 <button
                   onClick={handleAddProduct}
-                  className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
                   Product Toevoegen
                 </button>
@@ -2326,7 +2326,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               <p className="text-gray-700 mb-4">
                 Weet je zeker dat je dit product wilt verwijderen? Dit verwijdert ook alle voorraad van dit product.
               </p>
-              <p className="text-violet-600 font-semibold">Deze actie kan niet ongedaan worden gemaakt.</p>
+              <p className="text-red-600 font-semibold">Deze actie kan niet ongedaan worden gemaakt.</p>
             </div>
             <div className={`p-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-end gap-3`}>
               <button
@@ -2340,7 +2340,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </button>
               <button
                 onClick={() => handleDeleteProduct(productToDelete)}
-                className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Ja, Verwijderen
               </button>
@@ -2384,7 +2384,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={moveStockData.toLocationId}
                   onChange={(e) => setMoveStockData({ ...moveStockData, toLocationId: e.target.value })}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Selecteer locatie</option>
                   {locations
@@ -2420,7 +2420,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                       ...moveStockData,
                       quantity: Math.min(moveStockData.maxQuantity, Math.max(1, parseInt(e.target.value) || 1))
                     })}
-                    className={`flex-1 px-3 py-2 text-center border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`flex-1 px-3 py-2 text-center border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   <button
                     onClick={() => setMoveStockData({
@@ -2449,7 +2449,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </button>
               <button
                 onClick={handleMoveStock}
-                className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 flex items-center gap-2"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
               >
                 <ArrowRightLeft size={18} />
                 Verplaatsen
@@ -2482,7 +2482,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </button>
               <button
                 onClick={handleBulkDelete}
-                className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Ja, Verwijderen
               </button>
@@ -2517,7 +2517,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               <select
                 value={bulkNewLocationId}
                 onChange={(e) => setBulkNewLocationId(e.target.value)}
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">Selecteer locatie</option>
                 {locations.map(loc => (
@@ -2538,7 +2538,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               <button
                 onClick={handleBulkLocationChangeSubmit}
                 disabled={!bulkNewLocationId}
-                className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Doorgaan
               </button>
@@ -2567,7 +2567,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </button>
               <button
                 onClick={handleBulkLocationChangeConfirm}
-                className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Ja, Wijzigen
               </button>

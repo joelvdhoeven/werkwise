@@ -129,7 +129,7 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
             onClick={onToggle}
             className={`fixed left-4 bottom-4 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all ${
               isRunning
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
                 : isDark
                   ? 'bg-gray-800 text-white border border-gray-700'
                   : 'bg-white text-gray-900 border border-gray-200'
@@ -159,7 +159,7 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
             {/* Header */}
             <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-rose-600 rounded-lg flex items-center justify-center">
                   <Clock className="h-4 w-4 text-white" />
                 </div>
                 <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Timer</h3>
@@ -177,11 +177,11 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
             {/* Timer Display */}
             <div className="p-6">
               <div className={`text-center p-8 rounded-2xl mb-6 ${
-                isDark ? 'bg-gray-800' : 'bg-gradient-to-br from-violet-50 to-fuchsia-50'
+                isDark ? 'bg-gray-800' : 'bg-gradient-to-br from-red-50 to-rose-50'
               }`}>
                 <div className={`text-5xl font-mono font-bold mb-2 ${
                   isRunning
-                    ? 'text-violet-600'
+                    ? 'text-red-600'
                     : isDark ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                   {formatTime(elapsedSeconds)}
@@ -203,7 +203,7 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
                 {!isRunning ? (
                   <button
                     onClick={handleStart}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all"
                   >
                     <Play className="h-5 w-5" />
                     Start
@@ -214,7 +214,7 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
                       onClick={handlePause}
                       className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 font-semibold rounded-xl transition-all ${
                         isPaused
-                          ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                          ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
                           : isDark
                             ? 'bg-gray-800 text-yellow-400 border border-yellow-500/30'
                             : 'bg-yellow-50 text-yellow-600 border border-yellow-200'
@@ -297,7 +297,7 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
               {/* Modal Header */}
               <div className={`p-6 border-b ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-rose-600 rounded-xl flex items-center justify-center">
                     <Check className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -323,9 +323,9 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
                     onChange={(e) => setSelectedProject(e.target.value)}
                     className={`w-full px-4 py-3 rounded-xl border transition-colors ${
                       isDark
-                        ? 'bg-gray-800 border-gray-700 text-white focus:border-violet-500'
-                        : 'bg-white border-gray-300 text-gray-900 focus:border-violet-500'
-                    } focus:outline-none focus:ring-2 focus:ring-violet-500/20`}
+                        ? 'bg-gray-800 border-gray-700 text-white focus:border-red-500'
+                        : 'bg-white border-gray-300 text-gray-900 focus:border-red-500'
+                    } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
                   >
                     <option value="">Selecteer een project</option>
                     {projects.map((project) => (
@@ -346,9 +346,9 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
                     onChange={(e) => setWerktype(e.target.value)}
                     className={`w-full px-4 py-3 rounded-xl border transition-colors ${
                       isDark
-                        ? 'bg-gray-800 border-gray-700 text-white focus:border-violet-500'
-                        : 'bg-white border-gray-300 text-gray-900 focus:border-violet-500'
-                    } focus:outline-none focus:ring-2 focus:ring-violet-500/20`}
+                        ? 'bg-gray-800 border-gray-700 text-white focus:border-red-500'
+                        : 'bg-white border-gray-300 text-gray-900 focus:border-red-500'
+                    } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
                   >
                     <option value="">Selecteer werktype</option>
                     {werktypes.map((type) => (
@@ -371,9 +371,9 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
                     placeholder="Optioneel: beschrijf wat je hebt gedaan..."
                     className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
                       isDark
-                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-violet-500'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-violet-500'
-                    } focus:outline-none focus:ring-2 focus:ring-violet-500/20`}
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-red-500'
+                    } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
                   />
                 </div>
               </div>
@@ -395,7 +395,7 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
                   disabled={!selectedProject || !werktype}
                   className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                     selectedProject && werktype
-                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40'
+                      ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-red-500/40'
                       : isDark
                         ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'

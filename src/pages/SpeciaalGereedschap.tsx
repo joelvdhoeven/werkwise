@@ -292,7 +292,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
       case 'beschikbaar':
         return 'bg-green-100 text-green-800';
       case 'in-gebruik':
-        return 'bg-violet-100 text-violet-800';
+        return 'bg-red-100 text-red-800';
       case 'onderhoud':
         return 'bg-amber-100 text-amber-800';
       default:
@@ -312,7 +312,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Loader2 className="animate-spin h-8 w-8 text-violet-600" />
+        <Loader2 className="animate-spin h-8 w-8 text-red-600" />
       </div>
     );
   }
@@ -334,13 +334,13 @@ const SpeciaalGereedschapPage: React.FC = () => {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className={`text-2xl font-bold flex items-center space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
-          <Wrench className="text-violet-600" />
+          <Wrench className="text-red-600" />
           <span>{t('specialGereedschap')}</span>
         </h1>
         {isAdmin && (
           <button
             onClick={handleNewItem}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors shadow-lg shadow-violet-500/25"
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors shadow-lg shadow-red-500/25"
           >
             <Plus size={16} />
             <span>{t('nieuwGereedschap')}</span>
@@ -357,7 +357,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
             placeholder={t('zoekGereedschap')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${
+            className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
               isDark
                 ? 'bg-gray-700 border-gray-600 text-white placeholder:text-gray-400'
                 : 'bg-white border-gray-300 text-gray-900'
@@ -386,7 +386,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   </p>
                   <button
                     onClick={handleNewItem}
-                    className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                    className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
                   >
                     <Plus size={16} />
                     <span>{t('nieuwGereedschap')}</span>
@@ -470,7 +470,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                           {/* Everyone can change status */}
                           <button
                             onClick={() => handleStatusChangeClick(item)}
-                            className="text-violet-600 hover:text-violet-900 flex items-center space-x-1"
+                            className="text-red-600 hover:text-red-900 flex items-center space-x-1"
                           >
                             <Edit size={16} />
                             <span>Status</span>
@@ -529,7 +529,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 project_id: e.target.value !== 'in-gebruik' ? '' : prev.project_id
               }))}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="beschikbaar">{t('beschikbaar')} - Terug naar depot</option>
               <option value="in-gebruik">{t('inGebruik')} - Op project boeken</option>
@@ -544,7 +544,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 value={statusFormData.project_id}
                 onChange={(e) => setStatusFormData(prev => ({ ...prev, project_id: e.target.value }))}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 <option value="">Selecteer een project...</option>
                 {projecten.map(project => (
@@ -568,7 +568,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+              className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
             >
               {saving && <Loader2 size={16} className="animate-spin" />}
               <span>Status Opslaan</span>
@@ -595,7 +595,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="Bijv. Hijskraan 50 ton"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
               </div>
               <div>
@@ -605,7 +605,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   value={formData.status}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 >
                   <option value="beschikbaar">{t('beschikbaar')}</option>
                   <option value="in-gebruik">{t('inGebruik')}</option>
@@ -623,7 +623,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 rows={3}
                 required
                 placeholder="Beschrijf het gereedschap en zijn gebruik..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
 
@@ -637,7 +637,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="Bijv. Hoofddepot, Werkplaats"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
               </div>
               <div>
@@ -646,7 +646,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   name="project_id"
                   value={formData.project_id}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 >
                   <option value="">{t('selecteerProject')}</option>
                   {projecten.map(project => (
@@ -667,7 +667,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   }}
                   dateFormat="dd/MM/yyyy"
                   locale={nl}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   wrapperClassName="w-full"
                   portalId="root-portal"
                 />
@@ -682,7 +682,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   }}
                   dateFormat="dd/MM/yyyy"
                   locale={nl}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   wrapperClassName="w-full"
                   portalId="root-portal"
                 />
@@ -698,7 +698,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   value={formData.foto_url}
                   onChange={handleInputChange}
                   placeholder="https://example.com/foto.jpg"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
                 <div className="px-3 py-2 bg-gray-50 border border-l-0 border-gray-300 rounded-r-md flex items-center">
                   <Camera size={16} className="text-gray-400" />
@@ -717,7 +717,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
                 {saving && <Loader2 size={16} className="animate-spin" />}
                 <span>{editingItem ? t('opslaan') : t('nieuwGereedschap')}</span>

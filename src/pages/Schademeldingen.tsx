@@ -182,7 +182,7 @@ const Schademeldingen: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -226,7 +226,7 @@ const Schademeldingen: React.FC = () => {
               setUploadedPhotos([]);
               setShowModal(true);
             }}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
           >
             <Plus size={18} />
             <span>{t('nieuweSchademelding')}</span>
@@ -288,7 +288,7 @@ const Schademeldingen: React.FC = () => {
                       {canManageAll && (
                         <button
                           onClick={() => handleDownloadPhotos(melding.foto_urls, melding.id)}
-                          className="flex items-center space-x-1 px-2 py-1 bg-violet-600 text-white rounded text-xs hover:bg-violet-700 transition-colors"
+                          className="flex items-center space-x-1 px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors"
                         >
                           <Download size={12} />
                           <span>Download</span>
@@ -313,7 +313,7 @@ const Schademeldingen: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEditMelding(melding)}
-                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-violet-600 text-white rounded text-sm hover:bg-violet-700 transition-colors"
+                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
                       >
                         <Edit size={14} />
                         <span>Bewerk</span>
@@ -374,7 +374,7 @@ const Schademeldingen: React.FC = () => {
               value={formData.typeItem}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="">{t('selecteerType')}</option>
               <option value="gereedschap">{t('gereedschap')}</option>
@@ -394,7 +394,7 @@ const Schademeldingen: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Bijv. Boormachine, Bedrijfsbus, Hout planken"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
 
@@ -417,7 +417,7 @@ const Schademeldingen: React.FC = () => {
               rows={4}
               placeholder={t('beschrijfSchade')}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
 
@@ -426,7 +426,7 @@ const Schademeldingen: React.FC = () => {
               {t('fotoS')} <span className="text-gray-500">({t('optioneel')})</span>
             </label>
             <div className="mt-1">
-              <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-violet-500 transition-colors">
+              <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-red-500 transition-colors">
                 <div className="space-y-1 text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400" />
                   <div className="text-sm text-gray-600">
@@ -486,7 +486,7 @@ const Schademeldingen: React.FC = () => {
             <button
               type="submit"
               disabled={uploading}
-              className="px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors disabled:bg-gray-400"
+              className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors disabled:bg-gray-400"
             >
               {editingMelding ? 'Bijwerken' : 'Opslaan'}
             </button>

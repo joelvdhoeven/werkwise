@@ -62,7 +62,7 @@ const Instellingen: React.FC = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -303,7 +303,7 @@ const Instellingen: React.FC = () => {
             onClick={() => setActiveTab('profiel')}
             className={`${
               activeTab === 'profiel'
-                ? 'border-violet-600 text-violet-600'
+                ? 'border-red-600 text-red-600'
                 : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
@@ -314,7 +314,7 @@ const Instellingen: React.FC = () => {
             onClick={() => setActiveTab('beveiliging')}
             className={`${
               activeTab === 'beveiliging'
-                ? 'border-violet-600 text-violet-600'
+                ? 'border-red-600 text-red-600'
                 : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
@@ -325,7 +325,7 @@ const Instellingen: React.FC = () => {
             onClick={() => setActiveTab('afwezigheid')}
             className={`${
               activeTab === 'afwezigheid'
-                ? 'border-violet-600 text-violet-600'
+                ? 'border-red-600 text-red-600'
                 : isDark ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
@@ -346,7 +346,7 @@ const Instellingen: React.FC = () => {
                 type="text"
                 value={profileData.naam}
                 onChange={(e) => setProfileData({ ...profileData, naam: e.target.value })}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
               />
             </div>
 
@@ -364,7 +364,7 @@ const Instellingen: React.FC = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
               >
                 <Save size={16} />
                 <span>{t('opslaan')}</span>
@@ -387,7 +387,7 @@ const Instellingen: React.FC = () => {
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                   required
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
                 <button
                   type="button"
@@ -407,7 +407,7 @@ const Instellingen: React.FC = () => {
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   required
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
                 <button
                   type="button"
@@ -427,7 +427,7 @@ const Instellingen: React.FC = () => {
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                   required
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
                 <button
                   type="button"
@@ -442,7 +442,7 @@ const Instellingen: React.FC = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
               >
                 <Save size={16} />
                 <span>{t('wachtwoordWijzigen')}</span>
@@ -459,13 +459,13 @@ const Instellingen: React.FC = () => {
           <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-violet-600" />
+                <Calendar size={20} className="text-red-600" />
                 <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Afwezigheid Aanvragen</h2>
               </div>
               {!showVacationForm && (
                 <button
                   onClick={() => setShowVacationForm(true)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
                 >
                   <Plus size={16} />
                   <span>Nieuwe Aanvraag</span>
@@ -481,7 +481,7 @@ const Instellingen: React.FC = () => {
                     <select
                       value={vacationFormData.type}
                       onChange={(e) => setVacationFormData({ ...vacationFormData, type: e.target.value as any })}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                     >
                       <option value="vakantie">Vakantie</option>
                       <option value="ziekte">Ziekte</option>
@@ -496,7 +496,7 @@ const Instellingen: React.FC = () => {
                       type="date"
                       value={vacationFormData.start_date}
                       onChange={(e) => setVacationFormData({ ...vacationFormData, start_date: e.target.value })}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                       required
                     />
                   </div>
@@ -506,7 +506,7 @@ const Instellingen: React.FC = () => {
                       type="date"
                       value={vacationFormData.end_date}
                       onChange={(e) => setVacationFormData({ ...vacationFormData, end_date: e.target.value })}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                       required
                     />
                   </div>
@@ -518,7 +518,7 @@ const Instellingen: React.FC = () => {
                     onChange={(e) => setVacationFormData({ ...vacationFormData, reason: e.target.value })}
                     rows={3}
                     placeholder="Voeg een toelichting toe..."
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'}`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'}`}
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -534,7 +534,7 @@ const Instellingen: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
                   >
                     <Save size={16} />
                     <span>Indienen</span>
@@ -550,7 +550,7 @@ const Instellingen: React.FC = () => {
 
             {loadingVacation ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
               </div>
             ) : vacationRequests.filter(r => r.user_id === user?.id).length === 0 ? (
               <p className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -610,13 +610,13 @@ const Instellingen: React.FC = () => {
           {hasPermission('manage_settings') && (
             <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center gap-2 mb-4">
-                <Clock size={20} className="text-violet-600" />
+                <Clock size={20} className="text-red-600" />
                 <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Alle Aanvragen (Admin)</h2>
               </div>
 
               {loadingVacation ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                 </div>
               ) : vacationRequests.length === 0 ? (
                 <p className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -634,7 +634,7 @@ const Instellingen: React.FC = () => {
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className={`font-semibold ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                              <span className={`font-semibold ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                                 {request.profiles?.naam || 'Onbekend'}
                               </span>
                               <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>

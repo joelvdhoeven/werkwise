@@ -344,7 +344,7 @@ const Gebruikers: React.FC = () => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin':
-        return isDark ? 'bg-violet-900/50 text-violet-300' : 'bg-violet-100 text-violet-800';
+        return isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-800';
       case 'kantoorpersoneel':
         return isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-800';
       case 'medewerker':
@@ -359,7 +359,7 @@ const Gebruikers: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -380,12 +380,12 @@ const Gebruikers: React.FC = () => {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className={`text-2xl font-bold flex items-center space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
-          <Users className="text-violet-600" />
+          <Users className="text-red-600" />
           <span>{t('userOverview')}</span>
         </h1>
         <button
           onClick={handleNewUser}
-          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
         >
           <Plus size={16} />
           <span>{t('addNewUser')}</span>
@@ -402,14 +402,14 @@ const Gebruikers: React.FC = () => {
               placeholder={t('searchUsers')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+              className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
             />
           </div>
           <div>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="">{t('allRoles')}</option>
               <option value="admin">{t('administrator')}</option>
@@ -441,7 +441,7 @@ const Gebruikers: React.FC = () => {
               {!searchTerm && !roleFilter && (
                 <button
                   onClick={handleNewUser}
-                  className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+                  className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
                 >
                   <Plus size={16} />
                   <span>{t('addFirstUser')}</span>
@@ -472,7 +472,7 @@ const Gebruikers: React.FC = () => {
                 </thead>
                 <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                   {filteredUsers.map((userItem) => (
-                    <tr key={userItem.id} className={userItem.id === user?.id ? (isDark ? 'bg-violet-900/20' : 'bg-violet-50') : ''}>
+                    <tr key={userItem.id} className={userItem.id === user?.id ? (isDark ? 'bg-red-900/20' : 'bg-red-50') : ''}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -484,7 +484,7 @@ const Gebruikers: React.FC = () => {
                             <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                               {userItem.naam}
                               {userItem.id === user?.id && (
-                                <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${isDark ? 'bg-violet-900/50 text-violet-300' : 'bg-violet-100 text-violet-800'}`}>
+                                <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-800'}`}>
                                   {t('you')}
                                 </span>
                               )}
@@ -507,7 +507,7 @@ const Gebruikers: React.FC = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditUser(userItem)}
-                            className="text-violet-600 hover:text-violet-900 flex items-center space-x-1"
+                            className="text-red-600 hover:text-red-900 flex items-center space-x-1"
                           >
                             <Edit size={16} />
                             <span>{t('bewerken')}</span>
@@ -552,7 +552,7 @@ const Gebruikers: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder={t('enterUserName')}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
           </div>
@@ -570,7 +570,7 @@ const Gebruikers: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder={t('enterUserEmail')}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
           </div>
@@ -586,7 +586,7 @@ const Gebruikers: React.FC = () => {
                 value={formData.role}
                 onChange={handleInputChange}
                 required
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 appearance-none bg-white"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 appearance-none bg-white"
               >
                 <option value="admin">{t('administrator')}</option>
                 <option value="kantoorpersoneel">{t('officeStaff')}</option>
@@ -610,7 +610,7 @@ const Gebruikers: React.FC = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
               </div>
 
@@ -626,7 +626,7 @@ const Gebruikers: React.FC = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
               </div>
             </div>
@@ -645,7 +645,7 @@ const Gebruikers: React.FC = () => {
                   onChange={handleInputChange}
                   required={!editingUser}
                   placeholder={t('enterPassword')}
-                  className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
                 <button
                   type="button"
@@ -670,7 +670,7 @@ const Gebruikers: React.FC = () => {
             <button 
               type="submit"
               disabled={mutationLoading}
-              className="px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {mutationLoading ? t('saving') : (editingUser ? t('updateUser') : t('createUser'))}
             </button>

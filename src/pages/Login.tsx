@@ -131,12 +131,12 @@ const Login: React.FC = () => {
     <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-500 ${
       isDark
         ? 'bg-gray-950'
-        : 'bg-gradient-to-br from-violet-50 via-white to-fuchsia-50'
+        : 'bg-gradient-to-br from-red-50 via-white to-rose-50'
     }`}>
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-violet-900/20' : 'bg-violet-200/50'}`} />
-        <div className={`absolute top-1/2 -left-40 w-80 h-80 rounded-full blur-3xl ${isDark ? 'bg-fuchsia-900/20' : 'bg-fuchsia-200/50'}`} />
+        <div className={`absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-red-900/20' : 'bg-red-200/50'}`} />
+        <div className={`absolute top-1/2 -left-40 w-80 h-80 rounded-full blur-3xl ${isDark ? 'bg-rose-900/20' : 'bg-rose-200/50'}`} />
         <div className={`absolute bottom-0 right-1/4 w-64 h-64 rounded-full blur-3xl ${isDark ? 'bg-pink-900/10' : 'bg-pink-200/30'}`} />
       </div>
 
@@ -145,7 +145,7 @@ const Login: React.FC = () => {
         <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className={`inline-flex items-center space-x-2 transition-colors group ${isDark ? 'text-gray-400 hover:text-violet-400' : 'text-gray-600 hover:text-violet-600'}`}
+            className={`inline-flex items-center space-x-2 transition-colors group ${isDark ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-600'}`}
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             <span>{language === 'nl' ? 'Terug naar Home' : language === 'pl' ? 'Powrót do strony głównej' : 'Back to Home'}</span>
@@ -168,7 +168,7 @@ const Login: React.FC = () => {
               </p>
               <button
                 onClick={() => setShowForgotPassword(false)}
-                className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white py-2.5 px-4 rounded-xl hover:from-violet-700 hover:to-fuchsia-700 transition-colors font-medium"
+                className="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white py-2.5 px-4 rounded-xl hover:from-red-700 hover:to-rose-700 transition-colors font-medium"
               >
                 {language === 'nl' ? 'Sluiten' : language === 'pl' ? 'Zamknij' : 'Close'}
               </button>
@@ -193,8 +193,8 @@ const Login: React.FC = () => {
             disabled={isLoading}
             className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 border-2 ${
               isDark
-                ? 'border-violet-500/50 text-violet-400 hover:bg-violet-500/10 hover:border-violet-400'
-                : 'border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400'
+                ? 'border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-400'
+                : 'border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400'
             } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isLoading ? (
@@ -222,8 +222,8 @@ const Login: React.FC = () => {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm transition-all ${
                   language === lang.code
                     ? isDark
-                      ? 'bg-violet-500/20 text-violet-400 font-medium'
-                      : 'bg-violet-100 text-violet-700 font-medium'
+                      ? 'bg-red-500/20 text-red-400 font-medium'
+                      : 'bg-red-100 text-red-700 font-medium'
                     : isDark
                       ? 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

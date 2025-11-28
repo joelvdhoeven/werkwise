@@ -443,7 +443,7 @@ const FinancieelDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -458,11 +458,11 @@ const FinancieelDashboard: React.FC = () => {
 
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <Filter size={20} className="text-violet-600" />
+            <Filter size={20} className="text-red-600" />
             <select
               value={viewMode}
               onChange={(e) => handleViewModeChange(e.target.value as ViewMode)}
-              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="total">Totale Omzet</option>
               <option value="project">Per Project</option>
@@ -474,7 +474,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="">Alle Projecten</option>
               {projects.map(project => (
@@ -489,7 +489,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="">Alle Medewerkers</option>
               {employees.map(employee => (
@@ -501,11 +501,11 @@ const FinancieelDashboard: React.FC = () => {
           )}
 
           <div className="flex items-center gap-2">
-            <Calendar size={20} className="text-violet-600" />
+            <Calendar size={20} className="text-red-600" />
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               {timeRangeOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -527,8 +527,8 @@ const FinancieelDashboard: React.FC = () => {
                 {formatCurrency(financialData.totalRevenue)}
               </p>
             </div>
-            <div className="p-3 bg-violet-100 rounded-lg">
-              <TrendingUp size={24} className="text-violet-600" />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <TrendingUp size={24} className="text-red-600" />
             </div>
           </div>
         </div>
@@ -541,8 +541,8 @@ const FinancieelDashboard: React.FC = () => {
                 {formatCurrency(financialData.totalCosts)}
               </p>
             </div>
-            <div className="p-3 bg-violet-100 rounded-lg">
-              <TrendingUp size={24} className="text-violet-600" style={{ transform: 'rotate(180deg)' }} />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <TrendingUp size={24} className="text-red-600" style={{ transform: 'rotate(180deg)' }} />
             </div>
           </div>
         </div>
@@ -551,16 +551,16 @@ const FinancieelDashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Winst</p>
-              <p className={`text-2xl font-bold mt-1 ${financialData.profit >= 0 ? 'text-violet-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
+              <p className={`text-2xl font-bold mt-1 ${financialData.profit >= 0 ? 'text-red-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
                 {formatCurrency(financialData.profit)}
               </p>
             </div>
-            <div className={`p-3 rounded-lg ${financialData.profit >= 0 ? 'bg-violet-100' : 'bg-gray-100'}`}>
-              <DollarSign size={24} className={financialData.profit >= 0 ? 'text-violet-600' : (isDark ? 'text-gray-300' : 'text-gray-600')} />
+            <div className={`p-3 rounded-lg ${financialData.profit >= 0 ? 'bg-red-100' : 'bg-gray-100'}`}>
+              <DollarSign size={24} className={financialData.profit >= 0 ? 'text-red-600' : (isDark ? 'text-gray-300' : 'text-gray-600')} />
             </div>
           </div>
           <div className="mt-2">
-            <span className={`text-sm font-medium ${financialData.profitMargin >= 0 ? 'text-violet-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
+            <span className={`text-sm font-medium ${financialData.profitMargin >= 0 ? 'text-red-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
               {financialData.profitMargin.toFixed(1)}% marge
             </span>
           </div>
@@ -574,8 +574,8 @@ const FinancieelDashboard: React.FC = () => {
                 {financialData.hoursWorked.toFixed(1)}
               </p>
             </div>
-            <div className="p-3 bg-violet-100 rounded-lg">
-              <TrendingUp size={24} className="text-violet-600" />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <TrendingUp size={24} className="text-red-600" />
             </div>
           </div>
           <div className="mt-2">

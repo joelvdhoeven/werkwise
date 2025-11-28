@@ -117,7 +117,7 @@ const ModuleBeheer: React.FC = () => {
       <div className="space-y-6">
         <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex items-center gap-2 mb-4">
-            <Package size={20} className="text-violet-600" />
+            <Package size={20} className="text-red-600" />
             <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Module Beheer</h2>
           </div>
           <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -137,7 +137,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_financial_dashboard: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -153,7 +153,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_time_registration: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -169,7 +169,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_inventory: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -185,7 +185,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_damage_reports: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -201,7 +201,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_special_tools: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -217,7 +217,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_invoicing: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -233,7 +233,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_hourly_rates: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -249,7 +249,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_notifications: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
 
@@ -265,7 +265,7 @@ const ModuleBeheer: React.FC = () => {
                   onChange={(e) => setModuleSettings({ ...moduleSettings, module_email_notifications: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
               </label>
             </div>
           </div>
@@ -273,7 +273,7 @@ const ModuleBeheer: React.FC = () => {
 
         <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex items-center gap-2 mb-4">
-            <SettingsIcon size={20} className="text-violet-600" />
+            <SettingsIcon size={20} className="text-red-600" />
             <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>CSV Export/Import Instellingen</h2>
           </div>
           <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -295,7 +295,7 @@ const ModuleBeheer: React.FC = () => {
                   onClick={() => setModuleSettings({ ...moduleSettings, csv_separator: ';' })}
                   className={`px-4 py-2 rounded-md transition-colors ${
                     moduleSettings.csv_separator === ';'
-                      ? 'bg-violet-600 text-white'
+                      ? 'bg-red-600 text-white'
                       : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -305,7 +305,7 @@ const ModuleBeheer: React.FC = () => {
                   onClick={() => setModuleSettings({ ...moduleSettings, csv_separator: ',' })}
                   className={`px-4 py-2 rounded-md transition-colors ${
                     moduleSettings.csv_separator === ','
-                      ? 'bg-violet-600 text-white'
+                      ? 'bg-red-600 text-white'
                       : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -319,7 +319,7 @@ const ModuleBeheer: React.FC = () => {
         <div className="flex justify-end">
           <button
             onClick={saveModuleSettings}
-            className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors"
+            className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
           >
             <Save size={16} />
             <span>Instellingen Opslaan</span>

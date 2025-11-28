@@ -45,10 +45,10 @@ const Retourboekingen: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className={`text-2xl font-bold flex items-center space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
-          <Package className="text-violet-600" />
+          <Package className="text-red-600" />
           <span>{t('retourboekingen')}</span>
         </h1>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 transition-colors">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors">
           <Plus size={16} />
           <span>{t('nieuw')}</span>
         </button>
@@ -63,7 +63,7 @@ const Retourboekingen: React.FC = () => {
             placeholder={t('zoekRetourItems')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+            className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
           />
         </div>
       </div>

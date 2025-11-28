@@ -824,7 +824,7 @@ const Urenregistratie: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -857,16 +857,16 @@ const Urenregistratie: React.FC = () => {
               onClick={() => handleSelectOption('registreren')}
               className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
                 isDark
-                  ? 'bg-gradient-to-br from-violet-900/50 to-fuchsia-900/50 border-2 border-violet-600/50 hover:border-violet-500'
-                  : 'bg-gradient-to-br from-violet-50 to-fuchsia-50 border-2 border-violet-200 hover:border-violet-400'
+                  ? 'bg-gradient-to-br from-red-900/50 to-rose-900/50 border-2 border-red-600/50 hover:border-red-500'
+                  : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-200 hover:border-red-400'
               }`}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
                   isDark
-                    ? 'bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/30'
-                    : 'bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                    ? 'bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-500/30'
+                    : 'bg-gradient-to-br from-red-500 to-rose-500 shadow-lg shadow-red-500/30'
                 }`}>
                   <FileText className="h-10 w-10 text-white" />
                 </div>
@@ -876,7 +876,7 @@ const Urenregistratie: React.FC = () => {
                 <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Registreer je gewerkte uren op een project
                 </p>
-                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                   <span>Start</span>
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -962,7 +962,7 @@ const Urenregistratie: React.FC = () => {
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
               activeTab === 'registreren'
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
                 : isDark
                   ? 'text-gray-400 hover:text-white hover:bg-gray-800'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -978,7 +978,7 @@ const Urenregistratie: React.FC = () => {
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
               activeTab === 'timer'
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
                 : isDark
                   ? 'text-gray-400 hover:text-white hover:bg-gray-800'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -995,7 +995,7 @@ const Urenregistratie: React.FC = () => {
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
               activeTab === 'overzicht'
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
                 : isDark
                   ? 'text-gray-400 hover:text-white hover:bg-gray-800'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -1014,10 +1014,10 @@ const Urenregistratie: React.FC = () => {
       )}
       
       {formError && (
-        <div className="mb-4 p-4 bg-violet-100 border border-violet-400 text-violet-700 rounded-md">
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-violet-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
@@ -1047,7 +1047,7 @@ const Urenregistratie: React.FC = () => {
                       value={formData.datum}
                       onChange={handleInputChange}
                       required
-                      className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                      className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -1061,7 +1061,7 @@ const Urenregistratie: React.FC = () => {
                           setSelectedProject(project || null);
                         }}
                         required
-                        className={`flex-1 w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                        className={`flex-1 w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                       >
                         <option value="">Selecteer een project</option>
                         {projecten.map((project: any) => (
@@ -1073,7 +1073,7 @@ const Urenregistratie: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmProjectModal(true)}
-                        className="w-full sm:w-auto px-3 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors flex items-center justify-center"
+                        className="w-full sm:w-auto px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center"
                         title="Snel nieuw project aanmaken"
                       >
                         <Plus size={20} />
@@ -1098,7 +1098,7 @@ const Urenregistratie: React.FC = () => {
                     min="0"
                     max="100"
                     placeholder="0-100"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
                 </div>
@@ -1121,7 +1121,7 @@ const Urenregistratie: React.FC = () => {
                     min="0"
                     step="0.1"
                     placeholder="0"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel - vul alleen in indien van toepassing</p>
                 </div>
@@ -1133,7 +1133,7 @@ const Urenregistratie: React.FC = () => {
                   <button
                     type="button"
                     onClick={addWorkLine}
-                    className="flex items-center gap-1 px-3 py-1 bg-violet-600 text-white text-sm rounded-md hover:bg-violet-700"
+                    className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
                   >
                     <Plus size={16} />
                     Regel toevoegen
@@ -1149,7 +1149,7 @@ const Urenregistratie: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => removeWorkLine(index)}
-                            className="text-violet-600 hover:text-violet-800"
+                            className="text-red-600 hover:text-red-800"
                           >
                             <Minus size={18} />
                           </button>
@@ -1163,7 +1163,7 @@ const Urenregistratie: React.FC = () => {
                             value={line.werktype}
                             onChange={(e) => updateWorkLine(index, 'werktype', e.target.value)}
                             required
-                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                           >
                             <option value="">{t('selecteerType')}</option>
                             <option value="projectbasis">{t('projectbasis')}</option>
@@ -1182,7 +1182,7 @@ const Urenregistratie: React.FC = () => {
                             min="0"
                             required
                             placeholder="bv. 8 of 4.5"
-                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                           />
                         </div>
 
@@ -1194,7 +1194,7 @@ const Urenregistratie: React.FC = () => {
                             onChange={(e) => updateWorkLine(index, 'werkomschrijving', e.target.value)}
                             required
                             placeholder="Beschrijf het uitgevoerde werk"
-                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                            className={`w-full px-3 py-2 text-sm border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                           />
                         </div>
                       </div>
@@ -1237,7 +1237,7 @@ const Urenregistratie: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => removeMaterialFromWorkLine(index, matIdx)}
-                                      className="text-violet-600 hover:text-violet-800"
+                                      className="text-red-600 hover:text-red-800"
                                     >
                                       <X size={16} />
                                     </button>
@@ -1336,7 +1336,7 @@ const Urenregistratie: React.FC = () => {
                 <button
                   type="submit"
                   disabled={mutationLoading}
-                  className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                  className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   {mutationLoading ? 'Opslaan...' : t('registratieOpslaan')}
                 </button>
@@ -1362,7 +1362,7 @@ const Urenregistratie: React.FC = () => {
               </ProtectedRoute>
               <button
                 onClick={handleNewRegistration}
-                className="flex items-center space-x-2 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 <Plus size={16} />
                 <span>{t('nieuweRegistratie')}</span>
@@ -1379,7 +1379,7 @@ const Urenregistratie: React.FC = () => {
                   <select
                     value={userFilter}
                     onChange={(e) => setUserFilter(e.target.value)}
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Alle gebruikers</option>
                     {gebruikers.map((gebruiker: any) => (
@@ -1395,7 +1395,7 @@ const Urenregistratie: React.FC = () => {
                 <select
                   value={dateRangeFilter}
                   onChange={(e) => handleDateRangeChange(e.target.value)}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="custom">Aangepast</option>
                   <option value="deze-week">Deze week</option>
@@ -1426,7 +1426,7 @@ const Urenregistratie: React.FC = () => {
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="alleTypes">{t('alleTypes')}</option>
                   <option value="projectbasis">{t('projectbasis')}</option>
@@ -1441,7 +1441,7 @@ const Urenregistratie: React.FC = () => {
                 placeholder={t('zoekProjectOfOrdernummer')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full md:w-80 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full md:w-80 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
           </div>
@@ -1594,7 +1594,7 @@ const Urenregistratie: React.FC = () => {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className={`px-3 py-1 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                    className={`px-3 py-1 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -1648,7 +1648,7 @@ const Urenregistratie: React.FC = () => {
                           onClick={() => setCurrentPage(pageNumber)}
                           className={`px-3 py-1 border rounded-md ${
                             currentPage === pageNumber
-                              ? 'bg-violet-600 text-white border-violet-600'
+                              ? 'bg-red-600 text-white border-red-600'
                               : isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
                           }`}
                         >
@@ -1696,7 +1696,7 @@ const Urenregistratie: React.FC = () => {
                   value={formData.datum}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
               <div>
@@ -1707,7 +1707,7 @@ const Urenregistratie: React.FC = () => {
                   value={formData.ordernummer}
                   onChange={handleInputChange}
                   placeholder={t('projectOrdernummerPlaceholder')}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             </div>
@@ -1719,7 +1719,7 @@ const Urenregistratie: React.FC = () => {
                   value={formData.werktype}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">{t('selecteerType')}</option>
                   <option value="projectbasis">{t('projectbasis')}</option>
@@ -1738,7 +1738,7 @@ const Urenregistratie: React.FC = () => {
                   min="0"
                   required
                   placeholder="bv. 8 of 4.5"
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             </div>
@@ -1754,7 +1754,7 @@ const Urenregistratie: React.FC = () => {
                   onChange={handleInputChange}
                   required={formData.werktype === 'meerwerk' || formData.werktype === 'regie'}
                   placeholder={t('verbruiktMateriaalPlaceholder')}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             )}
@@ -1770,7 +1770,7 @@ const Urenregistratie: React.FC = () => {
               min="0"
               max="100"
               placeholder="0-100"
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
             <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel: geef aan hoeveel procent van het project is voltooid</p>
           </div>
@@ -1784,7 +1784,7 @@ const Urenregistratie: React.FC = () => {
               rows={4}
               required
               placeholder={formData.werktype === 'meerwerk' ? t('beschrijfMeerwerk') : t('beschrijfWerk')}
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
 
@@ -1799,7 +1799,7 @@ const Urenregistratie: React.FC = () => {
             <button
               type="submit"
               disabled={mutationLoading}
-              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               {mutationLoading ? 'Opslaan...' : t('registratieOpslaan')}
             </button>
@@ -1837,10 +1837,10 @@ const Urenregistratie: React.FC = () => {
         </div>
         
         {newProjectModalError && (
-          <div className="mb-4 p-4 bg-violet-100 border border-violet-400 text-violet-700 rounded-md">
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-violet-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -1861,7 +1861,7 @@ const Urenregistratie: React.FC = () => {
               onChange={handleNewProjectDetailsChange}
               required
               placeholder="Bijv. Renovatie kantoorpand"
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
 
@@ -1874,7 +1874,7 @@ const Urenregistratie: React.FC = () => {
               onChange={handleNewProjectDetailsChange}
               required
               placeholder="Bijv. Amsterdam, Damrak 1"
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
 
@@ -1887,7 +1887,7 @@ const Urenregistratie: React.FC = () => {
               rows={3}
               required
               placeholder={t('beschrijfProject')}
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
 
@@ -1905,7 +1905,7 @@ const Urenregistratie: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               {t('projectAanmakenEnRegistreren')}
             </button>
@@ -1932,7 +1932,7 @@ const Urenregistratie: React.FC = () => {
                 value={editingRegistration.datum}
                 onChange={handleEditInputChange}
                 required
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
 
@@ -1943,7 +1943,7 @@ const Urenregistratie: React.FC = () => {
                 value={editingRegistration.project_id || ''}
                 onChange={handleEditInputChange}
                 required
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">Selecteer een project</option>
                 {projecten.map((project: any) => (
@@ -1961,7 +1961,7 @@ const Urenregistratie: React.FC = () => {
                 value={editingRegistration.werktype}
                 onChange={handleEditInputChange}
                 required
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">{t('selecteerType')}</option>
                 <option value="projectbasis">{t('projectbasis')}</option>
@@ -1982,7 +1982,7 @@ const Urenregistratie: React.FC = () => {
                 min="0.5"
                 max="24"
                 placeholder={t('aantalUrenPlaceholder')}
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
 
@@ -1995,7 +1995,7 @@ const Urenregistratie: React.FC = () => {
                   value={editingRegistration.locatie}
                   onChange={handleEditInputChange}
                   placeholder={t('locatiePlaceholder')}
-                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             )}
@@ -2010,7 +2010,7 @@ const Urenregistratie: React.FC = () => {
                 min="0"
                 max="100"
                 placeholder="0-100"
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
               <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
             </div>
@@ -2033,7 +2033,7 @@ const Urenregistratie: React.FC = () => {
                 min="0"
                 step="0.1"
                 placeholder="0"
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
               <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel - vul alleen in indien van toepassing</p>
             </div>
@@ -2047,7 +2047,7 @@ const Urenregistratie: React.FC = () => {
                 rows={4}
                 required
                 placeholder={t('werkomschrijvingPlaceholder')}
-                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
 
@@ -2064,7 +2064,7 @@ const Urenregistratie: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 {t('opslaan')}
               </button>
@@ -2096,7 +2096,7 @@ const Urenregistratie: React.FC = () => {
                 setShowConfirmProjectModal(false);
                 setShowQuickProjectModal(true);
               }}
-              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               Ja
             </button>
@@ -2124,7 +2124,7 @@ const Urenregistratie: React.FC = () => {
               value={quickProjectName}
               onChange={(e) => setQuickProjectName(e.target.value)}
               placeholder="Bijv: Renovatie Hoofdstraat 123"
-              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500`}
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleQuickProjectCreate();
@@ -2145,7 +2145,7 @@ const Urenregistratie: React.FC = () => {
             </button>
             <button
               onClick={handleQuickProjectCreate}
-              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               Aanmaken
             </button>
@@ -2162,8 +2162,8 @@ const Urenregistratie: React.FC = () => {
         <div className="py-8">
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 border-4 border-violet-200 rounded-full"></div>
-              <div className="absolute top-0 left-0 w-20 h-20 border-4 border-violet-600 rounded-full border-t-transparent animate-spin"></div>
+              <div className="w-20 h-20 border-4 border-red-200 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-20 h-20 border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
             <div className="text-center space-y-2">
               <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Project wordt aangemaakt...</h3>

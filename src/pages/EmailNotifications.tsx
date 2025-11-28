@@ -326,7 +326,7 @@ const EmailNotifications: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -343,7 +343,7 @@ const EmailNotifications: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'} flex items-center space-x-3`}>
-          <Mail className="text-violet-600" />
+          <Mail className="text-red-600" />
           <span>E-mail Notificaties</span>
         </h1>
       </div>
@@ -356,7 +356,7 @@ const EmailNotifications: React.FC = () => {
               onClick={() => setActiveTab('templates')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'templates'
-                  ? 'border-violet-500 text-violet-600'
+                  ? 'border-red-500 text-red-600'
                   : `border-transparent ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`
               }`}
             >
@@ -369,7 +369,7 @@ const EmailNotifications: React.FC = () => {
               onClick={() => setActiveTab('schedules')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'schedules'
-                  ? 'border-violet-500 text-violet-600'
+                  ? 'border-red-500 text-red-600'
                   : `border-transparent ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`
               }`}
             >
@@ -382,7 +382,7 @@ const EmailNotifications: React.FC = () => {
               onClick={() => setActiveTab('logs')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'logs'
-                  ? 'border-violet-500 text-violet-600'
+                  ? 'border-red-500 text-red-600'
                   : `border-transparent ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`
               }`}
             >
@@ -406,7 +406,7 @@ const EmailNotifications: React.FC = () => {
                     setEditingTemplate(null);
                     setShowTemplateModal(true);
                   }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   <Plus size={16} />
                   <span>Nieuwe Template</span>
@@ -415,7 +415,7 @@ const EmailNotifications: React.FC = () => {
 
               {templatesLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -448,13 +448,13 @@ const EmailNotifications: React.FC = () => {
                         <div className="flex space-x-2 ml-4">
                           <button
                             onClick={() => handleEditTemplate(template)}
-                            className="text-violet-600 hover:text-violet-900"
+                            className="text-red-600 hover:text-red-900"
                           >
                             <Edit size={16} />
                           </button>
                           <button
                             onClick={() => handleDeleteTemplate(template.id)}
-                            className="text-violet-600 hover:text-violet-900"
+                            className="text-red-600 hover:text-red-900"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -478,7 +478,7 @@ const EmailNotifications: React.FC = () => {
                     setEditingSchedule(null);
                     setShowScheduleModal(true);
                   }}
-                  className="flex items-center space-x-2 px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   <Plus size={16} />
                   <span>Nieuw Schema</span>
@@ -487,7 +487,7 @@ const EmailNotifications: React.FC = () => {
 
               {schedulesLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -538,7 +538,7 @@ const EmailNotifications: React.FC = () => {
                           <button
                             onClick={() => handleSendTestEmail(schedule)}
                             disabled={sendingTestEmail === schedule.id}
-                            className="flex items-center space-x-1 px-3 py-1 bg-violet-500 text-white rounded-md hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            className="flex items-center space-x-1 px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             title="Verstuur test email nu"
                           >
                             {sendingTestEmail === schedule.id ? (
@@ -550,13 +550,13 @@ const EmailNotifications: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleEditSchedule(schedule)}
-                            className="text-violet-600 hover:text-violet-900"
+                            className="text-red-600 hover:text-red-900"
                           >
                             <Edit size={16} />
                           </button>
                           <button
                             onClick={() => handleDeleteSchedule(schedule.id)}
-                            className="text-violet-600 hover:text-violet-900"
+                            className="text-red-600 hover:text-red-900"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -576,7 +576,7 @@ const EmailNotifications: React.FC = () => {
 
               {logsLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -616,14 +616,14 @@ const EmailNotifications: React.FC = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               log.status === 'sent' ? 'bg-green-100 text-green-800' :
-                              log.status === 'failed' ? 'bg-violet-100 text-violet-800' :
+                              log.status === 'failed' ? 'bg-red-100 text-red-800' :
                               'bg-yellow-100 text-yellow-800'
                             }`}>
                               {log.status === 'sent' ? 'Verzonden' :
                                log.status === 'failed' ? 'Mislukt' : 'In behandeling'}
                             </span>
                             {log.error && (
-                              <div className="text-xs text-violet-600 mt-1" title={log.error}>
+                              <div className="text-xs text-red-600 mt-1" title={log.error}>
                                 Fout: {log.error.substring(0, 50)}...
                               </div>
                             )}
@@ -657,7 +657,7 @@ const EmailNotifications: React.FC = () => {
                 value={templateForm.name}
                 onChange={(e) => setTemplateForm(prev => ({ ...prev, name: e.target.value }))}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
             <div>
@@ -666,7 +666,7 @@ const EmailNotifications: React.FC = () => {
                 value={templateForm.type}
                 onChange={(e) => setTemplateForm(prev => ({ ...prev, type: e.target.value as 'missing_hours' | 'weekly_overview' }))}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 <option value="missing_hours">Ontbrekende Uren</option>
                 <option value="weekly_overview">Week Overzicht</option>
@@ -682,7 +682,7 @@ const EmailNotifications: React.FC = () => {
               onChange={(e) => setTemplateForm(prev => ({ ...prev, subject: e.target.value }))}
               required
               placeholder="Bijv: Ben je vergeten je uren in te vullen?"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
 
@@ -694,7 +694,7 @@ const EmailNotifications: React.FC = () => {
               rows={8}
               required
               placeholder={`Gebruik {{user_name}}, {{hours_filled}}, {{total_hours}}, etc. voor dynamische waarden`}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
             <div className={`mt-2 text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               <p><strong>Beschikbare placeholders:</strong></p>
@@ -709,7 +709,7 @@ const EmailNotifications: React.FC = () => {
               id="enabled"
               checked={templateForm.enabled}
               onChange={(e) => setTemplateForm(prev => ({ ...prev, enabled: e.target.checked }))}
-              className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+              className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label htmlFor="enabled" className={`ml-2 block text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Template actief
@@ -726,7 +726,7 @@ const EmailNotifications: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               <Save size={16} className="inline mr-2" />
               {editingTemplate ? 'Bijwerken' : 'Aanmaken'}
@@ -748,7 +748,7 @@ const EmailNotifications: React.FC = () => {
               value={scheduleForm.template_id}
               onChange={(e) => setScheduleForm(prev => ({ ...prev, template_id: e.target.value }))}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="">Selecteer template</option>
               {templates.filter(t => t.enabled).map(template => (
@@ -764,7 +764,7 @@ const EmailNotifications: React.FC = () => {
                 value={scheduleForm.schedule_type}
                 onChange={(e) => setScheduleForm(prev => ({ ...prev, schedule_type: e.target.value as 'weekly' | 'daily' }))}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 <option value="daily">Dagelijks</option>
                 <option value="weekly">Wekelijks</option>
@@ -778,7 +778,7 @@ const EmailNotifications: React.FC = () => {
                   value={scheduleForm.day_of_week}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, day_of_week: parseInt(e.target.value) }))}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 >
                   {dayNames.map((day, index) => (
                     <option key={index} value={index}>{day}</option>
@@ -793,7 +793,7 @@ const EmailNotifications: React.FC = () => {
                 value={scheduleForm.hour}
                 onChange={(e) => setScheduleForm(prev => ({ ...prev, hour: parseInt(e.target.value) }))}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i}>{i}:00</option>
@@ -811,7 +811,7 @@ const EmailNotifications: React.FC = () => {
                   value="roles"
                   checked={scheduleForm.target_type === 'roles'}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, target_type: e.target.value as 'roles' | 'users' }))}
-                  className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300"
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
                 />
                 <span className={`ml-2 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Doelgroep (Rollen)</span>
               </label>
@@ -821,7 +821,7 @@ const EmailNotifications: React.FC = () => {
                   value="users"
                   checked={scheduleForm.target_type === 'users'}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, target_type: e.target.value as 'roles' | 'users' }))}
-                  className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300"
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
                 />
                 <span className={`ml-2 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Specifieke Medewerkers</span>
               </label>
@@ -847,7 +847,7 @@ const EmailNotifications: React.FC = () => {
                           }));
                         }
                       }}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                     />
                     <span className={`ml-2 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{name}</span>
                   </label>
@@ -873,7 +873,7 @@ const EmailNotifications: React.FC = () => {
                           }));
                         }
                       }}
-                      className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                     />
                     <span className={`ml-2 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{user.naam} ({user.email})</span>
                   </label>
@@ -891,7 +891,7 @@ const EmailNotifications: React.FC = () => {
                   value="weekly"
                   checked={scheduleForm.hours_check_type === 'weekly'}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, hours_check_type: e.target.value as 'weekly' | 'daily' }))}
-                  className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300"
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
                 />
                 <span className={`ml-2 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Wekelijkse Uren</span>
               </label>
@@ -901,7 +901,7 @@ const EmailNotifications: React.FC = () => {
                   value="daily"
                   checked={scheduleForm.hours_check_type === 'daily'}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, hours_check_type: e.target.value as 'weekly' | 'daily' }))}
-                  className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300"
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
                 />
                 <span className={`ml-2 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>Dagelijkse Uren</span>
               </label>
@@ -915,7 +915,7 @@ const EmailNotifications: React.FC = () => {
                   value={scheduleForm.minimum_weekly_hours}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, minimum_weekly_hours: parseInt(e.target.value) || 0 }))}
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Bijv. 40"
                 />
               </div>
@@ -927,7 +927,7 @@ const EmailNotifications: React.FC = () => {
                   value={scheduleForm.minimum_daily_hours}
                   onChange={(e) => setScheduleForm(prev => ({ ...prev, minimum_daily_hours: parseInt(e.target.value) || 0 }))}
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Bijv. 8"
                 />
               </div>
@@ -940,7 +940,7 @@ const EmailNotifications: React.FC = () => {
               id="schedule-enabled"
               checked={scheduleForm.enabled}
               onChange={(e) => setScheduleForm(prev => ({ ...prev, enabled: e.target.checked }))}
-              className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded"
+              className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <label htmlFor="schedule-enabled" className={`ml-2 block text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Schema actief
@@ -957,7 +957,7 @@ const EmailNotifications: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               <Save size={16} className="inline mr-2" />
               {editingSchedule ? 'Bijwerken' : 'Aanmaken'}

@@ -55,7 +55,7 @@ const Meldingen: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -63,7 +63,7 @@ const Meldingen: React.FC = () => {
   return (
     <div className="space-y-6">
       <h1 className={`text-2xl font-bold flex items-center space-x-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>
-        <Bell className="text-violet-600" />
+        <Bell className="text-red-600" />
         <span>{t('notifications')}</span>
       </h1>
 
@@ -71,19 +71,19 @@ const Meldingen: React.FC = () => {
       <div className={`rounded-lg shadow p-4 flex space-x-4 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'all' ? 'bg-violet-600 text-white' : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'all' ? 'bg-red-600 text-white' : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
         >
           {t('allNotifications')}
         </button>
         <button
           onClick={() => setFilter('unread')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'unread' ? 'bg-violet-600 text-white' : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'unread' ? 'bg-red-600 text-white' : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
         >
           {t('unread')}
         </button>
         <button
           onClick={() => setFilter('archived')}
-          className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'archived' ? 'bg-violet-600 text-white' : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium ${filter === 'archived' ? 'bg-red-600 text-white' : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
         >
           {t('archived')}
         </button>
@@ -98,9 +98,9 @@ const Meldingen: React.FC = () => {
         ) : (
           <ul className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
             {filteredNotifications.map(notification => (
-              <li key={notification.id} className={`p-6 flex items-start space-x-4 ${notification.status === 'unread' ? (isDark ? 'bg-violet-900/20' : 'bg-violet-50') : ''}`}>
+              <li key={notification.id} className={`p-6 flex items-start space-x-4 ${notification.status === 'unread' ? (isDark ? 'bg-red-900/20' : 'bg-red-50') : ''}`}>
                 <div className="flex-shrink-0 mt-1">
-                  {notification.status === 'unread' ? <Mail className="h-6 w-6 text-violet-600" /> : <MailOpen className={`h-6 w-6 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />}
+                  {notification.status === 'unread' ? <Mail className="h-6 w-6 text-red-600" /> : <MailOpen className={`h-6 w-6 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
@@ -112,7 +112,7 @@ const Meldingen: React.FC = () => {
                     {notification.status === 'unread' && (
                       <button
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium ${isDark ? 'bg-violet-900/50 text-violet-300 hover:bg-violet-900/70' : 'bg-violet-100 text-violet-800 hover:bg-violet-200'}`}
+                        className={`flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium ${isDark ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
                         disabled={mutationLoading}
                       >
                         <MailOpen size={14} />

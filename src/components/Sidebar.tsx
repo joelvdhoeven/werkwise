@@ -227,11 +227,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
         <div className={`p-6 border-b ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
+              <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">
                 <span className="text-white font-bold">W</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 via-rose-600 to-red-600 bg-clip-text text-transparent">
                   WerkWise
                 </h1>
                 <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Workforce Management</p>
@@ -263,8 +263,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
                     className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all ${
                       groupActive
                         ? isDark
-                          ? 'bg-violet-500/10 text-violet-400'
-                          : 'bg-violet-50 text-violet-700'
+                          ? 'bg-red-500/10 text-red-400'
+                          : 'bg-red-50 text-red-700'
                         : isDark
                           ? 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -299,7 +299,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
                               }}
                               className={`w-full text-left px-4 py-2.5 rounded-xl flex items-center space-x-3 transition-all ${
                                 isActive
-                                  ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25'
+                                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/25'
                                   : isDark
                                     ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'

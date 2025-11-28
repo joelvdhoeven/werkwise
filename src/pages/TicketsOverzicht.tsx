@@ -369,13 +369,13 @@ const TicketsOverzicht: React.FC = () => {
                 placeholder="Zoek tickets..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="all">Alle Statussen</option>
               <option value="open">Open</option>
@@ -387,7 +387,7 @@ const TicketsOverzicht: React.FC = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="all">Alle Prioriteiten</option>
               <option value="urgent">Urgent</option>
@@ -483,7 +483,7 @@ const TicketsOverzicht: React.FC = () => {
                         <a
                           href={attachment.url}
                           download={attachment.name}
-                          className={`flex items-center gap-1 px-3 py-1 text-sm rounded ${isDark ? 'text-violet-400 hover:bg-violet-900/30' : 'text-violet-600 hover:bg-violet-50'}`}
+                          className={`flex items-center gap-1 px-3 py-1 text-sm rounded ${isDark ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'}`}
                         >
                           <Download size={14} />
                           Download
@@ -547,13 +547,13 @@ const TicketsOverzicht: React.FC = () => {
                       onChange={(e) => setNewComment(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && sendComment()}
                       placeholder="Typ je reactie..."
-                      className={`flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                      className={`flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                       disabled={sendingComment}
                     />
                     <button
                       onClick={sendComment}
                       disabled={sendingComment || !newComment.trim()}
-                      className="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-md hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <Send size={18} />
                       Verstuur
