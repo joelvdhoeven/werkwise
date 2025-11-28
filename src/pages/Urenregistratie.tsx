@@ -829,6 +829,42 @@ const Urenregistratie: React.FC = () => {
     );
   }
 
+  // Quick action definitions for admin users
+  const adminQuickActions = [
+    {
+      id: 'registreren',
+      title: 'Uren Registreren',
+      description: 'Handmatig uren invoeren',
+      icon: <FileText className="h-6 w-6" />,
+      color: 'from-red-500 to-rose-600',
+      onClick: () => handleSelectOption('registreren')
+    },
+    {
+      id: 'timer',
+      title: 'Timer Starten',
+      description: 'Tijd automatisch bijhouden',
+      icon: <Timer className="h-6 w-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      onClick: () => handleSelectOption('timer')
+    },
+    {
+      id: 'overzicht',
+      title: 'Alle Registraties',
+      description: `${registraties?.length || 0} registraties`,
+      icon: <ListChecks className="h-6 w-6" />,
+      color: 'from-amber-500 to-orange-600',
+      onClick: () => handleSelectOption('overzicht')
+    },
+    {
+      id: 'export',
+      title: 'Exporteren',
+      description: 'Download als CSV',
+      icon: <Download className="h-6 w-6" />,
+      color: 'from-blue-500 to-indigo-600',
+      onClick: handleExport
+    }
+  ];
+
   return (
     <div>
       {/* Timer Widget */}
@@ -838,6 +874,40 @@ const Urenregistratie: React.FC = () => {
         isOpen={isTimerOpen}
         onToggle={() => setIsTimerOpen(!isTimerOpen)}
       />
+
+      {/* Quick Actions for Admin Users */}
+      {canViewAll && (
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
+                <Clock className="h-7 w-7 text-red-600" />
+                {t('urenregistratie')}
+              </h1>
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Beheer alle urenregistraties</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {adminQuickActions.map((action) => (
+              <button
+                key={action.id}
+                onClick={action.onClick}
+                className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl ${
+                  isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
+                } shadow-md border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white mb-3 shadow-lg`}>
+                  {action.icon}
+                </div>
+                <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{action.title}</h3>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{action.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Selection Menu for Normal Users */}
       {showSelectionMenu && isNormalUser && (
