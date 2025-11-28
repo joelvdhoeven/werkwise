@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FolderOpen, Plus, Calendar, Users, Clock, BarChart3, Eye, Search, Archive, FileText, Download, Layers } from 'lucide-react';
+import { FolderOpen, Plus, Calendar, Users, Clock, BarChart3, Eye, Search, Archive, FileText, Download, Layers, ChevronDown, ChevronUp, MapPin, Pencil, Trash2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { nl } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -53,6 +53,19 @@ const Projecten: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveSearchTerm, setArchiveSearchTerm] = useState('');
   const [showArchive, setShowArchive] = useState(false);
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+
+  const toggleProjectExpanded = (projectId: string) => {
+    setExpandedProjects(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId);
+      } else {
+        newSet.add(projectId);
+      }
+      return newSet;
+    });
+  };
 
   const [formData, setFormData] = useState({
     naam: '',
@@ -458,82 +471,233 @@ const Projecten: React.FC = () => {
           ) : filteredProjecten.length === 0 ? (
             <div className="text-center py-12">
               <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">Geen projecten gevonden</p>
-              <p className="text-gray-400 text-sm mt-2">
+              <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Geen projecten gevonden</p>
+              <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                 Probeer een andere zoekterm
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-3">
               {filteredProjecten.map((project) => {
                 const projectUsers = getProjectUsers(project.id);
                 const totalHours = getTotalLoggedHours(project.id);
+                const totalKm = getTotalKilometers(project.id);
                 const incomplete = isProjectIncomplete(project);
+                const isExpanded = expandedProjects.has(project.id);
 
                 return (
-                  <div key={project.id} className={`rounded-lg p-6 hover:shadow-md transition-shadow ${
-                    incomplete ? (isDark ? 'bg-red-900/20 border-2 border-red-500' : 'bg-red-50 border-2 border-red-200') : (isDark ? 'bg-gray-700' : 'bg-gray-50')
-                  }`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.naam}</h3>
-                      </div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        project.status === 'actief' ? 'bg-green-100 text-green-800' :
-                        project.status === 'voltooid' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {t(project.status)}
-                      </span>
-                    </div>
+                  <div
+                    key={project.id}
+                    className={`rounded-xl overflow-hidden transition-all duration-200 ${
+                      incomplete
+                        ? (isDark ? 'bg-red-900/20 border border-red-500/50' : 'bg-red-50 border border-red-200')
+                        : (isDark ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100')
+                    }`}
+                  >
+                    {/* Main Row - Always Visible */}
+                    <button
+                      onClick={() => toggleProjectExpanded(project.id)}
+                      className="w-full px-5 py-4 flex items-center justify-between text-left"
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {/* Status Indicator */}
+                        <div className={`w-2 h-10 rounded-full flex-shrink-0 ${
+                          project.status === 'actief' ? 'bg-green-500' :
+                          project.status === 'voltooid' ? 'bg-blue-500' :
+                          'bg-yellow-500'
+                        }`} />
 
-                    {incomplete && hasPermission('view_reports') && (
-                      <div className={`mb-3 p-2 ${isDark ? 'bg-red-900/40 border-red-500' : 'bg-red-100 border-red-300'} border rounded text-xs ${isDark ? 'text-red-300' : 'text-red-700'}`}>
-                        ⚠️ Ontbrekende velden: {getMissingFields(project).join(', ')}
+                        {/* Project Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>{project.naam}</h3>
+                            <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                              project.status === 'actief' ? 'bg-green-100 text-green-700' :
+                              project.status === 'voltooid' ? 'bg-blue-100 text-blue-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {t(project.status)}
+                            </span>
+                            {incomplete && (
+                              <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                ⚠️ Incompleet
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 mt-1 text-sm flex-wrap">
+                            {project.locatie && (
+                              <span className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <MapPin size={12} />
+                                {project.locatie}
+                              </span>
+                            )}
+                            <span className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <Clock size={12} />
+                              {totalHours.toFixed(1)}h
+                            </span>
+                            <span className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <Calendar size={12} />
+                              {formatDate(project.start_datum)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar - Desktop */}
+                        {project.progress_percentage > 0 && (
+                          <div className="hidden sm:flex items-center gap-2 w-32 flex-shrink-0">
+                            <div className="flex-1 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${project.progress_percentage}%` }}
+                              />
+                            </div>
+                            <span className={`text-xs font-medium w-8 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{project.progress_percentage}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Expand Icon */}
+                      <div className={`ml-4 p-2 rounded-lg ${isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}>
+                        {isExpanded ? (
+                          <ChevronUp className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                        ) : (
+                          <ChevronDown className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expanded Content */}
+                    {isExpanded && (
+                      <div className={`px-5 pb-5 border-t ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                        <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Left Column - Details */}
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beschrijving</h4>
+                              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{project.beschrijving || 'Geen beschrijving'}</p>
+                            </div>
+
+                            {/* Progress Bar - Mobile */}
+                            {project.progress_percentage > 0 && (
+                              <div className="sm:hidden">
+                                <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Voortgang</h4>
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                      style={{ width: `${project.progress_percentage}%` }}
+                                    />
+                                  </div>
+                                  <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{project.progress_percentage}%</span>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Totaal Uren</div>
+                                <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{totalHours.toFixed(1)}h</div>
+                              </div>
+                              <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Kilometers</div>
+                                <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{totalKm.toFixed(0)} km</div>
+                              </div>
+                            </div>
+
+                            <ProtectedRoute permission="view_reports">
+                              <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mb-2`}>Medewerkers ({projectUsers.length})</div>
+                                {projectUsers.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {projectUsers.slice(0, 5).map((userName, idx) => (
+                                      <span key={idx} className={`inline-flex px-2 py-1 text-xs rounded-full ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                        {userName}
+                                      </span>
+                                    ))}
+                                    {projectUsers.length > 5 && (
+                                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                        +{projectUsers.length - 5} meer
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Geen medewerkers</span>
+                                )}
+                              </div>
+                            </ProtectedRoute>
+                          </div>
+
+                          {/* Right Column - Actions */}
+                          <div className="space-y-3">
+                            <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Acties</h4>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedProjectForDetails(project);
+                              }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                              } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                            >
+                              <Eye size={18} className="text-red-500" />
+                              <span className="font-medium">Bekijk volledige details</span>
+                            </button>
+
+                            <ProtectedRoute permission="manage_projects">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditProject(project);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                  isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                                } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                              >
+                                <Pencil size={18} className="text-blue-500" />
+                                <span className="font-medium">Project bewerken</span>
+                              </button>
+                            </ProtectedRoute>
+
+                            <ProtectedRoute permission="manage_projects">
+                              {project.status === 'actief' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Weet je zeker dat je dit project wilt archiveren?')) {
+                                      handleArchiveProject(project.id);
+                                    }
+                                  }}
+                                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                                  } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                                >
+                                  <Archive size={18} className="text-green-500" />
+                                  <span className="font-medium">Archiveren</span>
+                                </button>
+                              )}
+                            </ProtectedRoute>
+
+                            <ProtectedRoute permission="manage_projects">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Weet je zeker dat je dit project wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+                                    handleDeleteProject(project.id);
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-red-500 ${
+                                  isDark ? 'bg-gray-800 hover:bg-red-900/30' : 'bg-white hover:bg-red-50'
+                                } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                              >
+                                <Trash2 size={18} />
+                                <span className="font-medium">Verwijderen</span>
+                              </button>
+                            </ProtectedRoute>
+                          </div>
+                        </div>
                       </div>
                     )}
-
-                    <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-sm mb-4 break-words line-clamp-3`}>{project.beschrijving}</p>
-                    <div className="space-y-2">
-                      <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <Calendar size={14} className="mr-2" />
-                        <span>{formatDate(project.start_datum)}</span>
-                      </div>
-                      <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <Clock size={14} className="mr-2" />
-                        <span>{t('totalLoggedHours')}: {totalHours.toFixed(1)}h</span>
-                      </div>
-                      <ProtectedRoute permission="view_reports">
-                        <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                          <Users size={14} className="mr-2" />
-                          <span>{projectUsers.length} {projectUsers.length === 1 ? 'gebruiker' : 'gebruikers'}</span>
-                        </div>
-                      </ProtectedRoute>
-                      {project.progress_percentage > 0 && (
-                        <div className="mt-3">
-                          <div className={`flex justify-between text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-1`}>
-                            <span>Voortgang</span>
-                            <span className="font-medium">{project.progress_percentage}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-red-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${project.progress_percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={() => setSelectedProjectForDetails(project)}
-                        className="flex items-center space-x-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
-                      >
-                        <Eye size={16} />
-                        <span>Bekijk details</span>
-                      </button>
-                    </div>
                   </div>
                 );
               })}
