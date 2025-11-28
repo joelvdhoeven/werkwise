@@ -57,12 +57,9 @@ const Projecten: React.FC = () => {
   const [formData, setFormData] = useState({
     naam: '',
     beschrijving: '',
-    locatie: '',
     startDatum: '',
     status: 'actief' as const,
-    project_nummer: '',
     progressPercentage: '',
-    calculatedHours: '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -109,12 +106,9 @@ const Projecten: React.FC = () => {
         setFormData({
           naam: '',
           beschrijving: '',
-          locatie: '',
           startDatum: '',
           status: 'actief',
-          project_nummer: '',
           progressPercentage: '',
-          calculatedHours: '',
         });
 
         setShowModal(false);
@@ -137,12 +131,9 @@ const Projecten: React.FC = () => {
     setFormData({
       naam: '',
       beschrijving: '',
-      locatie: '',
       startDatum: new Date().toISOString().split('T')[0],
       status: 'actief',
-      project_nummer: '',
       progressPercentage: '',
-      calculatedHours: '',
     });
     setShowModal(true);
   };
@@ -152,12 +143,9 @@ const Projecten: React.FC = () => {
     setFormData({
       naam: project.naam,
       beschrijving: project.beschrijving,
-      locatie: project.locatie || '',
       startDatum: project.start_datum,
       status: project.status,
-      project_nummer: project.project_nummer || '',
       progressPercentage: project.progress_percentage?.toString() || '',
-      calculatedHours: project.calculated_hours?.toString() || '',
     });
     setShowModal(true);
   };
@@ -241,10 +229,7 @@ const Projecten: React.FC = () => {
 
   // Check if project is incomplete (created by employees/ZZPers, awaiting admin completion)
   const isProjectIncomplete = (project: any) => {
-    return (
-      project.beschrijving === 'Aangemaakt door medewerker - nog in te vullen' ||
-      !project.project_nummer
-    );
+    return project.beschrijving === 'Aangemaakt door medewerker - nog in te vullen';
   };
 
   const getMissingFields = (project: any): string[] => {
@@ -252,9 +237,6 @@ const Projecten: React.FC = () => {
 
     if (project.beschrijving === 'Aangemaakt door medewerker - nog in te vullen') {
       missing.push('Beschrijving');
-    }
-    if (!project.project_nummer) {
-      missing.push('Projectnummer');
     }
 
     return missing;
@@ -267,7 +249,6 @@ const Projecten: React.FC = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       project.naam?.toLowerCase().includes(searchLower) ||
-      project.project_nummer?.toLowerCase().includes(searchLower) ||
       project.beschrijving?.toLowerCase().includes(searchLower)
     );
   });
@@ -437,7 +418,7 @@ const Projecten: React.FC = () => {
               <input
                 id="project-search"
                 type="text"
-                placeholder="Zoek project op naam, nummer of beschrijving..."
+                placeholder="Zoek project op naam of beschrijving..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
@@ -491,7 +472,6 @@ const Projecten: React.FC = () => {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.naam}</h3>
-                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>#{project.project_nummer || 'Geen nummer'}</p>
                       </div>
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         project.status === 'actief' ? 'bg-green-100 text-green-800' :
@@ -564,30 +544,17 @@ const Projecten: React.FC = () => {
         title={editingProject ? t('editProject') : t('nieuwProject')}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNaam')} *</label>
-              <input
-                type="text"
-                name="naam"
-                value={formData.naam}
-                onChange={handleInputChange}
-                required
-                placeholder="Bijv. Renovatie kantoorpand"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNumber')}</label>
-              <input
-                type="text"
-                name="project_nummer"
-                value={formData.project_nummer}
-                onChange={handleInputChange}
-                placeholder="Bijv. 2024-001"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            </div>
+          <div>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNaam')} *</label>
+            <input
+              type="text"
+              name="naam"
+              value={formData.naam}
+              onChange={handleInputChange}
+              required
+              placeholder="Bijv. Renovatie kantoorpand"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -637,19 +604,6 @@ const Projecten: React.FC = () => {
             <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
           </div>
 
-          <div>
-            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Gecalculeerde Uren</label>
-            <input
-              type="number"
-              name="calculatedHours"
-              value={formData.calculatedHours}
-              onChange={handleInputChange}
-              min="0"
-              placeholder="Geschatte uren voor dit project"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            />
-            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel: vul in hoeveel uren je verwacht nodig te hebben voor dit project</p>
-          </div>
 
           <div>
             <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectBeschrijving')} *</label>
@@ -664,18 +618,6 @@ const Projecten: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('locatie')} *</label>
-            <input
-              type="text"
-              name="locatie"
-              value={formData.locatie}
-              onChange={handleInputChange}
-              required
-              placeholder="bijv. Amsterdam, Noord-Holland"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            />
-          </div>
           <div className="flex flex-col space-y-3 pt-4">
             {editingProject && editingProject.status === 'actief' && hasPermission('manage_projects') && (
               <button
@@ -791,7 +733,6 @@ const Projecten: React.FC = () => {
             const searchLower = archiveSearchTerm.toLowerCase();
             return (
               project.naam?.toLowerCase().includes(searchLower) ||
-              project.project_nummer?.toLowerCase().includes(searchLower) ||
               project.beschrijving?.toLowerCase().includes(searchLower)
             );
           }).length === 0 ? (
@@ -805,7 +746,6 @@ const Projecten: React.FC = () => {
                 const searchLower = archiveSearchTerm.toLowerCase();
                 return (
                   project.naam?.toLowerCase().includes(searchLower) ||
-                  project.project_nummer?.toLowerCase().includes(searchLower) ||
                   project.beschrijving?.toLowerCase().includes(searchLower)
                 );
               }).map((project: any) => {
@@ -823,9 +763,6 @@ const Projecten: React.FC = () => {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'} text-lg`}>{project.naam}</h3>
-                        {project.project_nummer && (
-                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} font-mono`}>#{project.project_nummer}</p>
-                        )}
                       </div>
                       <span
                         className={`px-3 py-1 text-xs font-medium rounded-full ${
