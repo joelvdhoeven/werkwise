@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Save, Building2, Mail, Phone, Globe, CreditCard, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { FileText, Save, Building2, Mail, Phone, Globe, CreditCard, Plus, Upload, X, Image } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -48,6 +48,8 @@ const FactuurInstellingen: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isNewSettings, setIsNewSettings] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canManage = profile?.role === 'admin' || profile?.role === 'kantoorpersoneel';
 
@@ -130,6 +132,54 @@ const FactuurInstellingen: React.FC = () => {
 
   const handleChange = (field: keyof InvoiceSettings, value: string | number) => {
     setSettings({ ...settings, [field]: value });
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Alleen PNG, JPG, SVG of WEBP bestanden zijn toegestaan');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Bestand is te groot. Maximaal 2MB toegestaan.');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const filePath = `invoice-logos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('uploads')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(filePath);
+
+      setSettings({ ...settings, logo_url: publicUrl });
+      setSuccessMessage('Logo succesvol geupload!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert('Fout bij uploaden van logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setSettings({ ...settings, logo_url: '' });
   };
 
   if (loading) {
@@ -314,7 +364,7 @@ const FactuurInstellingen: React.FC = () => {
                 type="email"
                 value={settings.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                placeholder="info@gouwebouw.nl"
+                placeholder="info@werkwise.nl"
                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'}`}
               />
             </div>
@@ -328,25 +378,67 @@ const FactuurInstellingen: React.FC = () => {
                 type="text"
                 value={settings.website}
                 onChange={(e) => handleChange('website', e.target.value)}
-                placeholder="www.gouwebouw.nl"
+                placeholder="www.werkwise.nl"
                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'}`}
               />
             </div>
 
             <div>
-              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                Logo URL
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                <Image className="inline mr-1" size={14} />
+                Bedrijfslogo
               </label>
+
+              {settings.logo_url ? (
+                <div className={`relative border-2 border-dashed rounded-lg p-4 ${isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'}`}>
+                  <img
+                    src={settings.logo_url}
+                    alt="Bedrijfslogo"
+                    className="max-h-24 max-w-full mx-auto object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    isDark
+                      ? 'border-gray-600 hover:border-gray-500 bg-gray-700'
+                      : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                  }`}
+                >
+                  {uploadingLogo ? (
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mb-2"></div>
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Uploaden...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className={`mx-auto h-8 w-8 mb-2 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                      <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Klik om logo te uploaden
+                      </p>
+                      <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        PNG, JPG, SVG of WEBP (max 2MB)
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+
               <input
-                type="text"
-                value={settings.logo_url}
-                onChange={(e) => handleChange('logo_url', e.target.value)}
-                placeholder="/gouwebouw-logo.svg"
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'}`}
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                onChange={handleLogoUpload}
+                className="hidden"
               />
-              <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                Relatief pad naar logo bestand (bijv. /gouwebouw-logo.svg)
-              </p>
             </div>
           </div>
         </div>
@@ -410,7 +502,7 @@ const FactuurInstellingen: React.FC = () => {
             <div className="flex justify-between items-start">
               <div>
                 {settings.logo_url && (
-                  <div className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>[Logo]</div>
+                  <img src={settings.logo_url} alt="Logo" className="h-10 max-w-[120px] object-contain mb-2" />
                 )}
                 <div className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>{settings.company_name || 'Bedrijfsnaam'}</div>
                 <div className={`text-xs space-y-1 mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>

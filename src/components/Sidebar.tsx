@@ -120,6 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       items: [
         { id: 'dashboard', label: t('dashboard'), icon: Home, permission: 'view_dashboard', module: null },
         { id: 'financieel-dashboard', label: 'Financieel Dashboard', icon: TrendingUp, permission: 'manage_settings', module: 'module_financial_dashboard' },
+        { id: 'voorraad-dashboard', label: 'Voorraad Dashboard', icon: Package, permission: 'manage_settings', module: null },
       ]
     },
     {

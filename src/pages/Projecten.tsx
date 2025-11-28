@@ -331,6 +331,140 @@ const Projecten: React.FC = () => {
     }
   };
 
+  const handleExportInvoice = async (project: any) => {
+    try {
+      // Get invoice settings
+      const { data: invoiceSettings } = await supabase
+        .from('invoice_settings')
+        .select('*')
+        .maybeSingle();
+
+      if (!invoiceSettings) {
+        alert('Configureer eerst je factuurinstellingen voordat je facturen kunt exporteren.');
+        return;
+      }
+
+      // Get time registrations for this project
+      const projectRegistrations = urenRegistraties.filter(
+        (reg: any) => reg.project_id === project.id
+      );
+
+      const totalHours = projectRegistrations.reduce(
+        (sum: number, reg: any) => sum + parseFloat(reg.aantal_uren || 0), 0
+      );
+
+      // Create invoice data
+      const invoiceNumber = `${invoiceSettings.invoice_prefix}-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+      const today = new Date().toLocaleDateString('nl-NL');
+      const dueDate = new Date(Date.now() + invoiceSettings.payment_terms_days * 24 * 60 * 60 * 1000).toLocaleDateString('nl-NL');
+
+      // Generate HTML for the invoice
+      const invoiceHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Factuur ${invoiceNumber}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+    .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .logo { max-height: 60px; }
+    .company-info { text-align: right; }
+    .invoice-title { font-size: 28px; font-weight: bold; color: #DC2626; margin-bottom: 20px; }
+    .invoice-details { margin-bottom: 30px; }
+    .project-info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+    .table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    .table th { background: #f5f5f5; font-weight: bold; }
+    .totals { text-align: right; margin-top: 20px; }
+    .total-row { font-size: 18px; font-weight: bold; color: #DC2626; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+    .bank-info { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      ${invoiceSettings.logo_url ? `<img src="${invoiceSettings.logo_url}" alt="Logo" class="logo" />` : ''}
+      <h1 style="margin: 0;">${invoiceSettings.company_name}</h1>
+      <p style="margin: 5px 0; font-size: 12px;">
+        ${invoiceSettings.address_street}<br>
+        ${invoiceSettings.address_zip} ${invoiceSettings.address_city}<br>
+        ${invoiceSettings.phone}<br>
+        ${invoiceSettings.email}
+      </p>
+    </div>
+    <div class="company-info">
+      <div class="invoice-title">FACTUUR</div>
+      <p>
+        <strong>Factuurnummer:</strong> ${invoiceNumber}<br>
+        <strong>Factuurdatum:</strong> ${today}<br>
+        <strong>Vervaldatum:</strong> ${dueDate}
+      </p>
+    </div>
+  </div>
+
+  <div class="project-info">
+    <h3 style="margin-top: 0;">Projectgegevens</h3>
+    <p>
+      <strong>Project:</strong> ${project.naam}<br>
+      <strong>Locatie:</strong> ${project.locatie || 'N.v.t.'}<br>
+      <strong>Omschrijving:</strong> ${project.beschrijving || 'Geen omschrijving'}
+    </p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Omschrijving</th>
+        <th>Aantal</th>
+        <th>Eenheid</th>
+        <th style="text-align: right;">Bedrag</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Gewerkte uren - ${project.naam}</td>
+        <td>${totalHours.toFixed(2)}</td>
+        <td>uur</td>
+        <td style="text-align: right;">Op aanvraag</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <p><strong>Subtotaal:</strong> Op aanvraag</p>
+    <p><strong>BTW (21%):</strong> Op aanvraag</p>
+    <p class="total-row"><strong>Totaal:</strong> Op aanvraag</p>
+  </div>
+
+  <div class="bank-info">
+    <strong>Betalingsgegevens</strong><br>
+    IBAN: ${invoiceSettings.iban}<br>
+    KVK: ${invoiceSettings.kvk_number}<br>
+    BTW: ${invoiceSettings.btw_number}
+  </div>
+
+  <div class="footer">
+    ${invoiceSettings.invoice_footer}
+  </div>
+</body>
+</html>
+      `;
+
+      // Open print dialog
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(invoiceHTML);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    } catch (error) {
+      console.error('Error exporting invoice:', error);
+      alert('Er is een fout opgetreden bij het exporteren van de factuur.');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -643,6 +777,21 @@ const Projecten: React.FC = () => {
                               <Eye size={18} className="text-red-500" />
                               <span className="font-medium">Bekijk volledige details</span>
                             </button>
+
+                            <ProtectedRoute permission="manage_settings">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleExportInvoice(project);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                  isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                                } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                              >
+                                <FileText size={18} className="text-violet-500" />
+                                <span className="font-medium">Factuur exporteren</span>
+                              </button>
+                            </ProtectedRoute>
 
                             <ProtectedRoute permission="manage_projects">
                               <button

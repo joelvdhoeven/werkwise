@@ -9,6 +9,7 @@ import FloatingTimerButton from './components/FloatingTimerButton';
 import OnboardingTour from './components/OnboardingTour';
 import Dashboard from './pages/Dashboard';
 import FinancieelDashboard from './pages/FinancieelDashboard';
+import VoorraadDashboard from './pages/VoorraadDashboard';
 import Urenregistratie from './pages/Urenregistratie';
 import MijnNotificaties from './pages/MijnNotificaties';
 import SpeciaalGereedschap from './pages/SpeciaalGereedschap';
@@ -48,6 +49,12 @@ function App() {
         return (
           <ProtectedRoute permission="manage_settings">
             <FinancieelDashboard />
+          </ProtectedRoute>
+        );
+      case 'voorraad-dashboard':
+        return (
+          <ProtectedRoute permission="manage_settings">
+            <VoorraadDashboard />
           </ProtectedRoute>
         );
       case 'urenregistratie':
