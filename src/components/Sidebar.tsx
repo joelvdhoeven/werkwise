@@ -49,10 +49,13 @@ interface MenuGroup {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOpen, onClose }) => {
   const { t } = useLanguage();
-  const { hasPermission } = useAuth();
+  const { hasPermission, profile } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [moduleSettings, setModuleSettings] = useState<any>(null);
+
+  // Check if user is a simple user (medewerker/zzper) - they get flat menu without dropdowns
+  const isSimpleUser = profile?.role === 'medewerker' || profile?.role === 'zzper';
 
   // Load expanded groups from localStorage, default to overzicht and werk
   const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
@@ -244,77 +247,111 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
 
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="space-y-2">
-            {visibleGroups.map((group) => {
-              const GroupIcon = group.icon;
-              const isExpanded = expandedGroups.includes(group.id);
-              const groupActive = isGroupActive(group);
+          {isSimpleUser ? (
+            /* Simple flat menu for medewerker/zzper */
+            <ul className="space-y-1">
+              {visibleGroups.flatMap(group => group.items).map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => {
+                        setActiveSection(item.id);
+                        onClose();
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/25'
+                          : isDark
+                            ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      <Icon
+                        size={20}
+                        className={item.id === 'schademeldingen' && !isActive ? 'text-amber-500' : ''}
+                      />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            /* Grouped dropdown menu for admin/kantoorpersoneel */
+            <div className="space-y-2">
+              {visibleGroups.map((group) => {
+                const GroupIcon = group.icon;
+                const isExpanded = expandedGroups.includes(group.id);
+                const groupActive = isGroupActive(group);
 
-              return (
-                <div key={group.id} className="space-y-1">
-                  {/* Group Header */}
-                  <button
-                    onClick={() => toggleGroup(group.id)}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all ${
-                      groupActive
-                        ? isDark
-                          ? 'bg-red-500/10 text-red-400'
-                          : 'bg-red-50 text-red-700'
-                        : isDark
-                          ? 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <GroupIcon size={18} />
-                      <span className="text-sm font-semibold">{group.label}</span>
+                return (
+                  <div key={group.id} className="space-y-1">
+                    {/* Group Header */}
+                    <button
+                      onClick={() => toggleGroup(group.id)}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all ${
+                        groupActive
+                          ? isDark
+                            ? 'bg-red-500/10 text-red-400'
+                            : 'bg-red-50 text-red-700'
+                          : isDark
+                            ? 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <GroupIcon size={18} />
+                        <span className="text-sm font-semibold">{group.label}</span>
+                      </div>
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    {/* Group Items */}
+                    <div
+                      className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                        isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <ul className="pl-4 space-y-1 pt-1">
+                        {group.items.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = activeSection === item.id;
+                          return (
+                            <li key={item.id}>
+                              <button
+                                onClick={() => {
+                                  setActiveSection(item.id);
+                                  onClose();
+                                }}
+                                className={`w-full text-left px-4 py-2.5 rounded-xl flex items-center space-x-3 transition-all ${
+                                  isActive
+                                    ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/25'
+                                    : isDark
+                                      ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                }`}
+                              >
+                                <Icon
+                                  size={18}
+                                  className={item.id === 'schademeldingen' && !isActive ? 'text-amber-500' : ''}
+                                />
+                                <span className="text-sm font-medium">{item.label}</span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-
-                  {/* Group Items */}
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                      isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <ul className="pl-4 space-y-1 pt-1">
-                      {group.items.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = activeSection === item.id;
-                        return (
-                          <li key={item.id}>
-                            <button
-                              onClick={() => {
-                                setActiveSection(item.id);
-                                onClose();
-                              }}
-                              className={`w-full text-left px-4 py-2.5 rounded-xl flex items-center space-x-3 transition-all ${
-                                isActive
-                                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/25'
-                                  : isDark
-                                    ? 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                              }`}
-                            >
-                              <Icon
-                                size={18}
-                                className={item.id === 'schademeldingen' && !isActive ? 'text-amber-500' : ''}
-                              />
-                              <span className="text-sm font-medium">{item.label}</span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </nav>
 
         {/* Footer */}
