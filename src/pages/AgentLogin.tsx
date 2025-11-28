@@ -90,7 +90,13 @@ const AgentLogin: React.FC = () => {
 
         if (profileError) {
           console.error('Profile creation error:', profileError);
+          // If profile creation fails, show error
+          setError('Account aangemaakt maar profiel kon niet worden opgeslagen. Neem contact op met een admin.');
+          return;
         }
+
+        // Sign out so user can login fresh (prevents auth context error)
+        await supabase.auth.signOut();
 
         setSuccess('Account aangemaakt! Je kunt nu inloggen.');
         setIsRegister(false);

@@ -16,7 +16,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const saved = localStorage.getItem('werkwise-theme') as Theme;
       if (saved) return saved;
     }
-    return 'light';
+    return 'dark';
   });
 
   useEffect(() => {
