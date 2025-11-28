@@ -63,10 +63,11 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
   const adminSteps: TourStep[] = [
     { id: 'dashboard', title: 'Dashboard', description: 'Je command center met realtime statistieken en overzichten.', pageId: 'dashboard', icon: <Home className="h-5 w-5" />, color: 'from-blue-500 to-cyan-500' },
     { id: 'financieel', title: 'Financieel Dashboard', description: 'Inzicht in omzet, kosten en winst op projectniveau.', pageId: 'financieel-dashboard', icon: <BarChart3 className="h-5 w-5" />, color: 'from-emerald-500 to-green-500' },
-    { id: 'uren', title: 'Urenregistratie', description: 'Gebruik de timer of voer handmatig uren in.', pageId: 'urenregistratie', icon: <Clock className="h-5 w-5" />, color: 'from-purple-500 to-violet-500' },
+    { id: 'voorraad-dashboard', title: 'Voorraad Dashboard', description: 'Overzicht van voorraadwaarde, lage voorraad alerts en trends.', pageId: 'voorraad-dashboard', icon: <Package className="h-5 w-5" />, color: 'from-indigo-500 to-blue-500' },
     { id: 'projecten', title: 'Projecten', description: 'Beheer projecten, voortgang en medewerkers.', pageId: 'projecten', icon: <FolderOpen className="h-5 w-5" />, color: 'from-orange-500 to-amber-500' },
+    { id: 'uren', title: 'Urenregistratie', description: 'Gebruik de timer of voer handmatig uren in.', pageId: 'urenregistratie', icon: <Clock className="h-5 w-5" />, color: 'from-purple-500 to-violet-500' },
     { id: 'voorraad-afboeken', title: 'Voorraad Afboeken', description: 'Boek materialen direct af op projecten.', pageId: 'voorraad-afboeken', icon: <Package className="h-5 w-5" />, color: 'from-pink-500 to-rose-500' },
-    { id: 'voorraadbeheer', title: 'Voorraadbeheer', description: 'Beheer je volledige voorraad en locaties.', pageId: 'voorraadbeheer', icon: <Package className="h-5 w-5" />, color: 'from-indigo-500 to-blue-500' },
+    { id: 'voorraadbeheer', title: 'Voorraadbeheer', description: 'Beheer je volledige voorraad en locaties.', pageId: 'voorraadbeheer', icon: <Package className="h-5 w-5" />, color: 'from-cyan-500 to-teal-500' },
     { id: 'gereedschap', title: 'Speciaal Gereedschap', description: 'Track gereedschap, onderhoud en uitleningen.', pageId: 'speciaal-gereedschap', icon: <Wrench className="h-5 w-5" />, color: 'from-yellow-500 to-orange-500' },
     { id: 'schade', title: 'Schademeldingen', description: 'Registreer en volg schademeldingen op.', pageId: 'schademeldingen', icon: <AlertTriangle className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
     { id: 'tickets', title: 'Ticket Omgeving', description: 'Interne communicatie en support tickets.', pageId: 'ticket-omgeving', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
@@ -78,13 +79,12 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
 
   const medewerkerSteps: TourStep[] = [
     { id: 'dashboard', title: 'Dashboard', description: 'Je persoonlijke overzicht met statistieken.', pageId: 'dashboard', icon: <Home className="h-5 w-5" />, color: 'from-blue-500 to-cyan-500' },
-    { id: 'uren', title: 'Urenregistratie', description: 'Registreer je uren met de timer.', pageId: 'urenregistratie', icon: <Clock className="h-5 w-5" />, color: 'from-purple-500 to-violet-500' },
     { id: 'projecten', title: 'Projecten', description: 'Bekijk je toegewezen projecten.', pageId: 'projecten', icon: <FolderOpen className="h-5 w-5" />, color: 'from-orange-500 to-amber-500' },
+    { id: 'uren', title: 'Urenregistratie', description: 'Registreer je uren met de timer.', pageId: 'urenregistratie', icon: <Clock className="h-5 w-5" />, color: 'from-purple-500 to-violet-500' },
     { id: 'voorraad', title: 'Voorraad Afboeken', description: 'Boek gebruikte materialen af.', pageId: 'voorraad-afboeken', icon: <Package className="h-5 w-5" />, color: 'from-pink-500 to-rose-500' },
     { id: 'gereedschap', title: 'Speciaal Gereedschap', description: 'Bekijk en leen gereedschap.', pageId: 'speciaal-gereedschap', icon: <Wrench className="h-5 w-5" />, color: 'from-yellow-500 to-orange-500' },
     { id: 'schade', title: 'Schademeldingen', description: 'Meld schade direct vanuit het veld.', pageId: 'schademeldingen', icon: <AlertTriangle className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
-    { id: 'tickets', title: 'Ticket Omgeving', description: 'Vraag hulp of meld problemen.', pageId: 'ticket-omgeving', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
-    { id: 'instellingen', title: 'Instellingen', description: 'Pas je voorkeuren aan.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
+    { id: 'instellingen', title: 'Instellingen', description: 'Vraag vakantie of verlof aan.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
   ];
 
   const steps = isAdmin ? adminSteps : medewerkerSteps;
@@ -107,7 +107,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else if (isLastStep) {
-      // Show completion screen after the last step
+      // Go back to dashboard and show completion screen
+      setActiveSection('dashboard');
       setShowCompletion(true);
     }
   };

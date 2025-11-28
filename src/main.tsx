@@ -29,6 +29,11 @@ createRoot(document.getElementById('root')!).render(
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/agent" element={
+                    <AgentAuthProvider>
+                      <AgentApp />
+                    </AgentAuthProvider>
+                  } />
                   <Route path="/agent/*" element={
                     <AgentAuthProvider>
                       <AgentApp />
