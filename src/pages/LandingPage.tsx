@@ -878,6 +878,9 @@ const LandingPage: React.FC = () => {
               <Link to="/demo" className="text-gray-400 hover:text-white transition-colors">
                 Demo
               </Link>
+              <Link to="/agent" className="text-gray-400 hover:text-white transition-colors">
+                Sales Portal
+              </Link>
             </div>
             <ThemeToggle />
           </div>

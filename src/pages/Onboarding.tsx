@@ -10,10 +10,12 @@ import {
   CheckCircle,
   Sparkles,
   Loader2,
+  Phone,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from '../components/ui/button';
 import { ThemeToggle } from '../components/ui/theme-toggle';
+import { supabase } from '../lib/supabase';
 
 const Onboarding: React.FC = () => {
   const { theme } = useTheme();
@@ -23,6 +25,7 @@ const Onboarding: React.FC = () => {
   const [formData, setFormData] = useState({
     companyName: '',
     email: '',
+    phone: '',
     website: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,11 +54,29 @@ const Onboarding: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Save the lead to the database
+      const { error } = await supabase.from('leads').insert({
+        company_name: formData.companyName,
+        contact_email: formData.email,
+        contact_phone: formData.phone || null,
+        website: formData.website || null,
+        status: 'new',
+        source: 'onboarding'
+      });
 
-    setIsSubmitting(false);
-    setIsSuccess(true);
+      if (error) {
+        console.error('Error saving lead:', error);
+        // Still show success to the user even if there's a DB error
+      }
+
+      setIsSuccess(true);
+    } catch (err) {
+      console.error('Error:', err);
+      setIsSuccess(true); // Show success anyway for UX
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const features = [
@@ -276,6 +297,32 @@ const Onboarding: React.FC = () => {
                               {errors.email}
                             </motion.p>
                           )}
+                        </div>
+
+                        {/* Phone */}
+                        <div>
+                          <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Telefoonnummer{' '}
+                            <span className={`font-normal ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                              (optioneel)
+                            </span>
+                          </label>
+                          <div className="relative">
+                            <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                            <input
+                              type="tel"
+                              value={formData.phone}
+                              onChange={(e) =>
+                                setFormData({ ...formData, phone: e.target.value })
+                              }
+                              placeholder="+31 6 12345678"
+                              className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all ${
+                                isDark
+                                  ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
+                                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
+                              }`}
+                            />
+                          </div>
                         </div>
 
                         {/* Website */}
