@@ -73,7 +73,7 @@ const Projecten: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.naam || !formData.beschrijving || !formData.locatie || !formData.startDatum) {
+    if (!formData.naam || !formData.beschrijving || !formData.startDatum) {
       alert(t('vulVerplichtVelden'));
       return;
     }
@@ -84,10 +84,10 @@ const Projecten: React.FC = () => {
       return;
     }
 
+    // Note: locatie column was removed from the database in migration 20251001183534
     const baseProjectData = {
       naam: formData.naam,
       beschrijving: formData.beschrijving,
-      locatie: formData.locatie,
       start_datum: formData.startDatum,
       status: formData.status,
       estimated_hours: null,
