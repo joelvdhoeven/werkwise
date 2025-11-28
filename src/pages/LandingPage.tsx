@@ -156,19 +156,6 @@ const LandingPage: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left: Content */}
             <div className="text-center lg:text-left">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${
-                  isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-700'
-                }`}>
-                  <Zap className="h-4 w-4" />
-                  De slimme keuze voor je bedrijf
-                </span>
-              </motion.div>
-
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

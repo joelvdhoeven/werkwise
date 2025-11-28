@@ -60,7 +60,7 @@ const Onboarding: React.FC = () => {
 
   const features = [
     'Persoonlijke onboarding',
-    'Gratis proefperiode',
+    '31 dagen gratis uitproberen',
     'Geen verplichtingen',
   ];
 
@@ -113,10 +113,10 @@ const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700'}`}
+                className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-lg font-bold mb-6 shadow-lg ${isDark ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-red-500/30' : 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-red-500/30'}`}
               >
-                <Sparkles className="h-4 w-4" />
-                Gratis proefperiode
+                <Sparkles className="h-5 w-5" />
+                31 Dagen Gratis Uitproberen!
               </motion.div>
 
               <h1 className={`text-4xl sm:text-5xl font-bold mb-6 leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
