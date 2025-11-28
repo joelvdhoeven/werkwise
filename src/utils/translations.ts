@@ -66,12 +66,12 @@ export const translations = {
     registratieOpgeslagen: 'Registratie succesvol opgeslagen!',
     vulVerplichtVelden: 'Vul alle verplichte velden in',
     selecteerType: 'Selecteer type',
-    projectbasis: 'Projectbasis',
-    meerwerk: 'Meerwerk',
-    regie: 'Regie/Indicatie',
+    projectbasis: 'Geoffreerd',
+    meerwerk: 'Extra Werk',
+    regie: 'Nacalculatie',
     overuren: 'Over uren',
     beschrijfWerk: 'Beschrijf het uitgevoerde werk...',
-    beschrijfMeerwerk: 'Beschrijf het meerwerk en de reden...',
+    beschrijfMeerwerk: 'Beschrijf het extra werk en de reden...',
     projectOrdernummerPlaceholder: 'Bijv. 25-110',
     
     // Filters
@@ -368,12 +368,12 @@ export const translations = {
     registratieOpgeslagen: 'Registration saved successfully!',
     vulVerplichtVelden: 'Please fill in all required fields',
     selecteerType: 'Select type',
-    projectbasis: 'Project Basis',
-    meerwerk: 'Additional Work',
+    projectbasis: 'Quoted Work',
+    meerwerk: 'Extra Work',
     regie: 'Time & Materials',
     overuren: 'Overtime',
     beschrijfWerk: 'Describe the work performed...',
-    beschrijfMeerwerk: 'Describe the additional work and reason...',
+    beschrijfMeerwerk: 'Describe the extra work and reason...',
     projectOrdernummerPlaceholder: 'E.g. 25-110',
     
     // Filters
