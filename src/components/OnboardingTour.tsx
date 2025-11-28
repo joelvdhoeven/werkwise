@@ -60,23 +60,33 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
   const [isLoading, setIsLoading] = useState(false);
 
   // Define steps based on user role with icons and colors
+  // Order matches sidebar navigation exactly
   const adminSteps: TourStep[] = [
+    // Overzicht
     { id: 'dashboard', title: 'Dashboard', description: 'Je command center met realtime statistieken en overzichten.', pageId: 'dashboard', icon: <Home className="h-5 w-5" />, color: 'from-blue-500 to-cyan-500' },
     { id: 'financieel', title: 'Financieel Dashboard', description: 'Inzicht in omzet, kosten en winst op projectniveau.', pageId: 'financieel-dashboard', icon: <BarChart3 className="h-5 w-5" />, color: 'from-emerald-500 to-green-500' },
     { id: 'voorraad-dashboard', title: 'Voorraad Dashboard', description: 'Overzicht van voorraadwaarde, lage voorraad alerts en trends.', pageId: 'voorraad-dashboard', icon: <Package className="h-5 w-5" />, color: 'from-indigo-500 to-blue-500' },
+    // Werk
     { id: 'projecten', title: 'Projecten', description: 'Beheer projecten, voortgang en medewerkers.', pageId: 'projecten', icon: <FolderOpen className="h-5 w-5" />, color: 'from-orange-500 to-amber-500' },
     { id: 'uren', title: 'Urenregistratie', description: 'Gebruik de timer of voer handmatig uren in.', pageId: 'urenregistratie', icon: <Clock className="h-5 w-5" />, color: 'from-purple-500 to-violet-500' },
+    // Voorraad & Gereedschap
     { id: 'voorraad-afboeken', title: 'Voorraad Afboeken', description: 'Boek materialen direct af op projecten.', pageId: 'voorraad-afboeken', icon: <Package className="h-5 w-5" />, color: 'from-pink-500 to-rose-500' },
     { id: 'voorraadbeheer', title: 'Voorraadbeheer', description: 'Beheer je volledige voorraad en locaties.', pageId: 'voorraadbeheer', icon: <Package className="h-5 w-5" />, color: 'from-cyan-500 to-teal-500' },
     { id: 'gereedschap', title: 'Speciaal Gereedschap', description: 'Track gereedschap, onderhoud en uitleningen.', pageId: 'speciaal-gereedschap', icon: <Wrench className="h-5 w-5" />, color: 'from-yellow-500 to-orange-500' },
+    // Meldingen & Support
     { id: 'schade', title: 'Schademeldingen', description: 'Registreer en volg schademeldingen op.', pageId: 'schademeldingen', icon: <AlertTriangle className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
-    { id: 'tickets', title: 'Ticket Omgeving', description: 'Interne communicatie en support tickets.', pageId: 'ticket-omgeving', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
+    { id: 'tickets', title: 'Ticket Omgeving', description: 'Maak tickets voor interne communicatie.', pageId: 'ticket-omgeving', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
+    { id: 'tickets-overzicht', title: 'Tickets Overzicht', description: 'Bekijk en beheer alle tickets van medewerkers.', pageId: 'tickets-overzicht', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
+    // Beheer
     { id: 'gebruikers', title: 'Gebruikersbeheer', description: 'Beheer gebruikers, rollen en permissies.', pageId: 'gebruikers', icon: <Users className="h-5 w-5" />, color: 'from-violet-500 to-purple-500' },
     { id: 'facturen', title: 'Factuur Instellingen', description: 'Configureer factuurlayout, bedrijfsgegevens en exporteer projectfacturen.', pageId: 'factuur-instellingen', icon: <FileText className="h-5 w-5" />, color: 'from-emerald-500 to-teal-500' },
     { id: 'instellingen', title: 'Instellingen', description: 'Personaliseer je WerkWise ervaring.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
     { id: 'systeem', title: 'Module Beheer', description: 'Beheer modules, demo data en geavanceerde systeemopties.', pageId: 'module-beheer', icon: <Sliders className="h-5 w-5" />, color: 'from-rose-500 to-red-500' },
+    // Final step - back to dashboard
+    { id: 'start', title: 'Aan de Slag!', description: 'Je bent klaar om te beginnen. Welkom bij WerkWise!', pageId: 'dashboard', icon: <Rocket className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
   ];
 
+  // Order matches sidebar navigation for simple users
   const medewerkerSteps: TourStep[] = [
     { id: 'dashboard', title: 'Dashboard', description: 'Je persoonlijke overzicht met statistieken.', pageId: 'dashboard', icon: <Home className="h-5 w-5" />, color: 'from-blue-500 to-cyan-500' },
     { id: 'projecten', title: 'Projecten', description: 'Bekijk je toegewezen projecten.', pageId: 'projecten', icon: <FolderOpen className="h-5 w-5" />, color: 'from-orange-500 to-amber-500' },
@@ -84,7 +94,10 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
     { id: 'voorraad', title: 'Voorraad Afboeken', description: 'Boek gebruikte materialen af.', pageId: 'voorraad-afboeken', icon: <Package className="h-5 w-5" />, color: 'from-pink-500 to-rose-500' },
     { id: 'gereedschap', title: 'Speciaal Gereedschap', description: 'Bekijk en leen gereedschap.', pageId: 'speciaal-gereedschap', icon: <Wrench className="h-5 w-5" />, color: 'from-yellow-500 to-orange-500' },
     { id: 'schade', title: 'Schademeldingen', description: 'Meld schade direct vanuit het veld.', pageId: 'schademeldingen', icon: <AlertTriangle className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
+    { id: 'tickets', title: 'Ticket Omgeving', description: 'Maak tickets voor vragen of support.', pageId: 'ticket-omgeving', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
     { id: 'instellingen', title: 'Instellingen', description: 'Vraag vakantie of verlof aan.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
+    // Final step - back to dashboard
+    { id: 'start', title: 'Aan de Slag!', description: 'Je bent klaar om te beginnen. Welkom bij WerkWise!', pageId: 'dashboard', icon: <Rocket className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
   ];
 
   const steps = isAdmin ? adminSteps : medewerkerSteps;
