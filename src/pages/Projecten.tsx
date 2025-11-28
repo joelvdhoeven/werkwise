@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FolderOpen, Plus, Calendar, Users, Clock, BarChart3, Eye, Search, Archive } from 'lucide-react';
+import { FolderOpen, Plus, Calendar, Users, Clock, BarChart3, Eye, Search, Archive, FileText, Download, Layers } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { nl } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -344,45 +344,89 @@ const Projecten: React.FC = () => {
     );
   }
 
+  // Quick action definitions
+  const quickActions = [
+    {
+      id: 'new-project',
+      title: 'Nieuw Project',
+      description: 'Maak een nieuw project aan',
+      icon: <Plus className="h-6 w-6" />,
+      color: 'from-red-500 to-rose-600',
+      onClick: handleNewProject
+    },
+    {
+      id: 'search',
+      title: 'Project Zoeken',
+      description: 'Zoek in je projecten',
+      icon: <Search className="h-6 w-6" />,
+      color: 'from-blue-500 to-indigo-600',
+      onClick: () => document.getElementById('project-search')?.focus()
+    },
+    {
+      id: 'active',
+      title: 'Actieve Projecten',
+      description: `${projecten.filter((p: any) => p.status === 'actief').length} projecten`,
+      icon: <Layers className="h-6 w-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      onClick: () => setSearchTerm('')
+    },
+    {
+      id: 'archive',
+      title: 'Archief',
+      description: `${archivedProjecten.length} gearchiveerd`,
+      icon: <Archive className="h-6 w-6" />,
+      color: 'from-gray-500 to-slate-600',
+      onClick: () => setShowArchive(true)
+    }
+  ];
+
   return (
-    <div>
+    <div className="space-y-6">
       {showSuccessMessage && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
           {t('projectOpgeslagen')}
         </div>
       )}
-      
-      <SupabaseErrorHelper 
-        error={lastError} 
-        table="projects" 
-        operation="INSERT" 
+
+      <SupabaseErrorHelper
+        error={lastError}
+        table="projects"
+        operation="INSERT"
       />
-      
-      <div className="flex justify-between items-center mb-6">
-        <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center space-x-3`}>
-          <FolderOpen className="text-red-600" />
-          <span>{t('projecten')}</span>
-        </h1>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowArchive(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-          >
-            <Archive size={16} />
-            <span>Archief</span>
-          </button>
-          <button
-            onClick={handleNewProject}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-          >
-            <Plus size={16} />
-            <span>{t('nieuwProject')}</span>
-          </button>
+
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
+            <FolderOpen className="h-7 w-7 text-red-600" />
+            {t('projecten')}
+          </h1>
+          <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Beheer al je projecten op één plek</p>
         </div>
       </div>
 
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {quickActions.map((action) => (
+          <button
+            key={action.id}
+            onClick={action.onClick}
+            className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl ${
+              isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
+            } shadow-md border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white mb-3 shadow-lg`}>
+              {action.icon}
+            </div>
+            <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{action.title}</h3>
+            <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{action.description}</p>
+          </button>
+        ))}
+      </div>
+
       {/* Projecten Overview */}
-      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow`}>
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
         <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
           <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('projectOverzicht')}</h2>
           <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t('beheerProjecten')}</p>
@@ -394,11 +438,14 @@ const Projecten: React.FC = () => {
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <input
+                id="project-search"
                 type="text"
                 placeholder="Zoek project op naam, nummer of beschrijving..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                }`}
               />
             </div>
             {searchTerm && (
