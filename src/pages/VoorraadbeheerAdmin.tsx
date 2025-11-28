@@ -1005,19 +1005,102 @@ const VoorraadbeheerAdmin: React.FC = () => {
     );
   }
 
+  // Quick action cards for the landing view
+  const quickActions = [
+    {
+      id: 'add-product',
+      title: 'Product Toevoegen',
+      description: 'Scan of handmatig toevoegen',
+      icon: <Plus className="h-6 w-6" />,
+      color: 'from-red-500 to-rose-600',
+      onClick: () => setShowAddProductModal(true),
+      show: canManage
+    },
+    {
+      id: 'book-material',
+      title: 'Materiaal Boeken',
+      description: 'Boek materiaal af op project',
+      icon: <ScanLine className="h-6 w-6" />,
+      color: 'from-blue-500 to-indigo-600',
+      onClick: () => setShowBookingModal(true),
+      show: true
+    },
+    {
+      id: 'products-overview',
+      title: 'Producten Overzicht',
+      description: `${products.length} producten in systeem`,
+      icon: <Package className="h-6 w-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      onClick: () => setActiveTab('producten'),
+      show: true
+    },
+    {
+      id: 'locations-overview',
+      title: 'Locatie Overzicht',
+      description: `${locations.length} locaties beschikbaar`,
+      icon: <Warehouse className="h-6 w-6" />,
+      color: 'from-orange-500 to-amber-600',
+      onClick: () => setActiveTab('locaties'),
+      show: true
+    },
+    {
+      id: 'search-product',
+      title: 'Product Zoeken',
+      description: 'Zoek snel in je voorraad',
+      icon: <Search className="h-6 w-6" />,
+      color: 'from-purple-500 to-violet-600',
+      onClick: () => {
+        setActiveTab('overzicht');
+        setTimeout(() => document.getElementById('stock-search')?.focus(), 100);
+      },
+      show: true
+    },
+    {
+      id: 'add-location',
+      title: 'Locatie Toevoegen',
+      description: 'Bus of magazijn toevoegen',
+      icon: <Truck className="h-6 w-6" />,
+      color: 'from-cyan-500 to-blue-600',
+      onClick: () => setShowAddLocationModal(true),
+      show: canManage
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraadbeheer</h1>
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
+            <Package className="h-7 w-7 text-red-600" />
+            Voorraadbeheer
+          </h1>
           <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Beheer voorraad en boek materiaal af op projecten</p>
-        </div>
-        <div className="flex gap-2">
         </div>
       </div>
 
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {quickActions.filter(action => action.show).map((action) => (
+          <button
+            key={action.id}
+            onClick={action.onClick}
+            className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl ${
+              isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
+            } shadow-md border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white mb-3 shadow-lg`}>
+              {action.icon}
+            </div>
+            <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{action.title}</h3>
+            <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{action.description}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Low Stock Alerts */}
       {canManage && lowStockAlerts.length > 0 && (
-        <div className={`rounded-lg p-4 ${isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'}`}>
+        <div className={`rounded-xl p-4 ${isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'}`}>
           <div className="flex items-start gap-3">
             <AlertCircle className={`mt-0.5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} size={20} />
             <div className="flex-1">
@@ -1037,20 +1120,26 @@ const VoorraadbeheerAdmin: React.FC = () => {
         </div>
       )}
 
-      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow`}>
-        <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex space-x-1 p-1">
-            {['overzicht', 'producten', 'locaties'].map((tab) => (
+      {/* Main Content Area with Tabs */}
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
+        <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} px-4 pt-4`}>
+          <div className="flex space-x-1">
+            {[
+              { id: 'overzicht', label: 'Voorraad Overzicht', icon: <Package size={16} /> },
+              { id: 'producten', label: 'Producten', icon: <Package size={16} /> },
+              { id: 'locaties', label: 'Locaties', icon: <Warehouse size={16} /> }
+            ].map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === tab
-                    ? 'bg-red-600 text-white'
-                    : `${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                  activeTab === tab.id
+                    ? `${isDark ? 'bg-gray-700 text-white' : 'bg-red-50 text-red-700'} border-b-2 border-red-600`
+                    : `${isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab.icon}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -1059,10 +1148,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
         <div className="p-6">
           {activeTab === 'overzicht' && (
             <div className="space-y-4">
+              {/* Bulk Selection Bar */}
               {selectedStockIds.size > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className={`rounded-lg p-4 ${isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-blue-900 font-medium">
+                    <span className={`font-medium ${isDark ? 'text-blue-300' : 'text-blue-900'}`}>
                       {selectedStockIds.size} item(s) geselecteerd
                     </span>
                     <div className="flex gap-2">
@@ -1100,77 +1190,24 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className={`flex justify-between items-center gap-2 pb-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-                <button
-                  onClick={() => setShowBookingModal(true)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                >
-                  <ScanLine size={18} />
-                  Materiaal Boeken
-                </button>
-                <div className="flex gap-2">
-                  {canManage && (
-                    <>
-                      <button
-                        onClick={() => setShowAddProductModal(true)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                      >
-                        <Plus size={18} />
-                        Product Toevoegen
-                      </button>
-                      <button
-                        onClick={() => setShowAddLocationModal(true)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                      >
-                        <Plus size={18} />
-                        Locatie Toevoegen
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={exportToCSV}
-                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                  >
-                    <Download size={18} />
-                    Export Voorraad
-                  </button>
-                  {canManage && (
-                    <div className="flex flex-col items-end gap-1">
-                      <label className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2 cursor-pointer">
-                        <Upload size={18} />
-                        Import Voorraad
-                        <input
-                          type="file"
-                          accept=".csv"
-                          onChange={handleImportProducts}
-                          className="hidden"
-                        />
-                      </label>
-                      <button
-                        onClick={downloadImportTemplate}
-                        className="text-xs text-blue-600 hover:text-blue-800 underline"
-                      >
-                        Download import sjabloon
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1 relative">
+
+              {/* Search and Filters */}
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex-1 min-w-[200px] relative">
                   <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
                   <input
+                    id="stock-search"
                     type="text"
                     placeholder="Zoek op naam of SKU..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Alle Categorieën</option>
                   {categories.map(cat => (
@@ -1180,13 +1217,34 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Alle Locaties</option>
                   {locations.map(loc => (
                     <option key={loc.id} value={loc.id}>{loc.name}</option>
                   ))}
                 </select>
+                <div className="flex gap-2 ml-auto">
+                  <button
+                    onClick={exportToCSV}
+                    className={`px-3 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-lg flex items-center gap-2 text-sm`}
+                  >
+                    <Download size={16} />
+                    Export
+                  </button>
+                  {canManage && (
+                    <label className={`px-3 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-lg flex items-center gap-2 text-sm cursor-pointer`}>
+                      <Upload size={16} />
+                      Import
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleImportProducts}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
 
               <div className="overflow-x-auto">

@@ -127,8 +127,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       label: 'Werk',
       icon: Briefcase,
       items: [
-        { id: 'urenregistratie', label: t('urenregistratie'), icon: Clock, permission: 'register_hours', module: 'module_time_registration' },
         { id: 'projecten', label: t('projecten'), icon: FolderOpen, permission: 'view_projects', module: null },
+        { id: 'urenregistratie', label: t('urenregistratie'), icon: Clock, permission: 'register_hours', module: 'module_time_registration' },
       ]
     },
     {
