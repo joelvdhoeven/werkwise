@@ -78,6 +78,12 @@ const Projecten: React.FC = () => {
       return;
     }
 
+    // Ensure user is authenticated with a valid ID
+    if (!user?.id) {
+      alert('Je bent niet ingelogd. Log opnieuw in en probeer het nog een keer.');
+      return;
+    }
+
     const baseProjectData = {
       naam: formData.naam,
       beschrijving: formData.beschrijving,
@@ -106,6 +112,7 @@ const Projecten: React.FC = () => {
         setFormData({
           naam: '',
           beschrijving: '',
+          locatie: '',
           startDatum: '',
           status: 'actief',
           project_nummer: '',
