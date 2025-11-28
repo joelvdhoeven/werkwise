@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Settings as SettingsIcon, Save } from 'lucide-react';
+import { Package, Settings as SettingsIcon, Save, Database, PlayCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
+import { seedMockData, mockUserCredentials } from '../utils/seedMockData';
 
 const ModuleBeheer: React.FC = () => {
   const { user } = useAuth();
@@ -10,6 +11,8 @@ const ModuleBeheer: React.FC = () => {
   const isDark = theme === 'dark';
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [seedingData, setSeedingData] = useState(false);
+  const [seedResults, setSeedResults] = useState<{ success: string[]; errors: string[] } | null>(null);
 
   const [moduleSettings, setModuleSettings] = useState<{
     module_invoicing: boolean;
@@ -93,6 +96,44 @@ const ModuleBeheer: React.FC = () => {
       console.error('Error saving module settings:', error);
       setErrorMessage('Fout bij het opslaan van instellingen');
       setTimeout(() => setErrorMessage(''), 3000);
+    }
+  };
+
+  const handleSeedData = async () => {
+    if (seedingData) return;
+
+    const confirmed = window.confirm(
+      'Dit zal demo data aanmaken in de database:\n\n' +
+      '- 5 gebruikers (admin, kantoorpersoneel, medewerkers, zzper)\n' +
+      '- Projecten, urenregistraties, voorraad\n' +
+      '- Schademeldingen, tickets, notificaties\n' +
+      '- Vakantieaanvragen en meer\n\n' +
+      'Weet je zeker dat je door wilt gaan?'
+    );
+
+    if (!confirmed) return;
+
+    setSeedingData(true);
+    setSeedResults(null);
+
+    try {
+      const results = await seedMockData();
+      setSeedResults(results);
+
+      if (results.errors.length === 0) {
+        setSuccessMessage('Demo data succesvol aangemaakt!');
+      } else if (results.success.length > 0) {
+        setSuccessMessage(`Demo data aangemaakt met ${results.errors.length} waarschuwingen`);
+      } else {
+        setErrorMessage('Er zijn fouten opgetreden bij het aanmaken van demo data');
+      }
+      setTimeout(() => setSuccessMessage(''), 5000);
+    } catch (error: any) {
+      console.error('Error seeding data:', error);
+      setErrorMessage('Fout bij het aanmaken van demo data: ' + error.message);
+      setTimeout(() => setErrorMessage(''), 5000);
+    } finally {
+      setSeedingData(false);
     }
   };
 
@@ -312,6 +353,99 @@ const ModuleBeheer: React.FC = () => {
                   Komma (,)
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Demo Data Section */}
+        <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className="flex items-center gap-2 mb-4">
+            <Database size={20} className="text-red-600" />
+            <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Demo Data</h2>
+          </div>
+          <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Genereer demo data om de applicatie te testen. Dit maakt gebruikers, projecten, urenregistraties, voorraad en meer aan.
+          </p>
+
+          <div className="space-y-4">
+            <div className={`p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Demo Accounts</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    De volgende accounts worden aangemaakt (wachtwoord: demowerkwise):
+                  </p>
+                  <ul className={`text-sm space-y-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {mockUserCredentials.map((user, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-xs ${
+                          user.role === 'admin'
+                            ? isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700'
+                            : user.role === 'kantoorpersoneel'
+                              ? isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'
+                              : user.role === 'zzper'
+                                ? isDark ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700'
+                                : isDark ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {user.role}
+                        </span>
+                        <span>{user.naam}</span>
+                        <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>({user.email})</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <button
+                  onClick={handleSeedData}
+                  disabled={seedingData}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                    seedingData
+                      ? isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700'
+                  }`}
+                >
+                  {seedingData ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                      <span>Bezig...</span>
+                    </>
+                  ) : (
+                    <>
+                      <PlayCircle size={16} />
+                      <span>Demo Data Aanmaken</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Results Section */}
+              {seedResults && (
+                <div className={`mt-4 p-4 rounded-lg ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                  <p className={`font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>Resultaten:</p>
+                  {seedResults.success.length > 0 && (
+                    <div className="mb-2">
+                      <p className={`text-sm ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+                        Succesvol: {seedResults.success.length} items
+                      </p>
+                    </div>
+                  )}
+                  {seedResults.errors.length > 0 && (
+                    <div>
+                      <p className={`text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                        Fouten: {seedResults.errors.length}
+                      </p>
+                      <ul className={`text-xs mt-1 space-y-1 max-h-32 overflow-y-auto ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {seedResults.errors.slice(0, 5).map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                        {seedResults.errors.length > 5 && (
+                          <li>... en {seedResults.errors.length - 5} meer</li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

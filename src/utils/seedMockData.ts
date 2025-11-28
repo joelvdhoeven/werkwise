@@ -475,6 +475,123 @@ export async function seedMockData() {
       }
     }
 
+    // 12. Create notifications for users
+    console.log('Creating notifications...');
+    const notificationTypes = [
+      { type: 'time_registration_submitted', title: 'Uren ingediend', message: 'Nieuwe urenregistratie ingediend voor goedkeuring' },
+      { type: 'missing_hours_reminder', title: 'Uren ontbreken', message: 'Je hebt nog geen uren ingevuld voor gisteren' },
+      { type: 'system_alert', title: 'Systeemmelding', message: 'Gepland onderhoud vanavond om 22:00' },
+      { type: 'user_active', title: 'Gebruiker actief', message: 'Pieter Jansen is weer actief in het systeem' }
+    ];
+
+    for (const userId of createdUserIds) {
+      // Create 2-4 notifications per user
+      const numNotifications = Math.floor(Math.random() * 3) + 2;
+      for (let i = 0; i < numNotifications; i++) {
+        try {
+          const notifData = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
+          const senderId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+
+          const { error } = await supabase
+            .from('notifications')
+            .insert({
+              recipient_id: userId,
+              sender_id: notifData.type === 'system_alert' ? null : senderId,
+              type: notifData.type,
+              title: notifData.title,
+              message: notifData.message,
+              status: Math.random() > 0.5 ? 'unread' : 'read'
+            });
+
+          if (error) throw error;
+        } catch (error: any) {
+          results.errors.push(`Error creating notification: ${error.message}`);
+        }
+      }
+    }
+    results.success.push(`Created notifications for ${createdUserIds.length} users`);
+
+    // 13. Create vacation requests
+    console.log('Creating vacation requests...');
+    const vacationTypes = ['vakantie', 'ziekte', 'verlof', 'anders'];
+    const vacationReasons = [
+      'Zomervakantie met gezin',
+      'Griep',
+      'Doktersafspraak',
+      'Verhuizing',
+      'Bruiloft familielid',
+      'Wintervakantie'
+    ];
+
+    for (let i = 0; i < 8; i++) {
+      try {
+        const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+        const reviewerId = createdUserIds[0]; // Admin reviews
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 60)); // Random date in next 60 days
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 10) + 1); // 1-10 days
+
+        const status = ['pending', 'approved', 'rejected'][Math.floor(Math.random() * 3)];
+
+        const { error } = await supabase
+          .from('vacation_requests')
+          .insert({
+            user_id: userId,
+            type: vacationTypes[Math.floor(Math.random() * vacationTypes.length)],
+            start_date: formatDate(startDate),
+            end_date: formatDate(endDate),
+            reason: vacationReasons[Math.floor(Math.random() * vacationReasons.length)],
+            status: status,
+            reviewed_by: status !== 'pending' ? reviewerId : null,
+            reviewed_at: status !== 'pending' ? new Date().toISOString() : null,
+            review_note: status === 'rejected' ? 'Helaas, te druk op kantoor in deze periode' : null
+          });
+
+        if (error) throw error;
+      } catch (error: any) {
+        results.errors.push(`Error creating vacation request: ${error.message}`);
+      }
+    }
+    results.success.push('Created 8 vacation requests');
+
+    // 14. Create ticket comments (for existing tickets)
+    console.log('Creating ticket comments...');
+    const ticketComments = [
+      'Ik kijk hier naar, moment geduld alsjeblieft.',
+      'Kun je meer details geven over het probleem?',
+      'Dit is opgelost in de laatste update.',
+      'Bedankt voor de melding, we pakken dit op.',
+      'Heb je al geprobeerd uit te loggen en opnieuw in te loggen?'
+    ];
+
+    // Get existing tickets
+    const { data: existingTickets } = await supabase.from('tickets').select('id');
+    if (existingTickets && existingTickets.length > 0) {
+      for (const ticket of existingTickets) {
+        // Add 1-3 comments per ticket
+        const numComments = Math.floor(Math.random() * 3) + 1;
+        for (let i = 0; i < numComments; i++) {
+          try {
+            const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+
+            const { error } = await supabase
+              .from('ticket_comments')
+              .insert({
+                ticket_id: ticket.id,
+                user_id: userId,
+                comment: ticketComments[Math.floor(Math.random() * ticketComments.length)]
+              });
+
+            if (error) throw error;
+          } catch (error: any) {
+            results.errors.push(`Error creating ticket comment: ${error.message}`);
+          }
+        }
+      }
+      results.success.push(`Created comments for ${existingTickets.length} tickets`);
+    }
+
     console.log('Mock data seeding complete!');
     return results;
 
