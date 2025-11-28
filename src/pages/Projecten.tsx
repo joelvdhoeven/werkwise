@@ -84,7 +84,7 @@ const Projecten: React.FC = () => {
       return;
     }
 
-    // Note: locatie column was removed from the database in migration 20251001183534
+    // Note: locatie and calculated_hours columns may not exist in all database instances
     const baseProjectData = {
       naam: formData.naam,
       beschrijving: formData.beschrijving,
@@ -93,7 +93,6 @@ const Projecten: React.FC = () => {
       estimated_hours: null,
       progress_percentage: formData.progressPercentage ? parseInt(formData.progressPercentage) : (editingProject ? editingProject.progress_percentage || 0 : 0),
       project_nummer: formData.project_nummer || null,
-      calculated_hours: formData.calculatedHours ? parseInt(formData.calculatedHours) : null,
     };
 
     // Only include created_by for new projects (INSERT), not for updates
