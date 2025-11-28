@@ -70,7 +70,11 @@ const rolePermissions: Record<UserRole, string[]> = {
     'view_notifications',
     'view_damage_reports',
     'manage_damage_reports',
-    'view_own_reports'
+    'view_own_reports',
+    'view_projects',
+    'view_tools',
+    'view_inventory',
+    'create_tickets'
   ],
   zzper: [
     'view_dashboard',
@@ -78,7 +82,11 @@ const rolePermissions: Record<UserRole, string[]> = {
     'view_notifications',
     'view_damage_reports',
     'manage_damage_reports',
-    'view_own_reports'
+    'view_own_reports',
+    'view_projects',
+    'view_tools',
+    'view_inventory',
+    'create_tickets'
   ],
   superuser: [
     'view_dashboard',
