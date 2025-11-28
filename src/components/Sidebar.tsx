@@ -158,7 +158,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       items: [
         { id: 'gebruikers', label: t('gebruikers'), icon: Users, permission: 'manage_users', module: null },
         { id: 'factuur-instellingen', label: 'Factuur Instellingen', icon: FileText, permission: 'manage_settings', module: 'module_invoicing' },
-        { id: 'module-beheer', label: 'Systeeminstellingen', icon: Sliders, permission: 'manage_settings', module: null },
+        { id: 'module-beheer', label: 'Module Beheer', icon: Sliders, permission: 'manage_settings', module: null },
         { id: 'instellingen', label: t('instellingen'), icon: Settings, permission: 'view_dashboard', module: null },
       ]
     }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Play, Pause, Square, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Clock, Play, Pause, Square, ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../contexts/TimerContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -16,6 +16,25 @@ const FloatingTimerButton: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState('');
   const [description, setDescription] = useState('');
   const [werktype, setWerktype] = useState('');
+  const [isHidden, setIsHidden] = useState(() => {
+    return localStorage.getItem('werkwise_timer_hidden') === 'true';
+  });
+
+  const handleHide = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsHidden(true);
+    localStorage.setItem('werkwise_timer_hidden', 'true');
+  };
+
+  const handleShow = () => {
+    setIsHidden(false);
+    localStorage.removeItem('werkwise_timer_hidden');
+  };
+
+  // Show button again if timer starts running
+  if (isHidden && timerState.isRunning) {
+    handleShow();
+  }
 
   const { data: allProjecten } = useSupabaseQuery<any>('projects');
   const projects = (allProjecten || []).filter((p: any) => p.status === 'actief');
@@ -75,7 +94,13 @@ const FloatingTimerButton: React.FC = () => {
     { value: 'overig', label: 'Overig' },
   ];
 
-  // Always show the timer button (collapsed or expanded)
+  // Check if timer should be hidden (only when not running and at 0)
+  const canHide = !timerState.isRunning && timerState.elapsedSeconds === 0;
+
+  // If hidden and can still be hidden, don't render
+  if (isHidden && canHide) {
+    return null;
+  }
 
   return (
     <>
@@ -152,6 +177,20 @@ const FloatingTimerButton: React.FC = () => {
                   transition={{ duration: 1, repeat: Infinity }}
                   className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-lg"
                 />
+              )}
+
+              {/* Close button when timer is at 00:00:00 */}
+              {canHide && (
+                <button
+                  onClick={handleHide}
+                  className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-lg ${
+                    isDark
+                      ? 'bg-gray-700 hover:bg-red-600 text-gray-400 hover:text-white'
+                      : 'bg-gray-200 hover:bg-red-500 text-gray-500 hover:text-white'
+                  }`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               )}
             </motion.button>
           </motion.div>

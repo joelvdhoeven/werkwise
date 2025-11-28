@@ -21,7 +21,9 @@ import {
   Ticket,
   Settings,
   BarChart3,
-  Home
+  Home,
+  FileText,
+  Sliders
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
@@ -69,7 +71,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
     { id: 'schade', title: 'Schademeldingen', description: 'Registreer en volg schademeldingen op.', pageId: 'schademeldingen', icon: <AlertTriangle className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
     { id: 'tickets', title: 'Ticket Omgeving', description: 'Interne communicatie en support tickets.', pageId: 'ticket-omgeving', icon: <Ticket className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
     { id: 'gebruikers', title: 'Gebruikersbeheer', description: 'Beheer gebruikers, rollen en permissies.', pageId: 'gebruikers', icon: <Users className="h-5 w-5" />, color: 'from-violet-500 to-purple-500' },
+    { id: 'facturen', title: 'Factuur Instellingen', description: 'Configureer factuurlayout, bedrijfsgegevens en exporteer projectfacturen.', pageId: 'factuur-instellingen', icon: <FileText className="h-5 w-5" />, color: 'from-emerald-500 to-teal-500' },
     { id: 'instellingen', title: 'Instellingen', description: 'Personaliseer je WerkWise ervaring.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
+    { id: 'systeem', title: 'Module Beheer', description: 'Beheer modules, demo data en geavanceerde systeemopties.', pageId: 'module-beheer', icon: <Sliders className="h-5 w-5" />, color: 'from-rose-500 to-red-500' },
   ];
 
   const medewerkerSteps: TourStep[] = [
