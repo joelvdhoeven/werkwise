@@ -144,6 +144,10 @@ export async function seedMockData() {
   const createdProductIds: string[] = [];
   const createdLocationIds: string[] = [];
 
+  // Save the current session to restore later
+  const { data: currentSessionData } = await supabase.auth.getSession();
+  const originalSession = currentSessionData?.session;
+
   try {
     // 1. Create mock users - First try to get existing users
     console.log('Creating mock users...');
@@ -212,10 +216,27 @@ export async function seedMockData() {
 
           createdUserIds.push(authData.user.id);
           results.success.push(`Created user: ${userData.naam}`);
+
+          // Restore original session immediately after creating each user
+          // because signUp automatically logs in the new user
+          if (originalSession) {
+            await supabase.auth.setSession({
+              access_token: originalSession.access_token,
+              refresh_token: originalSession.refresh_token
+            });
+          }
         }
       } catch (error: any) {
         results.errors.push(`Error creating user ${userData.naam}: ${error.message}`);
       }
+    }
+
+    // Ensure we're back to original session after all user creation
+    if (originalSession) {
+      await supabase.auth.setSession({
+        access_token: originalSession.access_token,
+        refresh_token: originalSession.refresh_token
+      });
     }
 
     // If we have no user IDs, we can't continue
@@ -617,11 +638,33 @@ export async function seedMockData() {
     }
 
     console.log('Mock data seeding complete!');
+
+    // Final restoration of original session
+    if (originalSession) {
+      await supabase.auth.setSession({
+        access_token: originalSession.access_token,
+        refresh_token: originalSession.refresh_token
+      });
+    }
+
     return results;
 
   } catch (error: any) {
     console.error('Fatal error during seeding:', error);
     results.errors.push(`Fatal error: ${error.message}`);
+
+    // Restore original session even on error
+    if (originalSession) {
+      try {
+        await supabase.auth.setSession({
+          access_token: originalSession.access_token,
+          refresh_token: originalSession.refresh_token
+        });
+      } catch (sessionError) {
+        console.error('Failed to restore session:', sessionError);
+      }
+    }
+
     return results;
   }
 }
