@@ -192,12 +192,18 @@ const SpeciaalGereedschapPage: React.FC = () => {
         updateData.locatie = 'Depot';
       }
 
-      const { error: updateError } = await supabase
+      const { data: updatedData, error: updateError } = await supabase
         .from('special_tools')
         .update(updateData)
-        .eq('id', statusChangeItem.id);
+        .eq('id', statusChangeItem.id)
+        .select();
 
       if (updateError) throw updateError;
+
+      // Check if any rows were actually updated (RLS might silently block)
+      if (!updatedData || updatedData.length === 0) {
+        throw new Error('Je hebt geen rechten om de status van dit gereedschap te wijzigen. Neem contact op met een beheerder.');
+      }
 
       await loadData();
       setShowStatusModal(false);
@@ -508,10 +514,18 @@ const SpeciaalGereedschapPage: React.FC = () => {
       {/* Status Change Modal (for all users) */}
       <Modal
         isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
+        onClose={() => {
+          setShowStatusModal(false);
+          setError(null);
+        }}
         title="Status Wijzigen"
       >
         <form onSubmit={handleStatusChange} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
           {statusChangeItem && (
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
               <p className="font-medium text-gray-900">{statusChangeItem.naam}</p>

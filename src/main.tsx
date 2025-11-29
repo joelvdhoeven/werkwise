@@ -7,6 +7,7 @@ import App from './App.tsx';
 import LandingPage from './pages/LandingPage.tsx';
 import Onboarding from './pages/Onboarding.tsx';
 import AgentApp from './pages/AgentApp.tsx';
+import NotFound from './pages/NotFound.tsx';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { AgentAuthProvider } from './contexts/AgentAuthContext';
@@ -40,6 +41,7 @@ createRoot(document.getElementById('root')!).render(
                     </AgentAuthProvider>
                   } />
                   <Route path="/demo/*" element={<App />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </TimerProvider>
             </SystemSettingsProvider>
