@@ -1423,7 +1423,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                       const stockId = `${item.product_id}|||${item.location_id}`;
                       const isSelected = selectedStockIds.has(stockId);
                       return (
-                        <tr key={stockId} className={isLow ? 'bg-yellow-50' : ''}>
+                        <tr key={stockId} className={isLow ? (isDark ? 'bg-yellow-900/20' : 'bg-yellow-50') : ''}>
                           <td className="px-4 py-3">
                             <input
                               type="checkbox"
@@ -1445,7 +1445,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                               <span className={`italic ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Geen locatie</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-medium">
+                          <td className={`px-4 py-3 text-sm text-right font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                             {item.quantity} {item.product?.unit}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
