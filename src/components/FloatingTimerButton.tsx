@@ -280,9 +280,9 @@ const FloatingTimerButton: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 rounded-lg transition-colors bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 shadow-md"
+                className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-6 w-6 text-red-600" />
               </button>
             </div>
 
