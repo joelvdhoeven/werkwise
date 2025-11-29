@@ -554,11 +554,11 @@ const Gebruikers: React.FC = () => {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('userName')} *
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <User className={`absolute left-3 top-2.5 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
               <input
                 type="text"
                 name="naam"
@@ -566,17 +566,19 @@ const Gebruikers: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder={t('enterUserName')}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('userEmail')} *
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Mail className={`absolute left-3 top-2.5 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
               <input
                 type="email"
                 name="email"
@@ -584,23 +586,27 @@ const Gebruikers: React.FC = () => {
                 onChange={handleInputChange}
                 required
                 placeholder={t('enterUserEmail')}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('role')} *
             </label>
             <div className="relative">
-              <UserPlus className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <UserPlus className={`absolute left-3 top-2.5 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleInputChange}
                 required
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 appearance-none bg-white"
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 appearance-none ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="admin">{t('administrator')}</option>
                 <option value="kantoorpersoneel">{t('officeStaff')}</option>
@@ -613,7 +619,7 @@ const Gebruikers: React.FC = () => {
           {hourlyRatesEnabled && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Uurtarief Inkoop (€)
                 </label>
                 <input
@@ -624,12 +630,14 @@ const Gebruikers: React.FC = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Uurtarief Verkoop (€)
                 </label>
                 <input
@@ -640,7 +648,9 @@ const Gebruikers: React.FC = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
             </div>
@@ -649,7 +659,7 @@ const Gebruikers: React.FC = () => {
           {/* Vacation Hours Section */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Vakantie-uren Totaal
               </label>
               <input
@@ -660,14 +670,16 @@ const Gebruikers: React.FC = () => {
                 min="0"
                 step="0.5"
                 placeholder="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
-              <p className="text-xs text-gray-500 mt-1">Jaarlijks toegekende vakantie-uren</p>
+              <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Jaarlijks toegekende vakantie-uren</p>
             </div>
 
             {editingUser && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Vakantie-uren Gebruikt
                 </label>
                 <input
@@ -678,9 +690,11 @@ const Gebruikers: React.FC = () => {
                   min="0"
                   step="0.5"
                   placeholder="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Resterend: {(formData.vacation_hours_total - formData.vacation_hours_used).toFixed(1)} uur
                 </p>
               </div>
@@ -689,7 +703,7 @@ const Gebruikers: React.FC = () => {
 
           {!editingUser && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t('password')} *
               </label>
               <div className="relative">
@@ -700,12 +714,14 @@ const Gebruikers: React.FC = () => {
                   onChange={handleInputChange}
                   required={!editingUser}
                   placeholder={t('enterPassword')}
-                  className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full pl-4 pr-12 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  className={`absolute right-3 top-2.5 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -714,15 +730,17 @@ const Gebruikers: React.FC = () => {
           )}
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border rounded-md transition-colors ${
+                isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
               disabled={mutationLoading}
             >
               {t('annuleren')}
             </button>
-            <button 
+            <button
               type="submit"
               disabled={mutationLoading}
               className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

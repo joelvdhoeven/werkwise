@@ -522,19 +522,19 @@ const SpeciaalGereedschapPage: React.FC = () => {
       >
         <form onSubmit={handleStatusChange} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+            <div className={`p-3 rounded-md text-sm ${isDark ? 'bg-red-900/30 border border-red-700 text-red-300' : 'bg-red-100 border border-red-400 text-red-700'}`}>
               {error}
             </div>
           )}
           {statusChangeItem && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <p className="font-medium text-gray-900">{statusChangeItem.naam}</p>
-              <p className="text-sm text-gray-600">{statusChangeItem.beschrijving}</p>
+            <div className={`mb-4 p-3 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{statusChangeItem.naam}</p>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{statusChangeItem.beschrijving}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nieuwe Status *</label>
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Nieuwe Status *</label>
             <select
               value={statusFormData.status}
               onChange={(e) => setStatusFormData(prev => ({
@@ -543,7 +543,9 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 project_id: e.target.value !== 'in-gebruik' ? '' : prev.project_id
               }))}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="beschikbaar">{t('beschikbaar')} - Terug naar depot</option>
               <option value="in-gebruik">{t('inGebruik')} - Op project boeken</option>
@@ -553,19 +555,21 @@ const SpeciaalGereedschapPage: React.FC = () => {
 
           {statusFormData.status === 'in-gebruik' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project (Klus) *</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Project (Klus) *</label>
               <select
                 value={statusFormData.project_id}
                 onChange={(e) => setStatusFormData(prev => ({ ...prev, project_id: e.target.value }))}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">Selecteer een project...</option>
                 {projecten.map(project => (
                   <option key={project.id} value={project.id}>{project.naam}</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className={`mt-1 text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                 Selecteer het project waar je dit gereedschap gaat gebruiken
               </p>
             </div>
@@ -575,7 +579,9 @@ const SpeciaalGereedschapPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowStatusModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border rounded-md transition-colors ${
+                isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
             >
               {t('annuleren')}
             </button>
@@ -601,7 +607,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('gereedschapNaam')} *</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('gereedschapNaam')} *</label>
                 <input
                   type="text"
                   name="naam"
@@ -609,17 +615,21 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="Bijv. Hijskraan 50 ton"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('gereedschapStatus')} *</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('gereedschapStatus')} *</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="beschikbaar">{t('beschikbaar')}</option>
                   <option value="in-gebruik">{t('inGebruik')}</option>
@@ -629,7 +639,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('gereedschapBeschrijving')} *</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('gereedschapBeschrijving')} *</label>
               <textarea
                 name="beschrijving"
                 value={formData.beschrijving}
@@ -637,13 +647,15 @@ const SpeciaalGereedschapPage: React.FC = () => {
                 rows={3}
                 required
                 placeholder="Beschrijf het gereedschap en zijn gebruik..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('gereedschapLocatie')} *</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('gereedschapLocatie')} *</label>
                 <input
                   type="text"
                   name="locatie"
@@ -651,16 +663,20 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   placeholder="Bijv. Hoofddepot, Werkplaats"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('gekoppeldProject')}</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('gekoppeldProject')}</label>
                 <select
                   name="project_id"
                   value={formData.project_id}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="">{t('selecteerProject')}</option>
                   {projecten.map(project => (
@@ -672,7 +688,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('laatsteOnderhoud')}</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('laatsteOnderhoud')}</label>
                 <DatePicker
                   selected={formData.laatste_onderhoud ? new Date(formData.laatste_onderhoud) : null}
                   onChange={(date) => {
@@ -681,13 +697,15 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   }}
                   dateFormat="dd/MM/yyyy"
                   locale={nl}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   wrapperClassName="w-full"
                   portalId="root-portal"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('volgendeOnderhoud')}</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('volgendeOnderhoud')}</label>
                 <DatePicker
                   selected={formData.volgende_onderhoud ? new Date(formData.volgende_onderhoud) : null}
                   onChange={(date) => {
@@ -696,7 +714,9 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   }}
                   dateFormat="dd/MM/yyyy"
                   locale={nl}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   wrapperClassName="w-full"
                   portalId="root-portal"
                 />
@@ -704,7 +724,7 @@ const SpeciaalGereedschapPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('fotoUrl')}</label>
+              <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('fotoUrl')}</label>
               <div className="flex">
                 <input
                   type="url"
@@ -712,10 +732,14 @@ const SpeciaalGereedschapPage: React.FC = () => {
                   value={formData.foto_url}
                   onChange={handleInputChange}
                   placeholder="https://example.com/foto.jpg"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`flex-1 px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
-                <div className="px-3 py-2 bg-gray-50 border border-l-0 border-gray-300 rounded-r-md flex items-center">
-                  <Camera size={16} className="text-gray-400" />
+                <div className={`px-3 py-2 border border-l-0 rounded-r-md flex items-center ${
+                  isDark ? 'bg-gray-600 border-gray-600' : 'bg-gray-50 border-gray-300'
+                }`}>
+                  <Camera size={16} className={isDark ? 'text-gray-400' : 'text-gray-400'} />
                 </div>
               </div>
             </div>
@@ -724,7 +748,9 @@ const SpeciaalGereedschapPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className={`px-6 py-2 border rounded-md transition-colors ${
+                  isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
                 {t('annuleren')}
               </button>

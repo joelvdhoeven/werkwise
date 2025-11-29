@@ -366,7 +366,7 @@ const Schademeldingen: React.FC = () => {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('typeItem')} <span className="text-red-600">*</span>
             </label>
             <select
@@ -374,7 +374,9 @@ const Schademeldingen: React.FC = () => {
               value={formData.typeItem}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="">{t('selecteerType')}</option>
               <option value="gereedschap">{t('gereedschap')}</option>
@@ -384,7 +386,7 @@ const Schademeldingen: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('omschrijving')} <span className="text-red-600">*</span>
             </label>
             <input
@@ -394,7 +396,9 @@ const Schademeldingen: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Bijv. Boormachine, Bedrijfsbus, Hout planken"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
@@ -407,7 +411,7 @@ const Schademeldingen: React.FC = () => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {t('beschrijvingSchade')} <span className="text-red-600">*</span>
             </label>
             <textarea
@@ -417,19 +421,23 @@ const Schademeldingen: React.FC = () => {
               rows={4}
               placeholder={t('beschrijfSchade')}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('fotoS')} <span className="text-gray-500">({t('optioneel')})</span>
+            <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              {t('fotoS')} <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>({t('optioneel')})</span>
             </label>
             <div className="mt-1">
-              <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-red-500 transition-colors">
+              <label className={`flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-md cursor-pointer hover:border-red-500 transition-colors ${
+                isDark ? 'border-gray-600 bg-gray-700/50' : 'border-gray-300'
+              }`}>
                 <div className="space-y-1 text-center">
-                  <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                  <div className="text-sm text-gray-600">
+                  <Upload className={`mx-auto h-8 w-8 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {uploading ? t('uploaden') : t('klikOmFotoSTeUploaden')}
                   </div>
                 </div>
@@ -479,7 +487,9 @@ const Schademeldingen: React.FC = () => {
                 });
                 setUploadedPhotos([]);
               }}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border rounded-md transition-colors ${
+                isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
             >
               Annuleren
             </button>
