@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { Clock, Play, Pause, Square, ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Clock, Play, Pause, Square, ChevronLeft, ChevronRight, Check, X, Plus, Trash2, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../contexts/TimerContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSupabaseQuery, useSupabaseMutation } from '../hooks/useSupabase';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+
+interface Material {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit: string;
+}
 
 const FloatingTimerButton: React.FC = () => {
   const { timerState, startTimer, pauseTimer, stopTimer, resetTimer, toggleOpen, setIsOpen } = useTimer();
@@ -15,10 +23,29 @@ const FloatingTimerButton: React.FC = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState('');
   const [description, setDescription] = useState('');
-  const [werktype, setWerktype] = useState('');
+  const [werktype, setWerktype] = useState('projectbasis');
+  const [usedMaterials, setUsedMaterials] = useState(false);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [materialQuantity, setMaterialQuantity] = useState(1);
   const [isHidden, setIsHidden] = useState(() => {
     return localStorage.getItem('werkwise_timer_hidden') === 'true';
   });
+
+  // Load products for material selection
+  useEffect(() => {
+    const loadProducts = async () => {
+      const { data } = await supabase
+        .from('inventory_products')
+        .select('id, name, unit, sku')
+        .order('name');
+      if (data) setProducts(data);
+    };
+    if (usedMaterials && products.length === 0) {
+      loadProducts();
+    }
+  }, [usedMaterials]);
 
   const handleHide = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,40 +85,74 @@ const FloatingTimerButton: React.FC = () => {
     }
   };
 
+  const addMaterial = () => {
+    if (!selectedProductId) return;
+    const product = products.find(p => p.id === selectedProductId);
+    if (!product) return;
+
+    // Check if already added
+    const existing = materials.find(m => m.product_id === selectedProductId);
+    if (existing) {
+      setMaterials(materials.map(m =>
+        m.product_id === selectedProductId
+          ? { ...m, quantity: m.quantity + materialQuantity }
+          : m
+      ));
+    } else {
+      setMaterials([...materials, {
+        product_id: product.id,
+        product_name: product.name,
+        quantity: materialQuantity,
+        unit: product.unit
+      }]);
+    }
+    setSelectedProductId('');
+    setMaterialQuantity(1);
+  };
+
+  const removeMaterial = (productId: string) => {
+    setMaterials(materials.filter(m => m.product_id !== productId));
+  };
+
   const handleSave = async () => {
     if (!selectedProject || !werktype || !user) return;
 
     const hours = getHoursFromSeconds(timerState.elapsedSeconds);
+    const selectedProjectData = projects.find((p: any) => p.id === selectedProject);
 
     await insertRegistration({
       user_id: user.id,
       project_id: selectedProject,
+      project_naam: selectedProjectData?.naam || '',
       datum: new Date().toISOString().split('T')[0],
       aantal_uren: hours,
       werkomschrijving: description || 'Timer registratie',
       werktype: werktype,
       status: 'submitted',
+      materials: usedMaterials && materials.length > 0 ? materials : [],
     });
 
     resetTimer();
     setShowBookingModal(false);
     setSelectedProject('');
     setDescription('');
-    setWerktype('');
+    setWerktype('projectbasis');
+    setUsedMaterials(false);
+    setMaterials([]);
   };
 
   const handleCancelBooking = () => {
     setShowBookingModal(false);
+    setUsedMaterials(false);
+    setMaterials([]);
     // Resume timer if cancelled
     startTimer();
   };
 
   const werktypes = [
-    { value: 'werk', label: 'Werk' },
-    { value: 'transport', label: 'Transport' },
-    { value: 'administratie', label: 'Administratie' },
-    { value: 'vergadering', label: 'Vergadering' },
-    { value: 'overig', label: 'Overig' },
+    { value: 'projectbasis', label: 'Geoffreerd' },
+    { value: 'meerwerk', label: 'Extra Werk' },
+    { value: 'regie', label: 'Nacalculatie' },
   ];
 
   // Check if timer should be hidden (only when not running and at 0)
@@ -364,7 +425,7 @@ const FloatingTimerButton: React.FC = () => {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                 {/* Project Selection */}
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -393,22 +454,24 @@ const FloatingTimerButton: React.FC = () => {
                   <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     Werktype *
                   </label>
-                  <select
-                    value={werktype}
-                    onChange={(e) => setWerktype(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                      isDark
-                        ? 'bg-gray-800 border-gray-700 text-white focus:border-red-500'
-                        : 'bg-white border-gray-300 text-gray-900 focus:border-red-500'
-                    } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
-                  >
-                    <option value="">Selecteer werktype</option>
+                  <div className="grid grid-cols-3 gap-2">
                     {werktypes.map((type) => (
-                      <option key={type.value} value={type.value}>
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setWerktype(type.value)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          werktype === type.value
+                            ? 'bg-red-600 text-white'
+                            : isDark
+                              ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
                         {type.label}
-                      </option>
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -419,7 +482,7 @@ const FloatingTimerButton: React.FC = () => {
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
+                    rows={2}
                     placeholder="Optioneel: beschrijf wat je hebt gedaan..."
                     className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
                       isDark
@@ -427,6 +490,119 @@ const FloatingTimerButton: React.FC = () => {
                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-red-500'
                     } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
                   />
+                </div>
+
+                {/* Materials Toggle */}
+                <div className={`p-4 rounded-xl border ${isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Package className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        Materialen gebruikt?
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setUsedMaterials(false)}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                          !usedMaterials
+                            ? 'bg-red-600 text-white'
+                            : isDark
+                              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                      >
+                        Nee
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUsedMaterials(true)}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                          usedMaterials
+                            ? 'bg-red-600 text-white'
+                            : isDark
+                              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                      >
+                        Ja
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Material Selection */}
+                  {usedMaterials && (
+                    <div className="mt-4 space-y-3">
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedProductId}
+                          onChange={(e) => setSelectedProductId(e.target.value)}
+                          className={`flex-1 px-3 py-2 rounded-lg border text-sm ${
+                            isDark
+                              ? 'bg-gray-700 border-gray-600 text-white'
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
+                        >
+                          <option value="">Selecteer product...</option>
+                          {products.map((product) => (
+                            <option key={product.id} value={product.id}>
+                              {product.name} ({product.unit})
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          min="1"
+                          value={materialQuantity}
+                          onChange={(e) => setMaterialQuantity(parseInt(e.target.value) || 1)}
+                          className={`w-20 px-3 py-2 rounded-lg border text-sm text-center ${
+                            isDark
+                              ? 'bg-gray-700 border-gray-600 text-white'
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={addMaterial}
+                          disabled={!selectedProductId}
+                          className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Added Materials List */}
+                      {materials.length > 0 && (
+                        <div className="space-y-2">
+                          {materials.map((material) => (
+                            <div
+                              key={material.product_id}
+                              className={`flex items-center justify-between px-3 py-2 rounded-lg ${
+                                isDark ? 'bg-gray-700' : 'bg-white border border-gray-200'
+                              }`}
+                            >
+                              <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                {material.product_name}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  {material.quantity} {material.unit}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeMaterial(material.product_id)}
+                                  className="p-1 text-red-500 hover:bg-red-100 rounded"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
