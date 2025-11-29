@@ -50,11 +50,11 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
 
       try {
         const { data: stockData, error } = await supabase
-          .from('stock')
+          .from('inventory_stock')
           .select(`
             quantity,
-            product:product_id(name, minimum_stock),
-            location:location_id(name)
+            product:inventory_products!inventory_stock_product_id_fkey(name, minimum_stock),
+            location:inventory_locations!inventory_stock_location_id_fkey(name)
           `);
 
         if (error) throw error;
