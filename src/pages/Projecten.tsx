@@ -743,9 +743,9 @@ const Projecten: React.FC = () => {
                                 <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mb-2`}>Medewerkers ({projectUsers.length})</div>
                                 {projectUsers.length > 0 ? (
                                   <div className="flex flex-wrap gap-1">
-                                    {projectUsers.slice(0, 5).map((userName, idx) => (
+                                    {projectUsers.slice(0, 5).map((userInfo, idx) => (
                                       <span key={idx} className={`inline-flex px-2 py-1 text-xs rounded-full ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                        {userName}
+                                        {userInfo.naam}
                                       </span>
                                     ))}
                                     {projectUsers.length > 5 && (
