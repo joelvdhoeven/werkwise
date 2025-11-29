@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Search, Plus, AlertCircle, Truck, Warehouse, Download, Upload, ScanLine, Filter, X, Edit, Trash2, Eye, ArrowRightLeft } from 'lucide-react';
+import { Package, Search, Plus, AlertCircle, Truck, Warehouse, Download, Upload, ScanLine, Filter, X, Edit, Trash2, Eye, ArrowRightLeft, Camera, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
@@ -135,8 +135,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
     supplier: '',
     price: 0,
     purchase_price: 0,
-    sale_price: 0
+    sale_price: 0,
+    photo_url: ''
   });
+  const [productPhotoFile, setProductPhotoFile] = useState<File | null>(null);
+  const [productPhotoPreview, setProductPhotoPreview] = useState<string>('');
+  const [showEanScanner, setShowEanScanner] = useState(false);
+  const [eanVideoRef, setEanVideoRef] = useState<HTMLVideoElement | null>(null);
 
   const [showMoveStockModal, setShowMoveStockModal] = useState(false);
   const [moveStockData, setMoveStockData] = useState<{
@@ -784,6 +789,102 @@ const VoorraadbeheerAdmin: React.FC = () => {
     reader.readAsText(file);
   };
 
+  // Photo handling for product
+  const handleProductPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProductPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProductPhotoCapture = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+
+      // Wait for video to be ready
+      await new Promise(resolve => video.onloadedmetadata = resolve);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d')?.drawImage(video, 0, 0);
+
+      // Stop the stream
+      stream.getTracks().forEach(track => track.stop());
+
+      // Convert to blob and file
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `product-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          setProductPhotoFile(file);
+          setProductPhotoPreview(canvas.toDataURL('image/jpeg'));
+        }
+      }, 'image/jpeg', 0.8);
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+      alert('Kon camera niet openen. Controleer of je toestemming hebt gegeven.');
+    }
+  };
+
+  // EAN Scanner
+  const startEanScanner = async () => {
+    setShowEanScanner(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+
+      // We'll use a simple approach - user types the scanned code
+      // For a real barcode scanner, you'd need a library like quagga or zxing
+      const video = document.getElementById('ean-scanner-video') as HTMLVideoElement;
+      if (video) {
+        video.srcObject = stream;
+        video.play();
+      }
+    } catch (error) {
+      console.error('Error starting scanner:', error);
+      alert('Kon camera niet openen voor scanner');
+      setShowEanScanner(false);
+    }
+  };
+
+  const stopEanScanner = () => {
+    const video = document.getElementById('ean-scanner-video') as HTMLVideoElement;
+    if (video && video.srcObject) {
+      const stream = video.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setShowEanScanner(false);
+  };
+
+  const uploadProductPhoto = async (productId: string): Promise<string | null> => {
+    if (!productPhotoFile) return null;
+
+    const fileExt = productPhotoFile.name.split('.').pop();
+    const fileName = `${productId}.${fileExt}`;
+    const filePath = `product-photos/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('inventory')
+      .upload(filePath, productPhotoFile, { upsert: true });
+
+    if (uploadError) {
+      console.error('Error uploading photo:', uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage.from('inventory').getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
   const handleAddProduct = async () => {
     if (!newProductData.name || !newProductData.sku || !newProductData.category || !newProductData.unit) {
       alert('Vul minimaal naam, SKU, categorie en eenheid in');
@@ -791,7 +892,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase
+      // First insert the product
+      const { data: insertedProduct, error } = await supabase
         .from('inventory_products')
         .insert({
           name: newProductData.name,
@@ -805,9 +907,22 @@ const VoorraadbeheerAdmin: React.FC = () => {
           price: newProductData.price || null,
           purchase_price: newProductData.purchase_price || null,
           sale_price: newProductData.sale_price || null
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Upload photo if exists and update product
+      if (productPhotoFile && insertedProduct) {
+        const photoUrl = await uploadProductPhoto(insertedProduct.id);
+        if (photoUrl) {
+          await supabase
+            .from('inventory_products')
+            .update({ photo_url: photoUrl })
+            .eq('id', insertedProduct.id);
+        }
+      }
 
       alert('Product succesvol toegevoegd!');
       setShowAddProductModal(false);
@@ -822,8 +937,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
         supplier: '',
         price: 0,
         purchase_price: 0,
-        sale_price: 0
+        sale_price: 0,
+        photo_url: ''
       });
+      setProductPhotoFile(null);
+      setProductPhotoPreview('');
       loadData();
     } catch (error) {
       console.error('Error adding product:', error);
@@ -986,12 +1104,34 @@ const VoorraadbeheerAdmin: React.FC = () => {
     event.target.value = '';
   };
 
-  const filteredStock = stock.filter(s => {
+  // Create a combined list of all products with their stock (including products with no stock)
+  const allProductsWithStock = React.useMemo(() => {
+    // Get products that have stock entries
+    const productsWithStock = new Set(stock.map(s => s.product_id));
+
+    // Create entries for products without stock (shown with quantity 0)
+    const productsWithoutStock = products
+      .filter(p => !productsWithStock.has(p.id))
+      .map(p => ({
+        id: `no-stock-${p.id}`,
+        product_id: p.id,
+        location_id: null,
+        quantity: 0,
+        product: p,
+        location: null,
+        updated_at: null
+      }));
+
+    // Combine stock entries with products without stock
+    return [...stock, ...productsWithoutStock];
+  }, [products, stock]);
+
+  const filteredStock = allProductsWithStock.filter(s => {
     const matchesSearch = !searchTerm ||
       s.product?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.product?.sku.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !categoryFilter || s.product?.category === categoryFilter;
-    const matchesLocation = !locationFilter || s.location_id === locationFilter;
+    const matchesLocation = !locationFilter || (s.location_id === null || s.location_id === locationFilter);
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
@@ -1288,10 +1428,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{item.product?.sku}</td>
                           <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{item.product?.category}</td>
                           <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                            <div className="flex items-center gap-2">
-                              {item.location?.type === 'bus' ? <Truck size={16} /> : <Warehouse size={16} />}
-                              {item.location?.name}
-                            </div>
+                            {item.location ? (
+                              <div className="flex items-center gap-2">
+                                {item.location.type === 'bus' ? <Truck size={16} /> : <Warehouse size={16} />}
+                                {item.location.name}
+                              </div>
+                            ) : (
+                              <span className={`italic ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Geen locatie</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-sm text-right font-medium">
                             {item.quantity} {item.product?.unit}
@@ -2299,13 +2443,23 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
                 <div>
                   <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>EAN Code</label>
-                  <input
-                    type="text"
-                    value={newProductData.ean}
-                    onChange={(e) => setNewProductData({ ...newProductData, ean: e.target.value })}
-                    placeholder="EAN barcode"
-                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newProductData.ean}
+                      onChange={(e) => setNewProductData({ ...newProductData, ean: e.target.value })}
+                      placeholder="EAN barcode"
+                      className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                    />
+                    <button
+                      type="button"
+                      onClick={startEanScanner}
+                      className={`px-3 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md`}
+                      title="Scan EAN code"
+                    >
+                      <ScanLine size={20} />
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -2353,6 +2507,56 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   placeholder="Extra informatie over dit product"
                   className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
+              </div>
+
+              {/* Photo Upload Section */}
+              <div>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Product Foto</label>
+                <div className="flex items-center gap-4">
+                  {productPhotoPreview ? (
+                    <div className="relative">
+                      <img
+                        src={productPhotoPreview}
+                        alt="Product preview"
+                        className="w-24 h-24 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProductPhotoFile(null);
+                          setProductPhotoPreview('');
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={`w-24 h-24 ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-300'} border-2 border-dashed rounded-lg flex items-center justify-center`}>
+                      <ImageIcon className={`${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={32} />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <label className={`flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md cursor-pointer`}>
+                      <Upload size={18} />
+                      <span>Upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProductPhotoChange}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleProductPhotoCapture}
+                      className={`flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md`}
+                    >
+                      <Camera size={18} />
+                      <span>Camera</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
@@ -2629,6 +2833,62 @@ const VoorraadbeheerAdmin: React.FC = () => {
               >
                 Ja, Wijzigen
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EAN Scanner Modal */}
+      {showEanScanner && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-lg w-full`}>
+            <div className={`p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Scan EAN Code</h3>
+              <button onClick={stopEanScanner} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="relative bg-black rounded-lg overflow-hidden mb-4">
+                <video
+                  id="ean-scanner-video"
+                  className="w-full h-64 object-cover"
+                  autoPlay
+                  playsInline
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-3/4 h-16 border-2 border-red-500 rounded-lg" />
+                </div>
+              </div>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4 text-center`}>
+                Richt de camera op de barcode en voer de code hieronder in
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Voer EAN code in..."
+                  className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const input = e.target as HTMLInputElement;
+                      setNewProductData({ ...newProductData, ean: input.value });
+                      stopEanScanner();
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    const input = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                    if (input?.value) {
+                      setNewProductData({ ...newProductData, ean: input.value });
+                      stopEanScanner();
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Bevestigen
+                </button>
+              </div>
             </div>
           </div>
         </div>
