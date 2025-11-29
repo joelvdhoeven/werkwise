@@ -1707,8 +1707,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    value={editFormData.minimum_stock}
-                    onChange={(e) => setEditFormData({ ...editFormData, minimum_stock: parseInt(e.target.value) || 0 })}
+                    value={editFormData.minimum_stock || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, minimum_stock: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                     className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
@@ -1730,8 +1730,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.purchase_price}
-                    onChange={(e) => setEditFormData({ ...editFormData, purchase_price: parseFloat(e.target.value) || 0 })}
+                    value={editFormData.purchase_price || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, purchase_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                     className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
@@ -1742,8 +1742,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.sale_price}
-                    onChange={(e) => setEditFormData({ ...editFormData, sale_price: parseFloat(e.target.value) || 0 })}
+                    value={editFormData.sale_price || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, sale_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                     className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>

@@ -625,8 +625,8 @@ const Gebruikers: React.FC = () => {
                 <input
                   type="number"
                   name="hourly_rate_purchase"
-                  value={formData.hourly_rate_purchase}
-                  onChange={(e) => setFormData({ ...formData, hourly_rate_purchase: parseFloat(e.target.value) || 0 })}
+                  value={formData.hourly_rate_purchase || ''}
+                  onChange={(e) => setFormData({ ...formData, hourly_rate_purchase: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   min="0"
                   step="0.01"
                   placeholder="0.00"
@@ -643,8 +643,8 @@ const Gebruikers: React.FC = () => {
                 <input
                   type="number"
                   name="hourly_rate_sale"
-                  value={formData.hourly_rate_sale}
-                  onChange={(e) => setFormData({ ...formData, hourly_rate_sale: parseFloat(e.target.value) || 0 })}
+                  value={formData.hourly_rate_sale || ''}
+                  onChange={(e) => setFormData({ ...formData, hourly_rate_sale: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   min="0"
                   step="0.01"
                   placeholder="0.00"
@@ -665,8 +665,8 @@ const Gebruikers: React.FC = () => {
               <input
                 type="number"
                 name="vacation_hours_total"
-                value={formData.vacation_hours_total}
-                onChange={(e) => setFormData({ ...formData, vacation_hours_total: parseFloat(e.target.value) || 0 })}
+                value={formData.vacation_hours_total || ''}
+                onChange={(e) => setFormData({ ...formData, vacation_hours_total: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                 min="0"
                 step="0.5"
                 placeholder="0"
@@ -685,8 +685,8 @@ const Gebruikers: React.FC = () => {
                 <input
                   type="number"
                   name="vacation_hours_used"
-                  value={formData.vacation_hours_used}
-                  onChange={(e) => setFormData({ ...formData, vacation_hours_used: parseFloat(e.target.value) || 0 })}
+                  value={formData.vacation_hours_used || ''}
+                  onChange={(e) => setFormData({ ...formData, vacation_hours_used: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                   min="0"
                   step="0.5"
                   placeholder="0"

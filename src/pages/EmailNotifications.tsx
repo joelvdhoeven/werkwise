@@ -912,8 +912,8 @@ const EmailNotifications: React.FC = () => {
                 <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Wekelijkse uren onder</label>
                 <input
                   type="number"
-                  value={scheduleForm.minimum_weekly_hours}
-                  onChange={(e) => setScheduleForm(prev => ({ ...prev, minimum_weekly_hours: parseInt(e.target.value) || 0 }))}
+                  value={scheduleForm.minimum_weekly_hours || ''}
+                  onChange={(e) => setScheduleForm(prev => ({ ...prev, minimum_weekly_hours: e.target.value === '' ? 0 : parseInt(e.target.value) }))}
                   min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Bijv. 40"
@@ -924,8 +924,8 @@ const EmailNotifications: React.FC = () => {
                 <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Dagelijkse uren onder</label>
                 <input
                   type="number"
-                  value={scheduleForm.minimum_daily_hours}
-                  onChange={(e) => setScheduleForm(prev => ({ ...prev, minimum_daily_hours: parseInt(e.target.value) || 0 }))}
+                  value={scheduleForm.minimum_daily_hours || ''}
+                  onChange={(e) => setScheduleForm(prev => ({ ...prev, minimum_daily_hours: e.target.value === '' ? 0 : parseInt(e.target.value) }))}
                   min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Bijv. 8"
