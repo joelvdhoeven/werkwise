@@ -107,17 +107,47 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
     localStorage.setItem('werkwise_tour_open', isOpen.toString());
   }, [isOpen]);
 
+  // Map page IDs to their sidebar group for admin tour
+  const getGroupForPage = (pageId: string): string | null => {
+    const groupMap: Record<string, string> = {
+      'dashboard': 'overzicht',
+      'financieel-dashboard': 'overzicht',
+      'voorraad-dashboard': 'overzicht',
+      'projecten': 'werk',
+      'urenregistratie': 'werk',
+      'voorraad-afboeken': 'voorraad',
+      'voorraadbeheer': 'voorraad',
+      'speciaal-gereedschap': 'voorraad',
+      'schademeldingen': 'meldingen',
+      'ticket-omgeving': 'meldingen',
+      'gebruikers': 'beheer',
+      'factuur-instellingen': 'beheer',
+      'instellingen': 'beheer',
+      'module-beheer': 'beheer',
+    };
+    return groupMap[pageId] || null;
+  };
+
   // Navigate to current step's page
   useEffect(() => {
     if (isOpen && steps[currentStep]) {
       setActiveSection(steps[currentStep].pageId);
 
-      // Collapse all sidebar sections on the final step
-      if (currentStep === steps.length - 1) {
-        window.dispatchEvent(new Event('sidebar-collapse-all'));
+      // For admin users, expand only the relevant sidebar group
+      if (isAdmin) {
+        // Collapse all sidebar sections on the final step
+        if (currentStep === steps.length - 1) {
+          window.dispatchEvent(new Event('sidebar-collapse-all'));
+        } else {
+          // Expand only the group for the current page
+          const groupToExpand = getGroupForPage(steps[currentStep].pageId);
+          if (groupToExpand) {
+            window.dispatchEvent(new CustomEvent('sidebar-expand-group', { detail: groupToExpand }));
+          }
+        }
       }
     }
-  }, [currentStep, isOpen, steps.length]);
+  }, [currentStep, isOpen, steps.length, isAdmin]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
