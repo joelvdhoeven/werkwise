@@ -25,6 +25,7 @@ import FactuurInstellingen from './pages/FactuurInstellingen';
 import TicketOmgeving from './pages/TicketOmgeving';
 import TicketsOverzicht from './pages/TicketsOverzicht';
 import ModuleBeheer from './pages/ModuleBeheer';
+import VakantieAanvraag from './pages/VakantieAanvraag';
 
 function App() {
   const { user } = useAuth();
@@ -141,6 +142,12 @@ function App() {
         return (
           <ProtectedRoute permission="manage_settings">
             <ModuleBeheer />
+          </ProtectedRoute>
+        );
+      case 'vakantie-aanvraag':
+        return (
+          <ProtectedRoute permission="view_dashboard">
+            <VakantieAanvraag />
           </ProtectedRoute>
         );
       default:

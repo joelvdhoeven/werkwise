@@ -18,7 +18,8 @@ import {
   BoxesIcon,
   MessageSquare,
   Shield,
-  Sliders
+  Sliders,
+  CalendarDays
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,6 +39,7 @@ interface MenuItem {
   icon: any;
   permission: string;
   module: string | null;
+  simpleUserOnly?: boolean; // Only show for medewerker/zzper
 }
 
 interface MenuGroup {
@@ -166,6 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
       label: 'Meldingen & Support',
       icon: MessageSquare,
       items: [
+        { id: 'vakantie-aanvraag', label: 'Vakantie Aanvraag', icon: CalendarDays, permission: 'view_dashboard', module: null, simpleUserOnly: true },
         { id: 'schademeldingen', label: t('schademeldingen'), icon: AlertTriangle, permission: 'view_damage_reports', module: 'module_damage_reports' },
         { id: 'ticket-omgeving', label: 'Ticket Omgeving', icon: Ticket, permission: 'create_tickets', module: null },
         { id: 'tickets-overzicht', label: 'Tickets Overzicht', icon: Ticket, permission: 'view_all_tickets', module: null },
@@ -188,7 +191,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
   const isItemVisible = (item: MenuItem) => {
     const hasPerms = hasPermission(item.permission);
     const moduleEnabled = !item.module || !moduleSettings || moduleSettings[item.module] !== false;
-    return hasPerms && moduleEnabled;
+    // If simpleUserOnly is true, only show for medewerker/zzper
+    const roleAllowed = !item.simpleUserOnly || isSimpleUser;
+    return hasPerms && moduleEnabled && roleAllowed;
   };
 
   // Filter groups to only show those with visible items

@@ -23,7 +23,8 @@ import {
   BarChart3,
   Home,
   FileText,
-  Sliders
+  Sliders,
+  CalendarDays
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
@@ -92,8 +93,9 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
     { id: 'uren', title: 'Urenregistratie', description: 'Registreer je uren met de timer.', pageId: 'urenregistratie', icon: <Clock className="h-5 w-5" />, color: 'from-purple-500 to-violet-500' },
     { id: 'voorraad', title: 'Voorraad Afboeken', description: 'Boek gebruikte materialen af.', pageId: 'voorraad-afboeken', icon: <Package className="h-5 w-5" />, color: 'from-pink-500 to-rose-500' },
     { id: 'gereedschap', title: 'Speciaal Gereedschap', description: 'Bekijk en leen gereedschap.', pageId: 'speciaal-gereedschap', icon: <Wrench className="h-5 w-5" />, color: 'from-yellow-500 to-orange-500' },
+    { id: 'vakantie', title: 'Vakantie Aanvraag', description: 'Vraag vakantie of verlof aan.', pageId: 'vakantie-aanvraag', icon: <CalendarDays className="h-5 w-5" />, color: 'from-teal-500 to-cyan-500' },
     { id: 'schade', title: 'Schademeldingen', description: 'Meld schade direct vanuit het veld.', pageId: 'schademeldingen', icon: <AlertTriangle className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
-    { id: 'instellingen', title: 'Instellingen', description: 'Vraag vakantie of verlof aan.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
+    { id: 'instellingen', title: 'Instellingen', description: 'Personaliseer je profiel en wachtwoord.', pageId: 'instellingen', icon: <Settings className="h-5 w-5" />, color: 'from-gray-500 to-slate-500' },
     // Final step - back to dashboard
     { id: 'start', title: 'Aan de Slag!', description: 'Je bent klaar om te beginnen. Welkom bij WerkWise!', pageId: 'dashboard', icon: <Rocket className="h-5 w-5" />, color: 'from-red-500 to-rose-500' },
   ];
