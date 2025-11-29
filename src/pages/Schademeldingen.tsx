@@ -21,7 +21,7 @@ const Schademeldingen: React.FC = () => {
 
   const { data: schademeldingen = [], loading, refetch } = useSupabaseQuery<any>(
     'damage_reports',
-    'id, type_item, omschrijving, beschrijving_schade, datum, foto_urls, created_at, created_by, status',
+    'id, type_item, naam, beschrijving, beschrijving_schade, datum, foto_urls, created_at, created_by, status',
     filter,
     { order: { column: 'created_at', ascending: false } }
   );
@@ -37,7 +37,8 @@ const Schademeldingen: React.FC = () => {
 
   const [formData, setFormData] = useState({
     typeItem: '',
-    omschrijving: '',
+    naam: '',
+    beschrijving: '',
     beschrijvingSchade: '',
     datum: new Date().toISOString().split('T')[0],
   });
@@ -73,12 +74,42 @@ const Schademeldingen: React.FC = () => {
     setUploading(true);
 
     try {
-      // For now, we'll skip photo upload if storage bucket doesn't exist
-      // You can create the bucket later in Supabase dashboard
-      console.log('Photo upload feature - requires storage bucket setup');
-      alert('Foto upload is momenteel nog niet beschikbaar. Neem contact op met de beheerder.');
-    } catch (error) {
+      const uploadedUrls: string[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `damage-reports/${user?.id}/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from('uploads')
+          .upload(filePath, file);
+
+        if (error) {
+          // If bucket doesn't exist, show helpful message
+          if (error.message.includes('bucket') || error.message.includes('not found')) {
+            alert('Storage bucket "uploads" bestaat nog niet. Maak deze aan in Supabase Dashboard → Storage → New bucket (naam: uploads, public: true)');
+            setUploading(false);
+            return;
+          }
+          throw error;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('uploads')
+          .getPublicUrl(filePath);
+
+        if (urlData?.publicUrl) {
+          uploadedUrls.push(urlData.publicUrl);
+        }
+      }
+
+      setUploadedPhotos(prev => [...prev, ...uploadedUrls]);
+    } catch (error: any) {
       console.error('Error uploading photos:', error);
+      alert('Fout bij uploaden: ' + (error.message || 'Onbekende fout'));
     } finally {
       setUploading(false);
     }
@@ -96,7 +127,7 @@ const Schademeldingen: React.FC = () => {
       return;
     }
 
-    if (!formData.typeItem || !formData.omschrijving || !formData.beschrijvingSchade || !formData.datum) {
+    if (!formData.typeItem || !formData.naam || !formData.beschrijvingSchade || !formData.datum) {
       alert('Vul alle verplichte velden in.');
       return;
     }
@@ -105,7 +136,8 @@ const Schademeldingen: React.FC = () => {
       if (editingMelding) {
         await updateDamageReport(editingMelding.id, {
           type_item: formData.typeItem,
-          omschrijving: formData.omschrijving,
+          naam: formData.naam,
+          beschrijving: formData.beschrijving || formData.naam,
           beschrijving_schade: formData.beschrijvingSchade,
           datum: formData.datum,
           foto_urls: uploadedPhotos.length > 0 ? uploadedPhotos : null,
@@ -113,7 +145,8 @@ const Schademeldingen: React.FC = () => {
       } else {
         await insertDamageReport({
           type_item: formData.typeItem,
-          omschrijving: formData.omschrijving,
+          naam: formData.naam,
+          beschrijving: formData.beschrijving || formData.naam,
           beschrijving_schade: formData.beschrijvingSchade,
           datum: formData.datum,
           foto_urls: uploadedPhotos.length > 0 ? uploadedPhotos : null,
@@ -127,7 +160,8 @@ const Schademeldingen: React.FC = () => {
       setEditingMelding(null);
       setFormData({
         typeItem: '',
-        omschrijving: '',
+        naam: '',
+        beschrijving: '',
         beschrijvingSchade: '',
         datum: new Date().toISOString().split('T')[0],
       });
@@ -143,8 +177,9 @@ const Schademeldingen: React.FC = () => {
     setEditingMelding(melding);
     setFormData({
       typeItem: melding.type_item,
-      omschrijving: melding.omschrijving,
-      beschrijvingSchade: melding.beschrijving_schade,
+      naam: melding.naam || '',
+      beschrijving: melding.beschrijving || '',
+      beschrijvingSchade: melding.beschrijving_schade || '',
       datum: melding.datum,
     });
     setUploadedPhotos(melding.foto_urls || []);
@@ -219,7 +254,8 @@ const Schademeldingen: React.FC = () => {
               setEditingMelding(null);
               setFormData({
                 typeItem: '',
-                omschrijving: '',
+                naam: '',
+                beschrijving: '',
                 beschrijvingSchade: '',
                 datum: new Date().toISOString().split('T')[0],
               });
@@ -272,8 +308,8 @@ const Schademeldingen: React.FC = () => {
 
                 <div className="space-y-2 mb-4">
                   <div>
-                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('omschrijving')}:</p>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{melding.omschrijving}</p>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Naam:</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{melding.naam}</p>
                   </div>
                   <div>
                     <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('beschrijvingSchade')}:</p>
@@ -356,7 +392,8 @@ const Schademeldingen: React.FC = () => {
           setShowModal(false);
           setFormData({
             typeItem: '',
-            omschrijving: '',
+            naam: '',
+            beschrijving: '',
             beschrijvingSchade: '',
             datum: new Date().toISOString().split('T')[0],
           });
@@ -387,12 +424,12 @@ const Schademeldingen: React.FC = () => {
 
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              {t('omschrijving')} <span className="text-red-600">*</span>
+              Naam <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
-              name="omschrijving"
-              value={formData.omschrijving}
+              name="naam"
+              value={formData.naam}
               onChange={handleInputChange}
               placeholder="Bijv. Boormachine, Bedrijfsbus, Hout planken"
               required
@@ -481,7 +518,8 @@ const Schademeldingen: React.FC = () => {
                 setShowModal(false);
                 setFormData({
                   typeItem: '',
-                  omschrijving: '',
+                  naam: '',
+                  beschrijving: '',
                   beschrijvingSchade: '',
                   datum: new Date().toISOString().split('T')[0],
                 });
