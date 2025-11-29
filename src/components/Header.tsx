@@ -1,23 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, LogOut, Bell, Menu, Rocket } from 'lucide-react';
+import { ChevronDown, LogOut, Bell, Menu, Rocket, Package, Calendar } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeToggle } from './ui/theme-toggle';
 import { Language, Notification } from '../types';
 import { useSupabaseQuery } from '../hooks/useSupabase';
+import { supabase } from '../lib/supabase';
 
 interface HeaderProps {
   onNotificationClick: () => void;
   onMenuClick: () => void;
 }
 
+interface LowStockItem {
+  product_name: string;
+  location_name: string;
+  current_stock: number;
+  minimum_stock: number;
+}
+
+interface VacationRequest {
+  id: string;
+  type: string;
+  start_date: string;
+  end_date: string;
+  profiles?: { naam: string };
+}
+
 const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => {
   const { language, setLanguage, t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
+  const [pendingVacations, setPendingVacations] = useState<VacationRequest[]>([]);
+  const [showAlertsDropdown, setShowAlertsDropdown] = useState(false);
 
   const languages: { code: Language; name: string; flag: string }[] = [
     { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
@@ -31,6 +50,75 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
     'id', // Only fetch ID for count
     { recipient_id: user?.id, status: 'unread' }
   );
+
+  // Fetch low stock alerts (for admins)
+  useEffect(() => {
+    const fetchLowStock = async () => {
+      if (!hasPermission('manage_settings')) return;
+
+      try {
+        const { data: stockData, error } = await supabase
+          .from('stock')
+          .select(`
+            quantity,
+            product:product_id(name, minimum_stock),
+            location:location_id(name)
+          `);
+
+        if (error) throw error;
+
+        const lowStock: LowStockItem[] = [];
+        for (const item of stockData || []) {
+          const product = item.product as any;
+          const location = item.location as any;
+          if (product && item.quantity < product.minimum_stock) {
+            lowStock.push({
+              product_name: product.name,
+              location_name: location?.name || 'Onbekend',
+              current_stock: item.quantity,
+              minimum_stock: product.minimum_stock
+            });
+          }
+        }
+        setLowStockItems(lowStock);
+      } catch (error) {
+        console.error('Error fetching low stock:', error);
+      }
+    };
+
+    fetchLowStock();
+    const interval = setInterval(fetchLowStock, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, [hasPermission]);
+
+  // Fetch pending vacation requests (for admins)
+  useEffect(() => {
+    const fetchPendingVacations = async () => {
+      if (!hasPermission('manage_settings')) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('vacation_requests')
+          .select(`
+            id,
+            type,
+            start_date,
+            end_date,
+            profiles:user_id(naam)
+          `)
+          .eq('status', 'pending');
+
+        if (error) throw error;
+        setPendingVacations(data || []);
+      } catch (error) {
+        console.error('Error fetching vacation requests:', error);
+      }
+    };
+
+    fetchPendingVacations();
+    const interval = setInterval(fetchPendingVacations, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, [hasPermission]);
 
   const currentLanguage = languages.find(lang => lang.code === language) || languages[0];
 
@@ -116,6 +204,101 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
               ))}
             </div>
           </div>
+
+          {/* Admin Alerts (Low Stock + Vacation Requests) */}
+          {hasPermission('manage_settings') && (lowStockItems.length > 0 || pendingVacations.length > 0) && (
+            <div className="relative">
+              <button
+                onClick={() => setShowAlertsDropdown(!showAlertsDropdown)}
+                className={`relative p-2 rounded-xl transition-colors ${
+                  isDark
+                    ? 'text-orange-400 hover:text-orange-300 hover:bg-gray-800'
+                    : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                }`}
+              >
+                <Package size={20} />
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-gradient-to-r from-orange-500 to-amber-500 rounded-full min-w-[18px]">
+                  {lowStockItems.length + pendingVacations.length}
+                </span>
+              </button>
+
+              {showAlertsDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowAlertsDropdown(false)}
+                  />
+                  <div className={`absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl shadow-lg z-50 ${
+                    isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+                  }`}>
+                    {/* Low Stock Section */}
+                    {lowStockItems.length > 0 && (
+                      <div className={`p-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Package size={16} className="text-orange-500" />
+                          <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                            Lage Voorraad ({lowStockItems.length})
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {lowStockItems.slice(0, 5).map((item, index) => (
+                            <div
+                              key={index}
+                              className={`p-2 rounded-lg text-xs ${
+                                isDark ? 'bg-orange-900/30 text-orange-200' : 'bg-orange-50 text-orange-800'
+                              }`}
+                            >
+                              <div className="font-medium">{item.product_name}</div>
+                              <div className={isDark ? 'text-orange-300/70' : 'text-orange-600'}>
+                                {item.location_name}: {item.current_stock} / {item.minimum_stock} min
+                              </div>
+                            </div>
+                          ))}
+                          {lowStockItems.length > 5 && (
+                            <div className={`text-xs text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              +{lowStockItems.length - 5} meer...
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Vacation Requests Section */}
+                    {pendingVacations.length > 0 && (
+                      <div className="p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar size={16} className="text-blue-500" />
+                          <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                            Verlofaanvragen ({pendingVacations.length})
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {pendingVacations.slice(0, 5).map((request) => (
+                            <div
+                              key={request.id}
+                              className={`p-2 rounded-lg text-xs ${
+                                isDark ? 'bg-blue-900/30 text-blue-200' : 'bg-blue-50 text-blue-800'
+                              }`}
+                            >
+                              <div className="font-medium">{request.profiles?.naam || 'Onbekend'}</div>
+                              <div className={isDark ? 'text-blue-300/70' : 'text-blue-600'}>
+                                {request.type}: {new Date(request.start_date).toLocaleDateString('nl-NL')} - {new Date(request.end_date).toLocaleDateString('nl-NL')}
+                              </div>
+                            </div>
+                          ))}
+                          {pendingVacations.length > 5 && (
+                            <div className={`text-xs text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              +{pendingVacations.length - 5} meer...
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Notification Bell */}
           <button
