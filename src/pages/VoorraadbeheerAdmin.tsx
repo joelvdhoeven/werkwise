@@ -1549,11 +1549,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   p.sku.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
                   p.category.toLowerCase().includes(productSearchTerm.toLowerCase())
                 ).map((product) => (
-                  <div key={product.id} className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4 hover:shadow-md transition-shadow`}>
+                  <div key={product.id} className={`border ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} rounded-lg p-4 hover:shadow-md transition-shadow`}>
                     <div className="flex items-start justify-between mb-2">
                       <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{product.name}</h3>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100'} px-2 py-1 rounded`}>{product.sku}</span>
+                        <span className={`text-xs ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'} px-2 py-1 rounded`}>{product.sku}</span>
                         {canManage && (
                           <>
                             <button
@@ -1565,7 +1565,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteProduct(product.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              className={`p-1 text-red-500 ${isDark ? 'hover:bg-red-900/30' : 'hover:bg-red-50'} rounded`}
                               title="Verwijder product"
                             >
                               <Trash2 size={16} />
@@ -1608,7 +1608,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 {locations.map((location) => (
                   <div
                     key={location.id}
-                    className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer`}
+                    className={`border ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer`}
                     onClick={() => handleViewLocationDetails(location)}
                   >
                     <div className="flex items-start gap-3 mb-2">
@@ -1643,7 +1643,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteLocation(location.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              className={`p-1 text-red-500 ${isDark ? 'hover:bg-red-900/30' : 'hover:bg-red-50'} rounded`}
                               title="Verwijder locatie"
                             >
                               <Trash2 size={16} />
