@@ -129,89 +129,105 @@ export async function seedMockData() {
   const originalSession = currentSessionData?.session;
 
   try {
-    // 1. Create mock users - First try to get existing users
-    console.log('Creating mock users...');
-    for (const userData of mockUsers) {
-      try {
-        // First check if profile already exists
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', userData.email)
-          .single();
+    // 1. Get existing users from profiles - we'll use these for demo data
+    console.log('Finding existing users...');
 
-        if (existingProfile) {
-          createdUserIds.push(existingProfile.id);
-          results.success.push(`User ${userData.naam} already exists`);
-          continue;
-        }
+    // First, get ALL existing profiles to use for demo data
+    const { data: allProfiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, naam, email, role')
+      .limit(10);
 
-        // Create auth user if not exists
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: userData.email,
-          password: userData.password,
-          options: {
-            data: {
-              name: userData.naam,
-              role: userData.role
-            }
-          }
-        });
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+    }
 
-        if (authError) {
-          // Check various error messages for existing user
-          if (authError.message.includes('already') ||
-              authError.message.includes('registered') ||
-              authError.message.includes('exists')) {
-            // Try to get from profiles again
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('email', userData.email)
-              .single();
-
-            if (profile) {
-              createdUserIds.push(profile.id);
-              results.success.push(`User ${userData.naam} already exists`);
-            }
-            continue;
-          }
-          throw authError;
-        }
-
-        if (authData.user) {
-          // Create profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: authData.user.id,
-              naam: userData.naam,
-              email: userData.email,
-              role: userData.role,
-              hourly_rate_purchase: Math.floor(Math.random() * 20) + 25,
-              hourly_rate_sale: Math.floor(Math.random() * 30) + 45
-            });
-
-          if (profileError) throw profileError;
-
-          createdUserIds.push(authData.user.id);
-          results.success.push(`Created user: ${userData.naam}`);
-
-          // Restore original session immediately after creating each user
-          // because signUp automatically logs in the new user
-          if (originalSession) {
-            await supabase.auth.setSession({
-              access_token: originalSession.access_token,
-              refresh_token: originalSession.refresh_token
-            });
-          }
-        }
-      } catch (error: any) {
-        results.errors.push(`Error creating user ${userData.naam}: ${error.message}`);
+    if (allProfiles && allProfiles.length > 0) {
+      // Use existing profiles
+      for (const profile of allProfiles) {
+        createdUserIds.push(profile.id);
+        results.success.push(`Using existing user: ${profile.naam || profile.email}`);
       }
     }
 
-    // Ensure we're back to original session after all user creation
+    // Also try to get current user if we don't have enough users
+    if (createdUserIds.length === 0 && originalSession?.user) {
+      createdUserIds.push(originalSession.user.id);
+      results.success.push(`Using current user: ${originalSession.user.email}`);
+    }
+
+    // Try to create demo users if we have very few
+    if (createdUserIds.length < 3) {
+      console.log('Attempting to create additional mock users...');
+      for (const userData of mockUsers) {
+        try {
+          // Check if profile already exists using maybeSingle to avoid 406 errors
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', userData.email)
+            .maybeSingle();
+
+          if (existingProfile) {
+            if (!createdUserIds.includes(existingProfile.id)) {
+              createdUserIds.push(existingProfile.id);
+              results.success.push(`Found existing user: ${userData.naam}`);
+            }
+            continue;
+          }
+
+          // Try to create auth user
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+            options: {
+              data: {
+                name: userData.naam,
+                role: userData.role
+              }
+            }
+          });
+
+          if (authError) {
+            // Skip if user already exists or other auth error
+            results.errors.push(`Cannot create user ${userData.naam}: ${authError.message}`);
+            continue;
+          }
+
+          if (authData.user) {
+            // Create profile
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: authData.user.id,
+                naam: userData.naam,
+                email: userData.email,
+                role: userData.role,
+                hourly_rate_purchase: Math.floor(Math.random() * 20) + 25,
+                hourly_rate_sale: Math.floor(Math.random() * 30) + 45
+              });
+
+            if (!profileError) {
+              createdUserIds.push(authData.user.id);
+              results.success.push(`Created user: ${userData.naam}`);
+            }
+
+            // Restore original session
+            if (originalSession) {
+              await supabase.auth.setSession({
+                access_token: originalSession.access_token,
+                refresh_token: originalSession.refresh_token
+              });
+            }
+          }
+        } catch (error: any) {
+          // Silently continue - we'll use existing users
+          console.log(`Skipping user ${userData.naam}: ${error.message}`);
+        }
+      }
+    }
+
+    // Ensure we're back to original session
     if (originalSession) {
       await supabase.auth.setSession({
         access_token: originalSession.access_token,
@@ -219,10 +235,10 @@ export async function seedMockData() {
       });
     }
 
-    // If we have no user IDs, we can't continue
+    // If we still have no user IDs, use just the current user
     if (createdUserIds.length === 0) {
-      results.errors.push('No user IDs available - cannot create related data');
-      return results;
+      results.errors.push('No users found - demo data will be limited. Run the SQL in Supabase to create demo users first.');
+      // Still continue with empty user array - some data can be created without users
     }
 
     console.log(`Found/created ${createdUserIds.length} users: ${createdUserIds.join(', ')}`);
@@ -333,8 +349,8 @@ export async function seedMockData() {
       'Voorbereiding materialen'
     ];
 
-    // Only create time registrations if we have projects
-    if (createdProjectIds.length > 0) {
+    // Only create time registrations if we have projects AND users
+    if (createdProjectIds.length > 0 && createdUserIds.length > 0) {
       for (const userId of createdUserIds) {
         // Create 5-10 time registrations per user in the last 30 days
         const numRegistrations = Math.floor(Math.random() * 5) + 5;
@@ -371,59 +387,65 @@ export async function seedMockData() {
       results.success.push(`Created time registrations for ${createdUserIds.length} users`);
     }
 
-    // 7. Create inventory transactions (afboekingen)
+    // 7. Create inventory transactions (afboekingen) - only if we have all required data
     console.log('Creating inventory transactions...');
-    for (let i = 0; i < 30; i++) {
-      try {
-        const productId = createdProductIds[Math.floor(Math.random() * createdProductIds.length)];
-        const locationId = createdLocationIds[Math.floor(Math.random() * createdLocationIds.length)];
-        const projectId = createdProjectIds[Math.floor(Math.random() * createdProjectIds.length)];
-        const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+    if (createdProductIds.length > 0 && createdLocationIds.length > 0 && createdProjectIds.length > 0 && createdUserIds.length > 0) {
+      for (let i = 0; i < 30; i++) {
+        try {
+          const productId = createdProductIds[Math.floor(Math.random() * createdProductIds.length)];
+          const locationId = createdLocationIds[Math.floor(Math.random() * createdLocationIds.length)];
+          const projectId = createdProjectIds[Math.floor(Math.random() * createdProjectIds.length)];
+          const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
 
-        const { error } = await supabase
-          .from('inventory_transactions')
-          .insert({
-            product_id: productId,
-            location_id: locationId,
-            project_id: projectId,
-            user_id: userId,
-            transaction_type: 'out',
-            quantity: -(Math.floor(Math.random() * 10) + 1),
-            notes: 'Materiaal afgeboekt voor project'
-          });
+          const { error } = await supabase
+            .from('inventory_transactions')
+            .insert({
+              product_id: productId,
+              location_id: locationId,
+              project_id: projectId,
+              user_id: userId,
+              transaction_type: 'out',
+              quantity: -(Math.floor(Math.random() * 10) + 1),
+              notes: 'Materiaal afgeboekt voor project'
+            });
 
-        if (error) throw error;
-      } catch (error: any) {
-        results.errors.push(`Error creating transaction: ${error.message}`);
+          if (error) throw error;
+        } catch (error: any) {
+          results.errors.push(`Error creating transaction: ${error.message}`);
+        }
       }
+      results.success.push('Created 30 inventory transactions');
+    } else {
+      results.errors.push('Skipped inventory transactions - missing required data (products, locations, projects, or users)');
     }
-    results.success.push('Created 30 inventory transactions');
 
-    // 8. Create damage reports
+    // 8. Create damage reports - only if we have users
     console.log('Creating damage reports...');
-    const damageReports = [
-      { type_item: 'bus', naam: 'Bus 01 - Deuk achterbumper', beschrijving: 'Deuk in achterbumper na aanrijding parkeergarage', status: 'gemeld' },
-      { type_item: 'gereedschap', naam: 'Lasapparaat - Defect', beschrijving: 'Lasapparaat geeft geen stroom meer', status: 'in-behandeling' },
-      { type_item: 'bus', naam: 'Bus 02 - Kras zijkant', beschrijving: 'Lange kras op linkerzijde door vangrail', status: 'opgelost' },
-      { type_item: 'gereedschap', naam: 'Boormachine - Oververhitting', beschrijving: 'Boormachine slaat af bij langdurig gebruik', status: 'gemeld' }
-    ];
+    if (createdUserIds.length > 0) {
+      const damageReports = [
+        { type_item: 'bus', naam: 'Bus 01 - Deuk achterbumper', beschrijving: 'Deuk in achterbumper na aanrijding parkeergarage', status: 'gemeld' },
+        { type_item: 'gereedschap', naam: 'Lasapparaat - Defect', beschrijving: 'Lasapparaat geeft geen stroom meer', status: 'in-behandeling' },
+        { type_item: 'bus', naam: 'Bus 02 - Kras zijkant', beschrijving: 'Lange kras op linkerzijde door vangrail', status: 'opgelost' },
+        { type_item: 'gereedschap', naam: 'Boormachine - Oververhitting', beschrijving: 'Boormachine slaat af bij langdurig gebruik', status: 'gemeld' }
+      ];
 
-    for (const report of damageReports) {
-      try {
-        const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
-        const { error } = await supabase
-          .from('damage_reports')
-          .insert({
-            ...report,
-            datum: formatDate(new Date()),
-            created_by: userId,
-            beschrijving_schade: report.beschrijving
-          });
+      for (const report of damageReports) {
+        try {
+          const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+          const { error } = await supabase
+            .from('damage_reports')
+            .insert({
+              ...report,
+              datum: formatDate(new Date()),
+              created_by: userId,
+              beschrijving_schade: report.beschrijving
+            });
 
-        if (error) throw error;
-        results.success.push(`Created damage report: ${report.naam}`);
-      } catch (error: any) {
-        results.errors.push(`Error creating damage report: ${error.message}`);
+          if (error) throw error;
+          results.success.push(`Created damage report: ${report.naam}`);
+        } catch (error: any) {
+          results.errors.push(`Error creating damage report: ${error.message}`);
+        }
       }
     }
 
@@ -449,59 +471,63 @@ export async function seedMockData() {
       }
     }
 
-    // 10. Create tickets
+    // 10. Create tickets - only if we have users
     console.log('Creating tickets...');
-    const ticketsData = [
-      { title: 'Probleem met urenregistratie', description: 'Kan uren niet opslaan voor project Rotterdam', category: 'Technisch', priority: 'high' },
-      { title: 'Nieuwe medewerker toevoegen', description: 'Graag account aanmaken voor nieuwe medewerker', category: 'Accounts', priority: 'medium' },
-      { title: 'Export functie werkt niet', description: 'CSV export geeft lege bestanden', category: 'Technisch', priority: 'low' }
-    ];
+    if (createdUserIds.length > 0) {
+      const ticketsData = [
+        { title: 'Probleem met urenregistratie', description: 'Kan uren niet opslaan voor project Rotterdam', category: 'Technisch', priority: 'high' },
+        { title: 'Nieuwe medewerker toevoegen', description: 'Graag account aanmaken voor nieuwe medewerker', category: 'Accounts', priority: 'medium' },
+        { title: 'Export functie werkt niet', description: 'CSV export geeft lege bestanden', category: 'Technisch', priority: 'low' }
+      ];
 
-    for (const ticket of ticketsData) {
-      try {
-        const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+      for (const ticket of ticketsData) {
+        try {
+          const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
 
-        const { error } = await supabase
-          .from('tickets')
-          .insert({
-            title: ticket.title,
-            description: ticket.description,
-            category: ticket.category,
-            priority: ticket.priority,
-            created_by: userId,
-            status: 'open'
-          });
+          const { error } = await supabase
+            .from('tickets')
+            .insert({
+              title: ticket.title,
+              description: ticket.description,
+              category: ticket.category,
+              priority: ticket.priority,
+              created_by: userId,
+              status: 'open'
+            });
 
-        if (error) throw error;
-        results.success.push(`Created ticket: ${ticket.title}`);
-      } catch (error: any) {
-        results.errors.push(`Error creating ticket: ${error.message}`);
+          if (error) throw error;
+          results.success.push(`Created ticket: ${ticket.title}`);
+        } catch (error: any) {
+          results.errors.push(`Error creating ticket: ${error.message}`);
+        }
       }
     }
 
-    // 11. Create return items
+    // 11. Create return items - only if we have users
     console.log('Creating return items...');
-    const returnItems = [
-      { naam: 'Verkeerde schroeven', artikelnummer: 'SCH-550', categorie: 'Bevestigingsmaterialen', reden: 'Verkeerd formaat besteld', status: 'goedgekeurd' },
-      { naam: 'Beschadigde gipsplaten', artikelnummer: 'GP-125', categorie: 'Bouwmaterialen', reden: 'Beschadigd tijdens transport', status: 'in-behandeling' }
-    ];
+    if (createdUserIds.length > 0) {
+      const returnItems = [
+        { naam: 'Verkeerde schroeven', artikelnummer: 'SCH-550', categorie: 'Bevestigingsmaterialen', reden: 'Verkeerd formaat besteld', status: 'goedgekeurd' },
+        { naam: 'Beschadigde gipsplaten', artikelnummer: 'GP-125', categorie: 'Bouwmaterialen', reden: 'Beschadigd tijdens transport', status: 'in-behandeling' }
+      ];
 
-    for (const item of returnItems) {
-      try {
-        const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
+      for (const item of returnItems) {
+        try {
+          const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
 
-        const { error } = await supabase
-          .from('return_items')
-          .insert({
-            ...item,
-            datum: formatDate(new Date()),
-            created_by: userId
-          });
+          const { error } = await supabase
+            .from('return_items')
+            .insert({
+              ...item,
+              datum: formatDate(new Date()),
+              created_by: userId
+            });
 
-        if (error) throw error;
-        results.success.push(`Created return item: ${item.naam}`);
-      } catch (error: any) {
-        results.errors.push(`Error creating return item: ${error.message}`);
+          if (error) throw error;
+          results.success.push(`Created return item: ${item.naam}`);
+        } catch (error: any) {
+          results.errors.push(`Error creating return item: ${error.message}`);
+        }
       }
     }
 
