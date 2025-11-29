@@ -74,25 +74,30 @@ export function useSupabaseMutation<T>(table: string) {
 
   const insert = async (data: Partial<T>) => {
     if (!user) throw new Error('User not authenticated');
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
+      console.log('Supabase insert attempt', { table, data });
+
       const { data: result, error } = await supabase
         .from(table)
         .insert(data)
         .select()
         .single();
-      
+
       if (error) {
-        console.error('Supabase insert failed', {
+        const errorInfo = {
           table,
+          data,
           code: (error as any).code,
           message: error.message,
           details: (error as any).details,
           hint: (error as any).hint,
-        });
+        };
+        console.error('Supabase insert failed:', JSON.stringify(errorInfo, null, 2));
+        console.error('Full error object:', error);
         setError(error.message);
         throw error;
       }

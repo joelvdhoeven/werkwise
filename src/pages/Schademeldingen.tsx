@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Plus, Upload, X, Download, User, CreditCard as Edit, Trash2, Archive } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useSupabaseQuery, useSupabaseMutation } from '../hooks/useSupabase';
 import { supabase } from '../lib/supabase';
 import { formatDate } from '../utils/dateUtils';
@@ -11,6 +12,8 @@ import DatePickerField from '../components/DatePickerField';
 const Schademeldingen: React.FC = () => {
   const { t } = useLanguage();
   const { user, hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Admins and kantoorpersoneel see all reports, others see only their own
   const canManageAll = hasPermission('manage_damage_reports') && (user?.role === 'admin' || user?.role === 'kantoorpersoneel');
@@ -187,25 +190,25 @@ const Schademeldingen: React.FC = () => {
   return (
     <div>
       {showSuccessMessage && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        <div className={`mb-4 p-4 rounded-md ${isDark ? 'bg-green-900/50 border border-green-700 text-green-300' : 'bg-green-100 border border-green-400 text-green-700'}`}>
           {t('schademeldingOpgeslagen')}
         </div>
       )}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{t('schademeldingen')}</h1>
-          <p className="text-gray-600">
+          <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{t('schademeldingen')}</h1>
+          <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             {canManageAll
               ? showArchive ? 'Archief - Verwerkte schademeldingen' : 'Overzicht van alle schademeldingen'
               : 'Mijn schademeldingen'}
           </p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           {canManageAll && (
             <button
               onClick={() => setShowArchive(!showArchive)}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-600 text-white hover:bg-gray-700'}`}
             >
               <Archive size={18} />
               <span>{showArchive ? 'Toon Actieve' : 'Archief'}</span>
@@ -223,7 +226,7 @@ const Schademeldingen: React.FC = () => {
               setUploadedPhotos([]);
               setShowModal(true);
             }}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors text-sm sm:text-base"
           >
             <Plus size={18} />
             <span>{t('nieuweSchademelding')}</span>
@@ -233,22 +236,22 @@ const Schademeldingen: React.FC = () => {
 
       {/* Damage Reports List */}
       {schademeldingen.filter((m: any) => showArchive ? m.status === 'opgelost' : m.status !== 'opgelost').length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className={`rounded-lg shadow p-8 text-center ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
           <AlertTriangle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500">Geen schademeldingen gevonden</p>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Geen schademeldingen gevonden</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {schademeldingen.filter((m: any) => showArchive ? m.status === 'opgelost' : m.status !== 'opgelost').map((melding: any) => {
             const creator = profiles.find((p: any) => p.id === melding.created_by);
             return (
-              <div key={melding.id} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+              <div key={melding.id} className={`rounded-lg shadow p-6 hover:shadow-lg transition-shadow ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
+                    <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>
                       {melding.type_item === 'bus' ? 'Bus' : melding.type_item === 'materiaal' ? 'Materiaal' : 'Gereedschap'}
                     </h3>
-                    <p className="text-sm text-gray-500">{formatDate(melding.datum)}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDate(melding.datum)}</p>
                     {canManageAll && creator && (
                       <div className="flex items-center text-xs text-gray-600 mt-1">
                         <User size={12} className="mr-1" />
@@ -269,23 +272,23 @@ const Schademeldingen: React.FC = () => {
 
                 <div className="space-y-2 mb-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">{t('omschrijving')}:</p>
-                    <p className="text-sm text-gray-600">{melding.omschrijving}</p>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('omschrijving')}:</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{melding.omschrijving}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700">{t('beschrijvingSchade')}:</p>
-                    <p className="text-sm text-gray-600">{melding.beschrijving_schade}</p>
+                    <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('beschrijvingSchade')}:</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{melding.beschrijving_schade}</p>
                   </div>
                 </div>
 
                 {melding.foto_urls && melding.foto_urls.length > 0 && (
                   <div className="mt-4">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-gray-700">{t('fotoS')} ({melding.foto_urls.length}):</p>
+                      <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('fotoS')} ({melding.foto_urls.length}):</p>
                       {canManageAll && (
                         <button
                           onClick={() => handleDownloadPhotos(melding.foto_urls, melding.id)}
-                          className="flex items-center space-x-1 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                          className="flex items-center space-x-1 px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors"
                         >
                           <Download size={12} />
                           <span>Download</span>
@@ -306,11 +309,11 @@ const Schademeldingen: React.FC = () => {
                 )}
 
                 {canManageAll && !showArchive && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                  <div className={`mt-4 pt-4 border-t space-y-2 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEditMelding(melding)}
-                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
                       >
                         <Edit size={14} />
                         <span>Bewerk</span>
@@ -323,7 +326,7 @@ const Schademeldingen: React.FC = () => {
                       </button>
                     </div>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-xs font-medium text-gray-700 mb-1">Status wijzigen:</p>
+                      <p className={`text-xs font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Status wijzigen:</p>
                       <button
                         onClick={() => handleStatusChange(melding.id, 'in-behandeling')}
                         disabled={melding.status === 'in-behandeling'}
@@ -483,7 +486,7 @@ const Schademeldingen: React.FC = () => {
             <button
               type="submit"
               disabled={uploading}
-              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400"
+              className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors disabled:bg-gray-400"
             >
               {editingMelding ? 'Bijwerken' : 'Opslaan'}
             </button>
