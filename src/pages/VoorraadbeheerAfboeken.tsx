@@ -934,11 +934,11 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Project *</label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <select
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
-                className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                className={`w-full sm:flex-1 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">Selecteer project</option>
                 {projects.map(project => (
@@ -949,10 +949,11 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               </select>
               <button
                 onClick={() => setShowProjectSearch(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center gap-2"
                 title="Zoek in alle projecten"
               >
                 <Search size={20} />
+                <span className="sm:hidden">Zoek project</span>
               </button>
             </div>
             {selectedProject && (
@@ -976,8 +977,10 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         <div className="space-y-3">
           {bookingLines.map((line, index) => (
             <div key={index} className="space-y-2">
-              <div className="flex gap-2">
-                <div className="w-48">
+              {/* Mobile layout: stacked */}
+              <div className="flex flex-col gap-2">
+                {/* Row 1: Location select */}
+                <div className="w-full">
                   <select
                     value={line.location}
                     onChange={(e) => updateLineLocation(index, e.target.value)}
@@ -991,6 +994,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     ))}
                   </select>
                 </div>
+                {/* Row 2: Product search input */}
                 <div className="flex-1 relative product-search-container">
                   <input
                     type="text"
@@ -1021,29 +1025,34 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={() => loadLocationStock(index)}
-                  disabled={!line.location}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
-                  title="Bekijk voorraad"
-                >
-                  <Search size={20} />
-                </button>
-                <button
-                  onClick={() => startScanning(index)}
-                  disabled={scanning}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Scan size={20} />
-                </button>
-                {bookingLines.length > 1 && (
+                {/* Row 3: Action buttons */}
+                <div className="flex gap-2">
                   <button
-                    onClick={() => removeLine(index)}
-                    className={`px-3 py-2 text-red-600 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-red-50'} rounded-md`}
+                    onClick={() => loadLocationStock(index)}
+                    disabled={!line.location}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                    title="Bekijk voorraad"
                   >
-                    <Trash2 size={20} />
+                    <Search size={18} />
+                    <span className="sm:hidden">Voorraad</span>
                   </button>
-                )}
+                  <button
+                    onClick={() => startScanning(index)}
+                    disabled={scanning}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                  >
+                    <Scan size={18} />
+                    <span className="sm:hidden">Scan</span>
+                  </button>
+                  {bookingLines.length > 1 && (
+                    <button
+                      onClick={() => removeLine(index)}
+                      className={`px-3 py-2 text-red-600 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-red-50'} rounded-md`}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {line.product && (
