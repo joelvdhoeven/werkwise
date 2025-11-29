@@ -115,6 +115,60 @@ const Gebruikers: React.FC = () => {
         });
 
         if (authError) {
+          // Check if user already exists in auth but maybe not in profiles
+          if (authError.message?.includes('already registered') || authError.message?.includes('already been registered')) {
+            // Try to sign in to get the user ID and create profile
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: formData.email,
+              password: formData.password,
+            });
+
+            if (signInError) {
+              // Password doesn't match or other issue
+              throw new Error('Deze gebruiker bestaat al in het authenticatiesysteem. Verwijder de gebruiker eerst in Supabase Dashboard -> Authentication -> Users, of gebruik het juiste wachtwoord.');
+            }
+
+            if (signInData.user) {
+              // Check if profile already exists
+              const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', signInData.user.id)
+                .maybeSingle();
+
+              if (existingProfile) {
+                // Profile exists, just update it
+                await supabase.from('profiles').update({
+                  naam: formData.naam,
+                  role: formData.role,
+                  hourly_rate_purchase: formData.hourly_rate_purchase || null,
+                  hourly_rate_sale: formData.hourly_rate_sale || null,
+                  vacation_hours_total: formData.vacation_hours_total || 0,
+                }).eq('id', signInData.user.id);
+              } else {
+                // Create profile for existing auth user
+                await supabase.from('profiles').insert({
+                  id: signInData.user.id,
+                  naam: formData.naam,
+                  email: formData.email,
+                  role: formData.role,
+                  hourly_rate_purchase: formData.hourly_rate_purchase || null,
+                  hourly_rate_sale: formData.hourly_rate_sale || null,
+                  vacation_hours_total: formData.vacation_hours_total || 0,
+                  vacation_hours_used: 0,
+                });
+              }
+
+              // Sign out the user we just signed in (we were creating, not logging in)
+              // Actually, don't sign out - let the page reload handle session
+              setShowSuccessMessage('Gebruiker profiel aangemaakt/bijgewerkt voor bestaande auth gebruiker');
+              resetForm();
+              setShowModal(false);
+              setTimeout(() => setShowSuccessMessage(''), 3000);
+              refetch();
+              return;
+            }
+          }
           throw authError;
         }
 
@@ -188,12 +242,16 @@ const Gebruikers: React.FC = () => {
 
     try {
       // Check if user has any related data
-      const [timeRegs, damageReports, returnItems, notifications, emailLogs] = await Promise.all([
+      const [timeRegs, damageReports, returnItems, notifications, emailLogs, invTransactions, vacationReqs, tickets, ticketComments] = await Promise.all([
         supabase.from('time_registrations').select('id', { count: 'exact', head: true }).eq('user_id', userId),
         supabase.from('damage_reports').select('id', { count: 'exact', head: true }).eq('created_by', userId),
         supabase.from('return_items').select('id', { count: 'exact', head: true }).eq('created_by', userId),
         supabase.from('notifications').select('id', { count: 'exact', head: true }).or(`recipient_id.eq.${userId},sender_id.eq.${userId}`),
         supabase.from('email_logs').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('inventory_transactions').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('vacation_requests').select('id', { count: 'exact', head: true }).or(`user_id.eq.${userId},reviewed_by.eq.${userId}`),
+        supabase.from('tickets').select('id', { count: 'exact', head: true }).or(`created_by.eq.${userId},assigned_to.eq.${userId}`),
+        supabase.from('ticket_comments').select('id', { count: 'exact', head: true }).eq('user_id', userId),
       ]);
 
       const timeRegsCount = timeRegs.count || 0;
@@ -201,6 +259,10 @@ const Gebruikers: React.FC = () => {
       const returnItemsCount = returnItems.count || 0;
       const notificationsCount = notifications.count || 0;
       const emailLogsCount = emailLogs.count || 0;
+      const invTransactionsCount = invTransactions.count || 0;
+      const vacationReqsCount = vacationReqs.count || 0;
+      const ticketsCount = tickets.count || 0;
+      const ticketCommentsCount = ticketComments.count || 0;
 
       // Show confirmation with data counts
       const relatedData = [];
@@ -209,6 +271,10 @@ const Gebruikers: React.FC = () => {
       if (returnItemsCount > 0) relatedData.push(`${returnItemsCount} retourboeking(en)`);
       if (notificationsCount > 0) relatedData.push(`${notificationsCount} notificatie(s)`);
       if (emailLogsCount > 0) relatedData.push(`${emailLogsCount} email log(s)`);
+      if (invTransactionsCount > 0) relatedData.push(`${invTransactionsCount} voorraadtransactie(s)`);
+      if (vacationReqsCount > 0) relatedData.push(`${vacationReqsCount} vakantieaanvra(a)g(en)`);
+      if (ticketsCount > 0) relatedData.push(`${ticketsCount} ticket(s)`);
+      if (ticketCommentsCount > 0) relatedData.push(`${ticketCommentsCount} ticket reactie(s)`);
 
       let confirmMessage = 'Weet je zeker dat je deze gebruiker wilt verwijderen?';
       if (relatedData.length > 0) {
@@ -296,7 +362,73 @@ const Gebruikers: React.FC = () => {
         }
       }
 
-      // 7. Set created_by to NULL for projects (don't delete projects)
+      // 7. Delete inventory transactions
+      if (invTransactionsCount > 0) {
+        const { error: invError } = await supabase
+          .from('inventory_transactions')
+          .delete()
+          .eq('user_id', userId);
+
+        if (invError) {
+          console.error('Error deleting inventory transactions:', invError);
+          throw new Error('Fout bij het verwijderen van voorraadtransacties: ' + invError.message);
+        }
+      }
+
+      // 8. Delete ticket comments first (before tickets)
+      if (ticketCommentsCount > 0) {
+        const { error: commentsError } = await supabase
+          .from('ticket_comments')
+          .delete()
+          .eq('user_id', userId);
+
+        if (commentsError) {
+          console.error('Error deleting ticket comments:', commentsError);
+          throw new Error('Fout bij het verwijderen van ticket reacties: ' + commentsError.message);
+        }
+      }
+
+      // 9. Update tickets - set assigned_to to null, delete tickets created by user
+      if (ticketsCount > 0) {
+        // First update assigned_to to null
+        await supabase
+          .from('tickets')
+          .update({ assigned_to: null })
+          .eq('assigned_to', userId);
+
+        // Then delete tickets created by user
+        const { error: ticketsError } = await supabase
+          .from('tickets')
+          .delete()
+          .eq('created_by', userId);
+
+        if (ticketsError) {
+          console.error('Error deleting tickets:', ticketsError);
+          throw new Error('Fout bij het verwijderen van tickets: ' + ticketsError.message);
+        }
+      }
+
+      // 10. Delete vacation requests and update reviewed_by
+      if (vacationReqsCount > 0) {
+        // First update reviewed_by to null
+        await supabase
+          .from('vacation_requests')
+          .update({ reviewed_by: null })
+          .eq('reviewed_by', userId);
+
+        // Then delete vacation requests by user
+        const { error: vacationError } = await supabase
+          .from('vacation_requests')
+          .delete()
+          .eq('user_id', userId);
+
+        if (vacationError) {
+          console.error('Error deleting vacation requests:', vacationError);
+          throw new Error('Fout bij het verwijderen van vakantieaanvragen: ' + vacationError.message);
+        }
+      }
+
+      // 11. Set created_by to NULL for projects (don't delete projects)
       const { error: projectsError } = await supabase
         .from('projects')
         .update({ created_by: null })
@@ -307,7 +439,7 @@ const Gebruikers: React.FC = () => {
         throw new Error('Fout bij het updaten van projecten: ' + projectsError.message);
       }
 
-      // 8. Finally delete the profile
+      // 12. Finally delete the profile
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
