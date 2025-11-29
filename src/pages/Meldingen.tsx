@@ -70,13 +70,13 @@ const Meldingen: React.FC<MeldingenProps> = ({ onNavigate }) => {
 
       try {
         const { data: stockData, error } = await supabase
-          .from('stock')
+          .from('inventory_stock')
           .select(`
             quantity,
             product_id,
             location_id,
-            product:product_id(id, name, sku, minimum_stock, unit),
-            location:location_id(id, name)
+            product:inventory_products!inventory_stock_product_id_fkey(id, name, sku, minimum_stock, unit),
+            location:inventory_locations!inventory_stock_location_id_fkey(id, name)
           `);
 
         if (error) throw error;
@@ -254,7 +254,7 @@ const Meldingen: React.FC<MeldingenProps> = ({ onNavigate }) => {
             }`}
           >
             <Mail size={16} />
-            Meldingen
+            Systeem Notificaties
             {unreadNotifications.length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 text-xs bg-white text-red-600 rounded-full font-bold">
                 {unreadNotifications.length}

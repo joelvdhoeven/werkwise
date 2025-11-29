@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Search, Plus, AlertCircle, Truck, Warehouse, Download, Upload, ScanLine, Filter, X, Edit, Trash2, Eye, ArrowRightLeft, Camera, Image as ImageIcon } from 'lucide-react';
+import { Package, Search, Plus, AlertCircle, Truck, Warehouse, Download, Upload, ScanLine, Filter, X, Edit, Trash2, Eye, ArrowRightLeft, Camera, Image as ImageIcon, ChevronRight, ShoppingCart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
@@ -89,6 +89,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
   const [productStockByLocation, setProductStockByLocation] = useState<Stock[]>([]);
 
   const [showStockEditModal, setShowStockEditModal] = useState(false);
+  const [showLowStockModal, setShowLowStockModal] = useState(false);
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [stockEditFormData, setStockEditFormData] = useState({
     product_name: '',
@@ -1246,26 +1247,25 @@ const VoorraadbeheerAdmin: React.FC = () => {
         ))}
       </div>
 
-      {/* Low Stock Alerts */}
+      {/* Low Stock Alerts Button */}
       {canManage && lowStockAlerts.length > 0 && (
-        <div className={`rounded-xl p-4 ${isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'}`}>
-          <div className="flex items-start gap-3">
-            <AlertCircle className={`mt-0.5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} size={20} />
-            <div className="flex-1">
-              <h3 className={`font-semibold mb-2 ${isDark ? 'text-yellow-300' : 'text-yellow-900'}`}>Voorraad Waarschuwingen ({lowStockAlerts.length})</h3>
-              <div className="space-y-1">
-                {lowStockAlerts.slice(0, 5).map((alert, idx) => (
-                  <div key={idx} className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'}`}>
-                    {alert.product_name} bij {alert.location_name}: {alert.current_stock} {products.find(p => p.id === alert.product_id)?.unit} (min: {alert.minimum_stock})
-                  </div>
-                ))}
-                {lowStockAlerts.length > 5 && (
-                  <div className={`text-sm font-medium ${isDark ? 'text-yellow-300' : 'text-yellow-700'}`}>+ {lowStockAlerts.length - 5} meer...</div>
-                )}
+        <button
+          onClick={() => setShowLowStockModal(true)}
+          className={`w-full rounded-xl p-4 text-left transition-all hover:shadow-md ${isDark ? 'bg-orange-900/30 border border-orange-700 hover:bg-orange-900/40' : 'bg-orange-50 border border-orange-200 hover:bg-orange-100'}`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-800/50' : 'bg-orange-200'}`}>
+                <AlertCircle className={`${isDark ? 'text-orange-400' : 'text-orange-600'}`} size={20} />
+              </div>
+              <div>
+                <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Waarschuwingen</h3>
+                <p className={`text-sm ${isDark ? 'text-orange-300' : 'text-orange-700'}`}>{lowStockAlerts.length} items onder minimum voorraad</p>
               </div>
             </div>
+            <ChevronRight className={`${isDark ? 'text-orange-400' : 'text-orange-600'}`} size={20} />
           </div>
-        </div>
+        </button>
       )}
 
       {/* Main Content Area with Tabs */}
@@ -2204,10 +2204,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
                         {stock.filter(s => s.location_id === selectedLocationForDetails.id).map((item) => {
                           const isLow = item.quantity < (item.product?.minimum_stock || 0);
                           return (
-                            <tr key={item.product_id} className={isLow ? 'bg-yellow-50' : ''}>
+                            <tr key={item.product_id} className={isLow ? (isDark ? 'bg-yellow-900/20' : 'bg-yellow-50') : ''}>
                               <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.product?.name}</td>
                               <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{item.product?.sku}</td>
-                              <td className="px-4 py-3 text-sm text-right font-medium">
+                              <td className={`px-4 py-3 text-sm text-right font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                 {item.quantity} {item.product?.unit}
                               </td>
                               <td className={`px-4 py-3 text-sm text-right ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -2215,11 +2215,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
                               </td>
                               <td className="px-4 py-3 text-sm">
                                 {isLow ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-yellow-100 text-yellow-800'}`}>
                                     Laag
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-green-100 text-green-800'}`}>
                                     OK
                                   </span>
                                 )}
@@ -2367,8 +2367,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 />
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
+              <div className={`${isDark ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3`}>
+                <p className={`text-sm ${isDark ? 'text-yellow-300' : 'text-yellow-800'}`}>
                   Let op: Producten die al bestaan op deze locatie worden bijgewerkt met de nieuwe aantallen (opgeteld).
                 </p>
               </div>
@@ -2737,13 +2737,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
       {showBulkDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Weet je het zeker?</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Weet je het zeker?</h3>
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
               Je staat op het punt om {selectedStockIds.size} voorraad item(s) permanent te verwijderen.
               Deze actie kan niet ongedaan worden gemaakt.
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
-              <p className="text-sm text-yellow-800 font-medium">
+            <div className={`${isDark ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3 mb-6`}>
+              <p className={`text-sm ${isDark ? 'text-yellow-300' : 'text-yellow-800'} font-medium`}>
                 Dit is een tweede waarschuwing. Weet je zeker dat je wilt doorgaan?
               </p>
             </div>
@@ -2781,7 +2781,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <X size={24} />
               </button>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
               Selecteer de nieuwe locatie voor {selectedStockIds.size} geselecteerde item(s).
             </p>
             <div className="mb-6">
@@ -2825,8 +2825,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
       {showBulkLocationConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Bevestig Locatie Wijziging</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Bevestig Locatie Wijziging</h3>
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
               Weet je zeker dat je {selectedStockIds.size} voorraad item(s) wilt verplaatsen naar de nieuwe locatie?
             </p>
             <div className="flex gap-3">
@@ -2901,6 +2901,96 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   Bevestigen
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Low Stock Modal */}
+      {showLowStockModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-900/50' : 'bg-orange-100'}`}>
+                  <AlertCircle className="h-6 w-6 text-orange-500" />
+                </div>
+                <div>
+                  <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Waarschuwingen</h2>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{lowStockAlerts.length} items onder minimum voorraad</p>
+                </div>
+              </div>
+              <button onClick={() => setShowLowStockModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-3">
+                {lowStockAlerts.map((alert, idx) => {
+                  const product = products.find(p => p.id === alert.product_id);
+                  const stockItem = stock.find(s => s.product_id === alert.product_id && s.location_id === alert.location_id);
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-center justify-between p-4 rounded-lg border ${
+                        isDark ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className={`p-3 rounded-lg ${isDark ? 'bg-orange-900/30' : 'bg-orange-50'}`}>
+                          <Package className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{alert.product_name}</h4>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            SKU: {alert.sku} | Locatie: {alert.location_name}
+                          </p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className={`text-sm font-medium ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
+                              Voorraad: {alert.current_stock} {product?.unit || 'stuk'}
+                            </span>
+                            <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                              (min: {alert.minimum_stock})
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowLowStockModal(false);
+                          if (stockItem) {
+                            handleEditStock(stockItem);
+                          } else {
+                            // Create a temporary stock object to edit
+                            const tempStock: Stock = {
+                              product_id: alert.product_id,
+                              location_id: alert.location_id,
+                              quantity: alert.current_stock,
+                              product: product
+                            };
+                            handleEditStock(tempStock);
+                          }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+                      >
+                        <ShoppingCart size={16} />
+                        Besteld
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={`p-4 border-t ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
+              <button
+                onClick={() => setShowLowStockModal(false)}
+                className={`w-full px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'} rounded-lg transition-colors`}
+              >
+                Sluiten
+              </button>
             </div>
           </div>
         </div>
