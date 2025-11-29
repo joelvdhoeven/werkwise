@@ -23,10 +23,11 @@ interface LowStockItem {
 
 interface VacationRequest {
   id: string;
+  user_id: string;
   type: string;
   start_date: string;
   end_date: string;
-  profiles?: { naam: string };
+  user_naam?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => {
@@ -97,19 +98,38 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
       if (!hasPermission('manage_settings')) return;
 
       try {
-        const { data, error } = await supabase
+        // First get vacation requests
+        const { data: vacationData, error: vacationError } = await supabase
           .from('vacation_requests')
-          .select(`
-            id,
-            type,
-            start_date,
-            end_date,
-            profiles:user_id(naam)
-          `)
+          .select('id, user_id, type, start_date, end_date')
           .eq('status', 'pending');
 
-        if (error) throw error;
-        setPendingVacations(data || []);
+        if (vacationError) throw vacationError;
+
+        if (!vacationData || vacationData.length === 0) {
+          setPendingVacations([]);
+          return;
+        }
+
+        // Get unique user IDs and fetch their names
+        const userIds = [...new Set(vacationData.map(v => v.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, naam')
+          .in('id', userIds);
+
+        const userNameMap: Record<string, string> = {};
+        profilesData?.forEach(p => {
+          userNameMap[p.id] = p.naam || 'Onbekend';
+        });
+
+        // Combine the data
+        const enrichedData = vacationData.map(v => ({
+          ...v,
+          user_naam: userNameMap[v.user_id] || 'Onbekend'
+        }));
+
+        setPendingVacations(enrichedData);
       } catch (error) {
         console.error('Error fetching vacation requests:', error);
       }
@@ -280,7 +300,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick, onMenuClick }) => 
                                 isDark ? 'bg-blue-900/30 text-blue-200' : 'bg-blue-50 text-blue-800'
                               }`}
                             >
-                              <div className="font-medium">{request.profiles?.naam || 'Onbekend'}</div>
+                              <div className="font-medium">{request.user_naam || 'Onbekend'}</div>
                               <div className={isDark ? 'text-blue-300/70' : 'text-blue-600'}>
                                 {request.type}: {new Date(request.start_date).toLocaleDateString('nl-NL')} - {new Date(request.end_date).toLocaleDateString('nl-NL')}
                               </div>
