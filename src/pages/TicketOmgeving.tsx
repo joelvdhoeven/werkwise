@@ -291,7 +291,7 @@ const TicketOmgeving: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Ticket Omgeving</h1>
           <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
@@ -300,10 +300,10 @@ const TicketOmgeving: React.FC = () => {
               : 'Maak tickets aan en bekijk alle tickets (Admin/Kantoorpersoneel)'}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
               showArchived
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -315,7 +315,7 @@ const TicketOmgeving: React.FC = () => {
           {(profile?.role === 'admin' || profile?.role === 'kantoorpersoneel') && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700"
             >
               <Plus size={20} />
               Nieuw Ticket
@@ -326,7 +326,7 @@ const TicketOmgeving: React.FC = () => {
 
       <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border`}>
         <div className={`p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className={`absolute left-3 top-2.5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={20} />
               <input
@@ -337,28 +337,30 @@ const TicketOmgeving: React.FC = () => {
                 className={`w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
               />
             </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-            >
-              <option value="all">Alle Statussen</option>
-              <option value="open">Open</option>
-              <option value="in_progress">In Behandeling</option>
-              <option value="resolved">Opgelost</option>
-              <option value="closed">Gesloten</option>
-            </select>
-            <select
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className={`px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-            >
-              <option value="all">Alle Prioriteiten</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">Hoog</option>
-              <option value="medium">Gemiddeld</option>
-              <option value="low">Laag</option>
-            </select>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className={`w-full sm:w-auto px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              >
+                <option value="all">Alle Statussen</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Behandeling</option>
+                <option value="resolved">Opgelost</option>
+                <option value="closed">Gesloten</option>
+              </select>
+              <select
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value)}
+                className={`w-full sm:w-auto px-4 py-2 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+              >
+                <option value="all">Alle Prioriteiten</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">Hoog</option>
+                <option value="medium">Gemiddeld</option>
+                <option value="low">Laag</option>
+              </select>
+            </div>
           </div>
         </div>
 

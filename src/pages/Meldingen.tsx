@@ -39,7 +39,7 @@ const Meldingen: React.FC<MeldingenProps> = ({ onNavigate }) => {
   const { user, hasPermission } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const [activeTab, setActiveTab] = useState<'notifications' | 'stock' | 'vacation'>('notifications');
+  const [activeTab, setActiveTab] = useState<'stock' | 'vacation'>('stock');
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([]);
   const [loadingStock, setLoadingStock] = useState(true);
@@ -246,22 +246,6 @@ const Meldingen: React.FC<MeldingenProps> = ({ onNavigate }) => {
       {isAdmin && (
         <div className={`rounded-lg shadow p-2 flex flex-wrap gap-2 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
           <button
-            onClick={() => setActiveTab('notifications')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'notifications'
-                ? 'bg-red-600 text-white'
-                : isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Mail size={16} />
-            Systeem Notificaties
-            {unreadNotifications.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-xs bg-white text-red-600 rounded-full font-bold">
-                {unreadNotifications.length}
-              </span>
-            )}
-          </button>
-          <button
             onClick={() => setActiveTab('stock')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'stock'
@@ -293,60 +277,6 @@ const Meldingen: React.FC<MeldingenProps> = ({ onNavigate }) => {
               </span>
             )}
           </button>
-        </div>
-      )}
-
-      {/* Notifications Tab */}
-      {activeTab === 'notifications' && (
-        <div className={`rounded-lg shadow ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-          {loadingNotifications ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-              {t('noNotifications')}
-            </div>
-          ) : (
-            <ul className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
-              {notifications.map(notification => (
-                <li key={notification.id} className={`p-6 flex items-start space-x-4 ${notification.status === 'unread' ? (isDark ? 'bg-red-900/20' : 'bg-red-50') : ''}`}>
-                  <div className="flex-shrink-0 mt-1">
-                    {notification.status === 'unread' ? <Mail className="h-6 w-6 text-red-600" /> : <MailOpen className={`h-6 w-6 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{notification.title}</h3>
-                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{new Date(notification.created_at).toLocaleString('nl-NL')}</span>
-                    </div>
-                    <p className={`mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{notification.message}</p>
-                    <div className="mt-3 flex space-x-2">
-                      {notification.status === 'unread' && (
-                        <button
-                          onClick={() => handleMarkAsRead(notification.id)}
-                          className={`flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium ${isDark ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70' : 'bg-red-100 text-red-800 hover:bg-red-200'}`}
-                          disabled={mutationLoading}
-                        >
-                          <MailOpen size={14} />
-                          <span>{t('markAsRead')}</span>
-                        </button>
-                      )}
-                      {notification.status !== 'archived' && (
-                        <button
-                          onClick={() => handleArchive(notification.id)}
-                          className={`flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium ${isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                          disabled={mutationLoading}
-                        >
-                          <Archive size={14} />
-                          <span>{t('archive')}</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
 

@@ -457,7 +457,7 @@ const ModuleBeheer: React.FC = () => {
 
           <div className="space-y-4">
             <div className={`p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="space-y-2">
                   <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Demo Accounts</p>
                   <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -465,7 +465,7 @@ const ModuleBeheer: React.FC = () => {
                   </p>
                   <ul className={`text-sm space-y-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {mockUserCredentials.map((user, index) => (
-                      <li key={index} className="flex items-center gap-2">
+                      <li key={index} className="flex flex-wrap items-center gap-2">
                         <span className={`px-2 py-0.5 rounded text-xs ${
                           user.role === 'admin'
                             ? isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700'
@@ -478,7 +478,7 @@ const ModuleBeheer: React.FC = () => {
                           {user.role}
                         </span>
                         <span>{user.naam}</span>
-                        <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>({user.email})</span>
+                        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>({user.email})</span>
                       </li>
                     ))}
                   </ul>
@@ -486,7 +486,7 @@ const ModuleBeheer: React.FC = () => {
                 <button
                   onClick={handleSeedData}
                   disabled={seedingData}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                  className={`w-full md:w-auto flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
                     seedingData
                       ? isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700'
@@ -538,7 +538,7 @@ const ModuleBeheer: React.FC = () => {
 
             {/* Delete All Data Section */}
             <div className={`mt-4 p-4 border rounded-lg ${isDark ? 'border-red-900/50 bg-red-900/10' : 'border-red-200 bg-red-50'}`}>
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="space-y-2">
                   <p className={`font-medium ${isDark ? 'text-red-300' : 'text-red-800'}`}>Data Verwijderen</p>
                   <p className={`text-sm ${isDark ? 'text-red-400/80' : 'text-red-600'}`}>
@@ -548,7 +548,7 @@ const ModuleBeheer: React.FC = () => {
                 <button
                   onClick={handleDeleteData}
                   disabled={deletingData}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                  className={`w-full md:w-auto flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
                     deletingData
                       ? isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : isDark ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70 border border-red-700' : 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-300'

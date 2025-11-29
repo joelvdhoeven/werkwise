@@ -203,7 +203,7 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 100 }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        className={`fixed bottom-4 right-4 z-50 w-[380px] rounded-3xl shadow-2xl overflow-hidden ${
+        className={`fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:w-[380px] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden ${
           isDark ? 'bg-gray-900' : 'bg-white'
         }`}
         style={{
@@ -212,71 +212,77 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
             : '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.05)'
         }}
       >
-        {/* Animated Header Background */}
+        {/* Header - Compact on mobile */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-red-600 via-rose-600 to-pink-600" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzMiAyIDIgNGMwIDItMiA0LTIgNHMtMi0yLTItNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
+          <div className="hidden sm:block absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzMiAyIDIgNGMwIDItMiA0LTIgNHMtMi0yLTItNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
 
-          {/* Floating particles */}
+          {/* Floating particles - hidden on mobile */}
           <motion.div
             animate={{ y: [-10, 10, -10], x: [-5, 5, -5] }}
             transition={{ duration: 4, repeat: Infinity }}
-            className="absolute top-4 right-16 w-3 h-3 bg-white/30 rounded-full blur-sm"
+            className="hidden sm:block absolute top-4 right-16 w-3 h-3 bg-white/30 rounded-full blur-sm"
           />
           <motion.div
             animate={{ y: [10, -10, 10], x: [5, -5, 5] }}
             transition={{ duration: 5, repeat: Infinity }}
-            className="absolute top-12 right-8 w-2 h-2 bg-white/40 rounded-full blur-sm"
+            className="hidden sm:block absolute top-12 right-8 w-2 h-2 bg-white/40 rounded-full blur-sm"
           />
           <motion.div
             animate={{ y: [-5, 15, -5] }}
             transition={{ duration: 3, repeat: Infinity }}
-            className="absolute bottom-4 left-20 w-4 h-4 bg-white/20 rounded-full blur-sm"
+            className="hidden sm:block absolute bottom-4 left-20 w-4 h-4 bg-white/20 rounded-full blur-sm"
           />
 
-          <div className="relative p-5">
+          <div className="relative p-3 sm:p-5">
+            {/* Mobile: Simple compact header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Icon hidden on mobile */}
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/30"
+                  className="hidden sm:flex w-12 h-12 bg-white/20 backdrop-blur-xl rounded-2xl items-center justify-center border border-white/30"
                 >
                   {isAdmin ? <Crown className="h-6 w-6 text-white" /> : <Zap className="h-6 w-6 text-white" />}
                 </motion.div>
                 <div>
-                  <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                    Rondleiding
+                  {/* Mobile: Just step counter, Desktop: Full title */}
+                  <h2 className="text-white font-bold text-sm sm:text-lg flex items-center gap-2">
+                    <span className="sm:hidden">Stap {currentStep + 1}/{steps.length}</span>
+                    <span className="hidden sm:inline">Rondleiding</span>
                     <motion.span
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
+                      className="hidden sm:inline"
                     >
                       <Sparkles className="h-4 w-4 text-yellow-300" />
                     </motion.span>
                   </h2>
-                  <p className="text-white/70 text-sm">
-                    {isAdmin ? 'Admin modus' : 'Medewerker modus'}
+                  <p className="text-white/70 text-xs sm:text-sm">
+                    <span className="sm:hidden">{steps[currentStep].title}</span>
+                    <span className="hidden sm:inline">{isAdmin ? 'Admin modus' : 'Medewerker modus'}</span>
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleClose}
-                className="p-2 hover:bg-white/20 rounded-xl transition-colors text-white/80 hover:text-white"
+                className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg sm:rounded-xl transition-colors text-white/80 hover:text-white"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
 
-            {/* Progress bar with glow */}
-            <div className="mt-4">
-              <div className="flex gap-1.5">
+            {/* Progress bar - simplified on mobile */}
+            <div className="mt-2 sm:mt-4">
+              <div className="flex gap-1 sm:gap-1.5">
                 {steps.map((_, index) => (
                   <motion.div
                     key={index}
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                    className={`h-1 sm:h-1.5 flex-1 rounded-full transition-all duration-300 ${
                       showCompletion || index <= currentStep
                         ? 'bg-white shadow-lg shadow-white/50'
                         : 'bg-white/30'
@@ -284,15 +290,15 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
                   />
                 ))}
               </div>
-              <p className="text-white/60 text-xs mt-2 text-center">
+              <p className="hidden sm:block text-white/60 text-xs mt-2 text-center">
                 {showCompletion ? 'Voltooid!' : `Stap ${currentStep + 1} van ${steps.length}`}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-5">
+        {/* Content - Compact on mobile */}
+        <div className="p-3 sm:p-5">
           <AnimatePresence mode="wait">
             {!showCompletion ? (
               <motion.div
@@ -302,8 +308,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* Step Icon */}
-                <div className="flex items-center gap-4 mb-4">
+                {/* Step Icon - Hidden on mobile, show title/desc differently */}
+                <div className="hidden sm:flex items-center gap-4 mb-4">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -328,34 +334,35 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
                   </div>
                 </div>
 
-                <p className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                {/* Mobile description - shorter */}
+                <p className={`text-xs sm:text-sm mb-3 sm:mb-6 leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   {steps[currentStep].description}
                 </p>
 
-                {/* Navigation */}
-                <div className="flex gap-3">
+                {/* Navigation - Compact on mobile */}
+                <div className="flex gap-2 sm:gap-3">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handlePrev}
                     disabled={currentStep === 0}
-                    className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1 sm:gap-2 ${
                       currentStep === 0
                         ? isDark ? 'bg-gray-800/50 text-gray-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : isDark ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Vorige
+                    <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Vorige</span>
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleNext}
-                    className="flex-1 py-3 px-4 rounded-xl text-sm font-medium bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all flex items-center justify-center gap-2 group"
+                    className="flex-[2] sm:flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all flex items-center justify-center gap-1 sm:gap-2 group"
                   >
                     {isLastStep ? 'Voltooien' : 'Volgende'}
-                    <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-0.5 transition-transform" />
                   </motion.button>
                 </div>
               </motion.div>
@@ -464,8 +471,8 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
           </AnimatePresence>
         </div>
 
-        {/* Mini progress dots at bottom */}
-        <div className={`px-5 pb-4 flex justify-center gap-1.5 ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
+        {/* Mini progress dots at bottom - Hidden on mobile */}
+        <div className={`hidden sm:flex px-5 pb-4 justify-center gap-1.5 ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
           {steps.map((_, index) => (
             <button
               key={index}
