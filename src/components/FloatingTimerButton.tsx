@@ -149,11 +149,24 @@ const FloatingTimerButton: React.FC = () => {
     startTimer();
   };
 
-  const werktypes = [
-    { value: 'projectbasis', label: 'Geoffreerd' },
-    { value: 'meerwerk', label: 'Extra Werk' },
-    { value: 'regie', label: 'Nacalculatie' },
-  ];
+  // Load work types from localStorage or use defaults
+  const getWorkTypes = () => {
+    const saved = localStorage.getItem('werkwise_work_types');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error loading work types:', e);
+      }
+    }
+    return [
+      { value: 'projectbasis', label: 'Geoffreerd' },
+      { value: 'meerwerk', label: 'Extra Werk' },
+      { value: 'regie', label: 'Nacalculatie' },
+    ];
+  };
+
+  const werktypes = getWorkTypes();
 
   // Check if timer should be hidden (only when not running and at 0)
   const canHide = !timerState.isRunning && timerState.elapsedSeconds === 0;

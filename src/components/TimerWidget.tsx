@@ -109,13 +109,24 @@ const TimerWidget: React.FC<TimerWidgetProps> = ({ projects, onSaveTime, isOpen,
     // Keep the timer running if they cancel
   };
 
-  const werktypes = [
-    { value: 'werk', label: 'Werk' },
-    { value: 'transport', label: 'Transport' },
-    { value: 'administratie', label: 'Administratie' },
-    { value: 'vergadering', label: 'Vergadering' },
-    { value: 'overig', label: 'Overig' },
-  ];
+  // Load work types from localStorage or use defaults
+  const getWorkTypes = () => {
+    const saved = localStorage.getItem('werkwise_work_types');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error loading work types:', e);
+      }
+    }
+    return [
+      { value: 'projectbasis', label: 'Geoffreerd' },
+      { value: 'meerwerk', label: 'Extra Werk' },
+      { value: 'regie', label: 'Nacalculatie' },
+    ];
+  };
+
+  const werktypes = getWorkTypes();
 
   return (
     <>

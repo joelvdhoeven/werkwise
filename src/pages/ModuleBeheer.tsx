@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Settings as SettingsIcon, Save, Database, PlayCircle } from 'lucide-react';
+import { Package, Settings as SettingsIcon, Save, Database, PlayCircle, X, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { seedMockData, mockUserCredentials } from '../utils/seedMockData';
+
+interface WorkType {
+  id: string;
+  value: string;
+  label: string;
+}
 
 const ModuleBeheer: React.FC = () => {
   const { user } = useAuth();
@@ -13,6 +19,16 @@ const ModuleBeheer: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [seedingData, setSeedingData] = useState(false);
   const [seedResults, setSeedResults] = useState<{ success: string[]; errors: string[] } | null>(null);
+  const [showModuleSettingsModal, setShowModuleSettingsModal] = useState<string | null>(null);
+
+  // Work types for time registration
+  const [workTypes, setWorkTypes] = useState<WorkType[]>([
+    { id: '1', value: 'projectbasis', label: 'Geoffreerd' },
+    { id: '2', value: 'meerwerk', label: 'Extra Werk' },
+    { id: '3', value: 'regie', label: 'Nacalculatie' }
+  ]);
+  const [newWorkTypeValue, setNewWorkTypeValue] = useState('');
+  const [newWorkTypeLabel, setNewWorkTypeLabel] = useState('');
 
   const [moduleSettings, setModuleSettings] = useState<{
     module_invoicing: boolean;
@@ -40,6 +56,15 @@ const ModuleBeheer: React.FC = () => {
 
   useEffect(() => {
     loadModuleSettings();
+    // Load work types from localStorage
+    const savedWorkTypes = localStorage.getItem('werkwise_work_types');
+    if (savedWorkTypes) {
+      try {
+        setWorkTypes(JSON.parse(savedWorkTypes));
+      } catch (e) {
+        console.error('Error loading work types:', e);
+      }
+    }
   }, []);
 
   const loadModuleSettings = async () => {
@@ -187,15 +212,24 @@ const ModuleBeheer: React.FC = () => {
                 <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>Urenregistratie</p>
                 <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Registreer gewerkte uren op projecten</p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={moduleSettings.module_time_registration}
-                  onChange={(e) => setModuleSettings({ ...moduleSettings, module_time_registration: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
-              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowModuleSettingsModal('time_registration')}
+                  className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+                  title="Module instellingen"
+                >
+                  <SettingsIcon size={18} />
+                </button>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={moduleSettings.module_time_registration}
+                    onChange={(e) => setModuleSettings({ ...moduleSettings, module_time_registration: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className={`w-11 h-6 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+                </label>
+              </div>
             </div>
 
             <div className={`flex items-center justify-between p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
@@ -460,6 +494,147 @@ const ModuleBeheer: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Time Registration Settings Modal */}
+      {showModuleSettingsModal === 'time_registration' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <div>
+                <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Urenregistratie Instellingen</h2>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Configureer werktypes en andere instellingen</p>
+              </div>
+              <button
+                onClick={() => setShowModuleSettingsModal(null)}
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                {/* Work Types Section */}
+                <div>
+                  <h3 className={`font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Werktypes</h3>
+                  <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Definieer de werktypes die medewerkers kunnen kiezen bij het registreren van uren.
+                  </p>
+
+                  <div className="space-y-2 mb-4">
+                    {workTypes.map((wt, index) => (
+                      <div
+                        key={wt.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border ${isDark ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'}`}
+                      >
+                        <GripVertical className={`${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={16} />
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={wt.value}
+                            onChange={(e) => {
+                              const newWorkTypes = [...workTypes];
+                              newWorkTypes[index].value = e.target.value.toLowerCase().replace(/\s+/g, '_');
+                              setWorkTypes(newWorkTypes);
+                            }}
+                            placeholder="Waarde (bijv: meerwerk)"
+                            className={`px-2 py-1 text-sm rounded border ${isDark ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+                          />
+                          <input
+                            type="text"
+                            value={wt.label}
+                            onChange={(e) => {
+                              const newWorkTypes = [...workTypes];
+                              newWorkTypes[index].label = e.target.value;
+                              setWorkTypes(newWorkTypes);
+                            }}
+                            placeholder="Label (bijv: Extra Werk)"
+                            className={`px-2 py-1 text-sm rounded border ${isDark ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
+                          />
+                        </div>
+                        <button
+                          onClick={() => setWorkTypes(workTypes.filter(w => w.id !== wt.id))}
+                          disabled={workTypes.length <= 1}
+                          className={`p-1 rounded transition-colors ${
+                            workTypes.length <= 1
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : isDark ? 'text-red-400 hover:bg-red-900/30' : 'text-red-600 hover:bg-red-50'
+                          }`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add New Work Type */}
+                  <div className={`p-3 rounded-lg border-2 border-dashed ${isDark ? 'border-gray-600' : 'border-gray-300'}`}>
+                    <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Nieuw werktype toevoegen</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newWorkTypeValue}
+                        onChange={(e) => setNewWorkTypeValue(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
+                        placeholder="Waarde"
+                        className={`flex-1 px-3 py-2 text-sm rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300'}`}
+                      />
+                      <input
+                        type="text"
+                        value={newWorkTypeLabel}
+                        onChange={(e) => setNewWorkTypeLabel(e.target.value)}
+                        placeholder="Label"
+                        className={`flex-1 px-3 py-2 text-sm rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300'}`}
+                      />
+                      <button
+                        onClick={() => {
+                          if (newWorkTypeValue && newWorkTypeLabel) {
+                            setWorkTypes([...workTypes, {
+                              id: Date.now().toString(),
+                              value: newWorkTypeValue,
+                              label: newWorkTypeLabel
+                            }]);
+                            setNewWorkTypeValue('');
+                            setNewWorkTypeLabel('');
+                          }
+                        }}
+                        disabled={!newWorkTypeValue || !newWorkTypeLabel}
+                        className={`px-3 py-2 rounded-lg transition-colors ${
+                          newWorkTypeValue && newWorkTypeLabel
+                            ? 'bg-red-600 text-white hover:bg-red-700'
+                            : isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className={`p-4 border-t ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'} flex gap-3`}>
+              <button
+                onClick={() => setShowModuleSettingsModal(null)}
+                className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'} rounded-lg transition-colors`}
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={() => {
+                  // Save work types to localStorage for now (can be extended to database later)
+                  localStorage.setItem('werkwise_work_types', JSON.stringify(workTypes));
+                  setSuccessMessage('Werktypes opgeslagen!');
+                  setTimeout(() => setSuccessMessage(''), 3000);
+                  setShowModuleSettingsModal(null);
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Opslaan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
