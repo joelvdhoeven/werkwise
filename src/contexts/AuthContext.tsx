@@ -130,6 +130,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     localStorage.removeItem('currentUser');
 
+    // Reset onboarding tour so it always shows on login
+    localStorage.removeItem('werkwise_tour_completed');
+    localStorage.setItem('werkwise_tour_open', 'true');
+
     // Sign in with Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email,
