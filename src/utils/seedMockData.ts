@@ -34,62 +34,42 @@ const mockUsers = [
   }
 ];
 
-// Mock projects
+// Mock projects - using only basic columns that should exist
 const mockProjects = [
   {
     naam: 'Nieuwbouw Villa Rotterdam',
     beschrijving: 'Complete nieuwbouw van luxe villa met tuin',
     locatie: 'Rotterdam, Zuid-Holland',
     start_datum: '2024-09-01',
-    status: 'actief',
-    estimated_hours: 2000,
-    progress_percentage: 45,
-    project_nummer: 'PRJ-2024-001',
-    oppervlakte_m2: 350
+    status: 'actief'
   },
   {
     naam: 'Renovatie Kantoorpand Amsterdam',
     beschrijving: 'Volledige renovatie van 3-verdieping kantoorpand',
     locatie: 'Amsterdam, Noord-Holland',
     start_datum: '2024-10-15',
-    status: 'actief',
-    estimated_hours: 1500,
-    progress_percentage: 30,
-    project_nummer: 'PRJ-2024-002',
-    oppervlakte_m2: 800
+    status: 'actief'
   },
   {
     naam: 'Dakvervanging School Utrecht',
     beschrijving: 'Vervanging van dakbedekking inclusief isolatie',
     locatie: 'Utrecht, Utrecht',
     start_datum: '2024-11-01',
-    status: 'actief',
-    estimated_hours: 400,
-    progress_percentage: 65,
-    project_nummer: 'PRJ-2024-003',
-    oppervlakte_m2: 1200
+    status: 'actief'
   },
   {
     naam: 'Badkamer Renovatie Den Haag',
     beschrijving: 'Complete badkamer renovatie met vloerverwarming',
     locatie: 'Den Haag, Zuid-Holland',
     start_datum: '2024-08-01',
-    status: 'voltooid',
-    estimated_hours: 120,
-    progress_percentage: 100,
-    project_nummer: 'PRJ-2024-004',
-    oppervlakte_m2: 15
+    status: 'voltooid'
   },
   {
     naam: 'Aanbouw Woning Leiden',
     beschrijving: 'Aanbouw van serre en extra slaapkamer',
     locatie: 'Leiden, Zuid-Holland',
     start_datum: '2024-12-01',
-    status: 'gepauzeerd',
-    estimated_hours: 600,
-    progress_percentage: 10,
-    project_nummer: 'PRJ-2024-005',
-    oppervlakte_m2: 40
+    status: 'gepauzeerd'
   }
 ];
 
@@ -343,52 +323,53 @@ export async function seedMockData() {
 
     // 6. Create time registrations for each user
     console.log('Creating time registrations...');
-    const werkTypes = ['Metselwerk', 'Timmerwerk', 'Schilderwerk', 'Installatiewerk', 'Voegen', 'Isoleren', 'Dakwerk'];
+    // Use valid werktype values: projectbasis, meerwerk, regie
+    const werkTypes = ['projectbasis', 'meerwerk', 'regie'];
     const beschrijvingen = [
-      'Muren gemetseld op de begane grond',
-      'Kozijnen geplaatst en afgewerkt',
-      'Binnenmuren geschilderd',
-      'CV installatie aangesloten',
-      'Badkamer betegeld',
-      'Dakisolatie aangebracht',
-      'Elektra aangelegd'
+      'Werkzaamheden uitgevoerd op locatie',
+      'Extra werk na wijziging opdracht',
+      'Reguliere werkzaamheden',
+      'Afwerking en oplevering',
+      'Voorbereiding materialen'
     ];
 
-    for (const userId of createdUserIds) {
-      // Create 10-20 time registrations per user in the last 30 days
-      const numRegistrations = Math.floor(Math.random() * 10) + 10;
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
-      const endDate = new Date();
+    // Only create time registrations if we have projects
+    if (createdProjectIds.length > 0) {
+      for (const userId of createdUserIds) {
+        // Create 5-10 time registrations per user in the last 30 days
+        const numRegistrations = Math.floor(Math.random() * 5) + 5;
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        const endDate = new Date();
 
-      for (let i = 0; i < numRegistrations; i++) {
-        try {
-          const regDate = randomDate(startDate, endDate);
-          const projectId = createdProjectIds[Math.floor(Math.random() * createdProjectIds.length)];
-          const werktype = werkTypes[Math.floor(Math.random() * werkTypes.length)];
-          const beschrijving = beschrijvingen[Math.floor(Math.random() * beschrijvingen.length)];
-          const uren = Math.floor(Math.random() * 6) + 3; // 3-8 hours
+        for (let i = 0; i < numRegistrations; i++) {
+          try {
+            const regDate = randomDate(startDate, endDate);
+            const projectId = createdProjectIds[Math.floor(Math.random() * createdProjectIds.length)];
+            const werktype = werkTypes[Math.floor(Math.random() * werkTypes.length)];
+            const beschrijving = beschrijvingen[Math.floor(Math.random() * beschrijvingen.length)];
+            const uren = Math.floor(Math.random() * 6) + 3; // 3-8 hours
 
-          const { error } = await supabase
-            .from('time_registrations')
-            .insert({
-              user_id: userId,
-              project_id: projectId,
-              datum: formatDate(regDate),
-              werktype: werktype,
-              aantal_uren: uren,
-              werkomschrijving: beschrijving,
-              status: Math.random() > 0.2 ? 'approved' : 'submitted',
-              driven_kilometers: Math.floor(Math.random() * 50)
-            });
+            const { error } = await supabase
+              .from('time_registrations')
+              .insert({
+                user_id: userId,
+                project_id: projectId,
+                datum: formatDate(regDate),
+                werktype: werktype,
+                aantal_uren: uren,
+                werkomschrijving: beschrijving,
+                status: Math.random() > 0.2 ? 'approved' : 'submitted'
+              });
 
-          if (error) throw error;
-        } catch (error: any) {
-          results.errors.push(`Error creating time registration: ${error.message}`);
+            if (error) throw error;
+          } catch (error: any) {
+            results.errors.push(`Error creating time registration: ${error.message}`);
+          }
         }
       }
+      results.success.push(`Created time registrations for ${createdUserIds.length} users`);
     }
-    results.success.push(`Created time registrations for ${createdUserIds.length} users`);
 
     // 7. Create inventory transactions (afboekingen)
     console.log('Creating inventory transactions...');
@@ -470,21 +451,25 @@ export async function seedMockData() {
 
     // 10. Create tickets
     console.log('Creating tickets...');
-    const tickets = [
-      { title: 'Probleem met urenregistratie', description: 'Kan uren niet opslaan voor project Rotterdam', category: 'Technisch', priority: 'high', status: 'open' },
-      { title: 'Nieuwe medewerker toevoegen', description: 'Graag account aanmaken voor nieuwe medewerker', category: 'Accounts', priority: 'medium', status: 'in_progress' },
-      { title: 'Export functie werkt niet', description: 'CSV export geeft lege bestanden', category: 'Technisch', priority: 'low', status: 'resolved' }
+    const ticketsData = [
+      { title: 'Probleem met urenregistratie', description: 'Kan uren niet opslaan voor project Rotterdam', category: 'Technisch', priority: 'high' },
+      { title: 'Nieuwe medewerker toevoegen', description: 'Graag account aanmaken voor nieuwe medewerker', category: 'Accounts', priority: 'medium' },
+      { title: 'Export functie werkt niet', description: 'CSV export geeft lege bestanden', category: 'Technisch', priority: 'low' }
     ];
 
-    for (const ticket of tickets) {
+    for (const ticket of ticketsData) {
       try {
         const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
 
         const { error } = await supabase
           .from('tickets')
           .insert({
-            ...ticket,
-            created_by: userId
+            title: ticket.title,
+            description: ticket.description,
+            category: ticket.category,
+            priority: ticket.priority,
+            created_by: userId,
+            status: 'open'
           });
 
         if (error) throw error;
@@ -520,87 +505,10 @@ export async function seedMockData() {
       }
     }
 
-    // 12. Create notifications for users
-    console.log('Creating notifications...');
-    const notificationTypes = [
-      { type: 'time_registration_submitted', title: 'Uren ingediend', message: 'Nieuwe urenregistratie ingediend voor goedkeuring' },
-      { type: 'missing_hours_reminder', title: 'Uren ontbreken', message: 'Je hebt nog geen uren ingevuld voor gisteren' },
-      { type: 'system_alert', title: 'Systeemmelding', message: 'Gepland onderhoud vanavond om 22:00' },
-      { type: 'user_active', title: 'Gebruiker actief', message: 'Pieter Jansen is weer actief in het systeem' }
-    ];
+    // 12. Skip notifications - table schema unknown
+    console.log('Skipping notifications...');
 
-    for (const userId of createdUserIds) {
-      // Create 2-4 notifications per user
-      const numNotifications = Math.floor(Math.random() * 3) + 2;
-      for (let i = 0; i < numNotifications; i++) {
-        try {
-          const notifData = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
-          const senderId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
-
-          const { error } = await supabase
-            .from('notifications')
-            .insert({
-              recipient_id: userId,
-              sender_id: notifData.type === 'system_alert' ? null : senderId,
-              type: notifData.type,
-              title: notifData.title,
-              message: notifData.message,
-              status: Math.random() > 0.5 ? 'unread' : 'read'
-            });
-
-          if (error) throw error;
-        } catch (error: any) {
-          results.errors.push(`Error creating notification: ${error.message}`);
-        }
-      }
-    }
-    results.success.push(`Created notifications for ${createdUserIds.length} users`);
-
-    // 13. Create vacation requests
-    console.log('Creating vacation requests...');
-    const vacationTypes = ['vakantie', 'ziekte', 'verlof', 'anders'];
-    const vacationReasons = [
-      'Zomervakantie met gezin',
-      'Griep',
-      'Doktersafspraak',
-      'Verhuizing',
-      'Bruiloft familielid',
-      'Wintervakantie'
-    ];
-
-    for (let i = 0; i < 8; i++) {
-      try {
-        const userId = createdUserIds[Math.floor(Math.random() * createdUserIds.length)];
-        const reviewerId = createdUserIds[0]; // Admin reviews
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 60)); // Random date in next 60 days
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 10) + 1); // 1-10 days
-
-        const status = ['pending', 'approved', 'rejected'][Math.floor(Math.random() * 3)];
-
-        const { error } = await supabase
-          .from('vacation_requests')
-          .insert({
-            user_id: userId,
-            type: vacationTypes[Math.floor(Math.random() * vacationTypes.length)],
-            start_date: formatDate(startDate),
-            end_date: formatDate(endDate),
-            reason: vacationReasons[Math.floor(Math.random() * vacationReasons.length)],
-            status: status,
-            reviewed_by: status !== 'pending' ? reviewerId : null,
-            reviewed_at: status !== 'pending' ? new Date().toISOString() : null,
-            review_note: status === 'rejected' ? 'Helaas, te druk op kantoor in deze periode' : null
-          });
-
-        if (error) throw error;
-      } catch (error: any) {
-        results.errors.push(`Error creating vacation request: ${error.message}`);
-      }
-    }
-    results.success.push('Created 8 vacation requests');
-
-    // 14. Create ticket comments (for existing tickets)
+    // 13. Create ticket comments (for existing tickets)
     console.log('Creating ticket comments...');
     const ticketComments = [
       'Ik kijk hier naar, moment geduld alsjeblieft.',
