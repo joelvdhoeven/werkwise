@@ -609,3 +609,50 @@ export const mockUserCredentials = mockUsers.map(u => ({
   naam: u.naam,
   role: u.role
 }));
+
+// Function to delete all data except user profiles
+export async function deleteAllData(): Promise<{ success: string[]; errors: string[] }> {
+  const results: { success: string[]; errors: string[] } = {
+    success: [],
+    errors: []
+  };
+
+  // Tables to delete in order (respecting foreign key constraints)
+  const tablesToDelete = [
+    'ticket_comments',
+    'return_items',
+    'tickets',
+    'inventory_transactions',
+    'inventory_stock',
+    'inventory_products',
+    'inventory_locations',
+    'time_registrations',
+    'damage_reports',
+    'special_tools',
+    'vacation_requests',
+    'notifications',
+    'projects'
+  ];
+
+  for (const table of tablesToDelete) {
+    try {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
+
+      if (error) {
+        // Some tables might not exist or have different constraints
+        if (!error.message.includes('does not exist')) {
+          results.errors.push(`Error deleting ${table}: ${error.message}`);
+        }
+      } else {
+        results.success.push(`Deleted all data from: ${table}`);
+      }
+    } catch (error: any) {
+      results.errors.push(`Failed to delete ${table}: ${error.message}`);
+    }
+  }
+
+  return results;
+}

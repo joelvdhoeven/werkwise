@@ -3,7 +3,7 @@ import { Package, Settings as SettingsIcon, Save, Database, PlayCircle, X, Plus,
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
-import { seedMockData, mockUserCredentials } from '../utils/seedMockData';
+import { seedMockData, mockUserCredentials, deleteAllData } from '../utils/seedMockData';
 
 interface WorkType {
   id: string;
@@ -18,7 +18,9 @@ const ModuleBeheer: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [seedingData, setSeedingData] = useState(false);
+  const [deletingData, setDeletingData] = useState(false);
   const [seedResults, setSeedResults] = useState<{ success: string[]; errors: string[] } | null>(null);
+  const [deleteResults, setDeleteResults] = useState<{ success: string[]; errors: string[] } | null>(null);
   const [showModuleSettingsModal, setShowModuleSettingsModal] = useState<string | null>(null);
 
   // Work types for time registration
@@ -159,6 +161,58 @@ const ModuleBeheer: React.FC = () => {
       setTimeout(() => setErrorMessage(''), 5000);
     } finally {
       setSeedingData(false);
+    }
+  };
+
+  const handleDeleteData = async () => {
+    if (deletingData) return;
+
+    const confirmed = window.confirm(
+      '⚠️ WAARSCHUWING: Dit verwijdert ALLE data behalve gebruikersaccounts!\n\n' +
+      'De volgende data wordt verwijderd:\n' +
+      '- Alle projecten\n' +
+      '- Alle urenregistraties\n' +
+      '- Alle voorraad en producten\n' +
+      '- Alle schademeldingen en tickets\n' +
+      '- Alle vakantieaanvragen\n' +
+      '- Alle notificaties\n\n' +
+      'Gebruikersaccounts blijven behouden.\n\n' +
+      'Weet je ZEKER dat je door wilt gaan?'
+    );
+
+    if (!confirmed) return;
+
+    // Double confirm for safety
+    const doubleConfirm = window.confirm(
+      '⚠️ LAATSTE WAARSCHUWING!\n\n' +
+      'Alle data wordt permanent verwijderd.\n' +
+      'Dit kan NIET ongedaan worden gemaakt!\n\n' +
+      'Klik OK om te bevestigen.'
+    );
+
+    if (!doubleConfirm) return;
+
+    setDeletingData(true);
+    setDeleteResults(null);
+
+    try {
+      const results = await deleteAllData();
+      setDeleteResults(results);
+
+      if (results.errors.length === 0) {
+        setSuccessMessage('Alle data succesvol verwijderd!');
+      } else if (results.success.length > 0) {
+        setSuccessMessage(`Data verwijderd met ${results.errors.length} waarschuwingen`);
+      } else {
+        setErrorMessage('Er zijn fouten opgetreden bij het verwijderen van data');
+      }
+      setTimeout(() => setSuccessMessage(''), 5000);
+    } catch (error: any) {
+      console.error('Error deleting data:', error);
+      setErrorMessage('Fout bij het verwijderen van data: ' + error.message);
+      setTimeout(() => setErrorMessage(''), 5000);
+    } finally {
+      setDeletingData(false);
     }
   };
 
@@ -474,6 +528,68 @@ const ModuleBeheer: React.FC = () => {
                         ))}
                         {seedResults.errors.length > 5 && (
                           <li>... en {seedResults.errors.length - 5} meer</li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Delete All Data Section */}
+            <div className={`mt-4 p-4 border rounded-lg ${isDark ? 'border-red-900/50 bg-red-900/10' : 'border-red-200 bg-red-50'}`}>
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <p className={`font-medium ${isDark ? 'text-red-300' : 'text-red-800'}`}>Data Verwijderen</p>
+                  <p className={`text-sm ${isDark ? 'text-red-400/80' : 'text-red-600'}`}>
+                    Verwijder alle data behalve gebruikersaccounts. Dit kan niet ongedaan worden gemaakt!
+                  </p>
+                </div>
+                <button
+                  onClick={handleDeleteData}
+                  disabled={deletingData}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                    deletingData
+                      ? isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : isDark ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70 border border-red-700' : 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-300'
+                  }`}
+                >
+                  {deletingData ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
+                      <span>Bezig...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      <span>Alle Data Verwijderen</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Delete Results Section */}
+              {deleteResults && (
+                <div className={`mt-4 p-4 rounded-lg ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+                  <p className={`font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>Verwijder Resultaten:</p>
+                  {deleteResults.success.length > 0 && (
+                    <div className="mb-2">
+                      <p className={`text-sm ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+                        Verwijderd: {deleteResults.success.length} tabellen
+                      </p>
+                    </div>
+                  )}
+                  {deleteResults.errors.length > 0 && (
+                    <div>
+                      <p className={`text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                        Fouten: {deleteResults.errors.length}
+                      </p>
+                      <ul className={`text-xs mt-1 space-y-1 max-h-32 overflow-y-auto ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {deleteResults.errors.slice(0, 5).map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                        {deleteResults.errors.length > 5 && (
+                          <li>... en {deleteResults.errors.length - 5} meer</li>
                         )}
                       </ul>
                     </div>
