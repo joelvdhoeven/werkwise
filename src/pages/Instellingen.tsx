@@ -48,6 +48,33 @@ const Instellingen: React.FC = () => {
     reason: '',
   });
   const [loadingVacation, setLoadingVacation] = useState(false);
+  const [vacationHoursTotal, setVacationHoursTotal] = useState(0);
+  const [vacationHoursUsed, setVacationHoursUsed] = useState(0);
+
+  // Calculate work days (excluding weekends)
+  const calculateWorkDays = (startDate: string, endDate: string): number => {
+    if (!startDate || !endDate) return 0;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    let workDays = 0;
+
+    const current = new Date(start);
+    while (current <= end) {
+      const dayOfWeek = current.getDay();
+      // 0 = Sunday, 6 = Saturday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        workDays++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    return workDays;
+  };
+
+  // Calculate requested hours (8 hours per work day)
+  const requestedHours = calculateWorkDays(vacationFormData.start_date, vacationFormData.end_date) * 8;
+  const remainingHours = vacationHoursTotal - vacationHoursUsed;
 
   // Update profile data when user loads
   React.useEffect(() => {
@@ -76,8 +103,26 @@ const Instellingen: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'afwezigheid') {
       loadVacationRequests();
+      loadVacationHours();
     }
   }, [activeTab]);
+
+  const loadVacationHours = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('vacation_hours_total, vacation_hours_used')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setVacationHoursTotal(data?.vacation_hours_total || 0);
+      setVacationHoursUsed(data?.vacation_hours_used || 0);
+    } catch (error) {
+      console.error('Error loading vacation hours:', error);
+    }
+  };
 
   const loadVacationRequests = async () => {
     if (!user) return;
@@ -169,6 +214,16 @@ const Instellingen: React.FC = () => {
   const handleReviewVacationRequest = async (id: string, status: 'approved' | 'rejected', note?: string) => {
     if (!user) return;
     try {
+      // Get the vacation request details first
+      const { data: request, error: fetchError } = await supabase
+        .from('vacation_requests')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update the vacation request status
       const { error } = await supabase
         .from('vacation_requests')
         .update({
@@ -181,9 +236,35 @@ const Instellingen: React.FC = () => {
 
       if (error) throw error;
 
+      // If approved and type is 'vakantie', update the user's vacation_hours_used
+      if (status === 'approved' && request.type === 'vakantie') {
+        const workDays = calculateWorkDays(request.start_date, request.end_date);
+        const hoursToAdd = workDays * 8;
+
+        // Get current vacation hours used
+        const { data: profileData, error: profileFetchError } = await supabase
+          .from('profiles')
+          .select('vacation_hours_used')
+          .eq('id', request.user_id)
+          .single();
+
+        if (profileFetchError) throw profileFetchError;
+
+        // Update vacation hours used
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            vacation_hours_used: (profileData?.vacation_hours_used || 0) + hoursToAdd,
+          })
+          .eq('id', request.user_id);
+
+        if (updateError) throw updateError;
+      }
+
       setSuccessMessage(status === 'approved' ? 'Aanvraag goedgekeurd' : 'Aanvraag afgewezen');
       setTimeout(() => setSuccessMessage(''), 3000);
       loadVacationRequests();
+      loadVacationHours();
     } catch (error) {
       console.error('Error reviewing vacation request:', error);
       setErrorMessage('Fout bij het verwerken van aanvraag');
@@ -455,6 +536,33 @@ const Instellingen: React.FC = () => {
       {/* Vacation/Absence Tab */}
       {activeTab === 'afwezigheid' && (
         <div className="space-y-6">
+          {/* Vacation Hours Overview */}
+          {vacationHoursTotal > 0 && (
+            <div className={`rounded-lg shadow p-4 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock size={20} className="text-blue-500" />
+                <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>Jouw Vakantie-uren</h2>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Totaal</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>{vacationHoursTotal}</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>uur/jaar</p>
+                </div>
+                <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Gebruikt</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{vacationHoursUsed}</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>uur</p>
+                </div>
+                <div className={`p-3 rounded-lg ${remainingHours < 0 ? (isDark ? 'bg-red-900/30' : 'bg-red-100') : (isDark ? 'bg-green-900/30' : 'bg-green-100')}`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Resterend</p>
+                  <p className={`text-xl font-bold ${remainingHours < 0 ? 'text-red-500' : (isDark ? 'text-green-400' : 'text-green-600')}`}>{remainingHours}</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>uur</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Request Form */}
           <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-4">
@@ -521,6 +629,33 @@ const Instellingen: React.FC = () => {
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'}`}
                   />
                 </div>
+
+                {/* Show hours calculation for vacation type */}
+                {vacationFormData.type === 'vakantie' && vacationFormData.start_date && vacationFormData.end_date && vacationHoursTotal > 0 && (
+                  <div className={`p-3 rounded-lg ${requestedHours > remainingHours ? (isDark ? 'bg-red-900/30 border border-red-700' : 'bg-red-50 border border-red-200') : (isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200')}`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                          {calculateWorkDays(vacationFormData.start_date, vacationFormData.end_date)} werkdagen = <span className="font-bold">{requestedHours} uur</span>
+                        </p>
+                        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          (weekenden worden niet meegerekend)
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Na goedkeuring:</p>
+                        <p className={`text-lg font-bold ${(remainingHours - requestedHours) < 0 ? 'text-red-500' : (isDark ? 'text-green-400' : 'text-green-600')}`}>
+                          {remainingHours - requestedHours} uur over
+                        </p>
+                      </div>
+                    </div>
+                    {requestedHours > remainingHours && (
+                      <p className={`mt-2 text-sm ${isDark ? 'text-red-300' : 'text-red-600'}`}>
+                        Let op: Je hebt niet genoeg vakantie-uren. Neem contact op met je leidinggevende.
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"

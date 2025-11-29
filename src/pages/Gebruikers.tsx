@@ -16,6 +16,8 @@ interface UserProfile {
   role: 'admin' | 'kantoorpersoneel' | 'medewerker' | 'zzper';
   hourly_rate_purchase?: number;
   hourly_rate_sale?: number;
+  vacation_hours_total?: number;
+  vacation_hours_used?: number;
   created_at: string;
   updated_at: string;
 }
@@ -61,6 +63,8 @@ const Gebruikers: React.FC = () => {
     password: '',
     hourly_rate_purchase: 0,
     hourly_rate_sale: 0,
+    vacation_hours_total: 0,
+    vacation_hours_used: 0,
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -92,6 +96,8 @@ const Gebruikers: React.FC = () => {
           role: formData.role,
           hourly_rate_purchase: formData.hourly_rate_purchase || null,
           hourly_rate_sale: formData.hourly_rate_sale || null,
+          vacation_hours_total: formData.vacation_hours_total || 0,
+          vacation_hours_used: formData.vacation_hours_used || 0,
         });
 
         setShowSuccessMessage(t('userUpdatedSuccessfully'));
@@ -121,6 +127,8 @@ const Gebruikers: React.FC = () => {
             role: formData.role,
             hourly_rate_purchase: formData.hourly_rate_purchase || null,
             hourly_rate_sale: formData.hourly_rate_sale || null,
+            vacation_hours_total: formData.vacation_hours_total || 0,
+            vacation_hours_used: 0,
           });
         }
 
@@ -149,6 +157,10 @@ const Gebruikers: React.FC = () => {
       email: '',
       role: 'medewerker',
       password: '',
+      hourly_rate_purchase: 0,
+      hourly_rate_sale: 0,
+      vacation_hours_total: 0,
+      vacation_hours_used: 0,
     });
     setEditingUser(null);
   };
@@ -161,6 +173,8 @@ const Gebruikers: React.FC = () => {
       password: '', // Never pre-fill password for security
       hourly_rate_purchase: user.hourly_rate_purchase || 0,
       hourly_rate_sale: user.hourly_rate_sale || 0,
+      vacation_hours_total: user.vacation_hours_total || 0,
+      vacation_hours_used: user.vacation_hours_used || 0,
     });
     setEditingUser(user);
     setShowModal(true);
@@ -631,6 +645,47 @@ const Gebruikers: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Vacation Hours Section */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Vakantie-uren Totaal
+              </label>
+              <input
+                type="number"
+                name="vacation_hours_total"
+                value={formData.vacation_hours_total}
+                onChange={(e) => setFormData({ ...formData, vacation_hours_total: parseFloat(e.target.value) || 0 })}
+                min="0"
+                step="0.5"
+                placeholder="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">Jaarlijks toegekende vakantie-uren</p>
+            </div>
+
+            {editingUser && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Vakantie-uren Gebruikt
+                </label>
+                <input
+                  type="number"
+                  name="vacation_hours_used"
+                  value={formData.vacation_hours_used}
+                  onChange={(e) => setFormData({ ...formData, vacation_hours_used: parseFloat(e.target.value) || 0 })}
+                  min="0"
+                  step="0.5"
+                  placeholder="0"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Resterend: {(formData.vacation_hours_total - formData.vacation_hours_used).toFixed(1)} uur
+                </p>
+              </div>
+            )}
+          </div>
 
           {!editingUser && (
             <div>
