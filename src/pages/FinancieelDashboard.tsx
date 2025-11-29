@@ -447,7 +447,7 @@ const FinancieelDashboard: React.FC = () => {
     { value: '1year', label: '1 Jaar' },
   ];
 
-  const COLORS = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#EDE9FE', '#5B21B6', '#6D28D9', '#7C3AED'];
+  const COLORS = ['#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2', '#B91C1C', '#991B1B', '#DC2626'];
 
   const handleViewModeChange = (newMode: ViewMode) => {
     setViewMode(newMode);
@@ -630,8 +630,8 @@ const FinancieelDashboard: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  <Cell fill="#A78BFA" />
-                  <Cell fill="#5B21B6" />
+                  <Cell fill="#F87171" />
+                  <Cell fill="#B91C1C" />
                 </Pie>
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
               </PieChart>
@@ -690,9 +690,9 @@ const FinancieelDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="#7C3AED" strokeWidth={2} name="Omzet" />
-                <Line type="monotone" dataKey="costs" stroke="#A78BFA" strokeWidth={2} name="Kosten" />
-                <Line type="monotone" dataKey="profit" stroke="#5B21B6" strokeWidth={2} name="Winst" />
+                <Line type="monotone" dataKey="revenue" stroke="#DC2626" strokeWidth={2} name="Omzet" />
+                <Line type="monotone" dataKey="costs" stroke="#F87171" strokeWidth={2} name="Kosten" />
+                <Line type="monotone" dataKey="profit" stroke="#991B1B" strokeWidth={2} name="Winst" />
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -749,9 +749,9 @@ const FinancieelDashboard: React.FC = () => {
               <YAxis />
               <Tooltip formatter={(value) => formatCurrency(Number(value))} />
               <Legend />
-              <Bar dataKey="revenue" fill="#7C3AED" name="Omzet" />
-              <Bar dataKey="costs" fill="#A78BFA" name="Kosten" />
-              <Bar dataKey="profit" fill="#5B21B6" name="Winst" />
+              <Bar dataKey="revenue" fill="#DC2626" name="Omzet" />
+              <Bar dataKey="costs" fill="#F87171" name="Kosten" />
+              <Bar dataKey="profit" fill="#991B1B" name="Winst" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -759,33 +759,33 @@ const FinancieelDashboard: React.FC = () => {
 
       {/* Magazijn Overzicht Section */}
       <div className={`rounded-2xl shadow-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
-        <div className={`px-8 py-6 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-violet-900/20 to-gray-800' : 'border-gray-100 bg-gradient-to-r from-violet-50 to-white'}`}>
+        <div className={`px-8 py-6 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-red-900/20 to-gray-800' : 'border-gray-100 bg-gradient-to-r from-red-50 to-white'}`}>
           <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>
-            <Package className="h-6 w-6 text-violet-600" />
+            <Package className="h-6 w-6 text-red-600" />
             Magazijn Overzicht
           </h3>
         </div>
         <div className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className={`rounded-xl p-6 border-2 border-violet-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 rounded-lg ${isDark ? 'bg-violet-900/30' : 'bg-violet-100'}`}>
-                  <Package className="h-5 w-5 text-violet-600" />
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                  <Package className="h-5 w-5 text-red-600" />
                 </div>
                 <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Waarde</p>
               </div>
-              <p className="text-3xl font-bold text-violet-600">€{totalInventoryValue.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-red-600">€{totalInventoryValue.toLocaleString()}</p>
             </div>
-            <div className={`rounded-xl p-6 border-2 border-violet-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 rounded-lg ${isDark ? 'bg-violet-900/30' : 'bg-violet-100'}`}>
-                  <Box className="h-5 w-5 text-violet-600" />
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                  <Box className="h-5 w-5 text-red-600" />
                 </div>
                 <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Items</p>
               </div>
               <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{inventoryItems.length}</p>
             </div>
-            <div className={`rounded-xl p-6 border-2 border-violet-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-900/30' : 'bg-orange-100'}`}>
                   <TrendingDown className="h-5 w-5 text-orange-600" />
@@ -794,7 +794,7 @@ const FinancieelDashboard: React.FC = () => {
               </div>
               <p className="text-3xl font-bold text-orange-600">{lowStockItems.length}</p>
             </div>
-            <div className={`rounded-xl p-6 border-2 border-violet-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center gap-3 mb-2">
                 <div className={`p-2 rounded-lg ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -926,7 +926,7 @@ const FinancieelDashboard: React.FC = () => {
                 return value;
               }} />
               <Legend />
-              <Bar dataKey="waarde" fill="#7C3AED" name="Waarde (€)" />
+              <Bar dataKey="waarde" fill="#DC2626" name="Waarde (€)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
