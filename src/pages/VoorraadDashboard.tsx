@@ -33,7 +33,7 @@ const VoorraadDashboard: React.FC = () => {
   const totalInventoryValue = inventoryItems.reduce((sum: number, item: any) => sum + (item.prijs || 0) * item.voorraad, 0);
   const availableTools = specialTools.filter((tool: any) => tool.status === 'beschikbaar');
 
-  const COLORS = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#EDE9FE', '#5B21B6', '#6D28D9'];
+  const COLORS = ['#DC2626', '#E11D48', '#F43F5E', '#FB7185', '#FECDD3', '#B91C1C', '#9F1239'];
 
   // Stock by category
   const stockByCategory = inventoryItems.reduce((acc: any, item: any) => {
@@ -65,7 +65,7 @@ const VoorraadDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className={`text-xl sm:text-2xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            <Package size={28} className="text-violet-600" />
+            <Package size={28} className="text-red-600" />
             Voorraad Dashboard
           </h1>
           <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Overzicht van voorraad en gereedschap</p>
@@ -76,8 +76,8 @@ const VoorraadDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-lg ${isDark ? 'bg-violet-900/30' : 'bg-violet-50'}`}>
-              <Package className="h-6 w-6 text-violet-600" />
+            <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
+              <Package className="h-6 w-6 text-red-600" />
             </div>
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Totale Waarde</p>
@@ -88,8 +88,8 @@ const VoorraadDashboard: React.FC = () => {
 
         <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-lg ${isDark ? 'bg-violet-900/30' : 'bg-violet-50'}`}>
-              <Box className="h-6 w-6 text-violet-600" />
+            <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
+              <Box className="h-6 w-6 text-red-600" />
             </div>
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Totaal Items</p>
@@ -112,8 +112,8 @@ const VoorraadDashboard: React.FC = () => {
 
         <div className={`rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-lg ${isDark ? 'bg-violet-900/30' : 'bg-violet-50'}`}>
-              <Wrench className="h-6 w-6 text-violet-600" />
+            <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-50'}`}>
+              <Wrench className="h-6 w-6 text-red-600" />
             </div>
             <div>
               <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beschikbare Tools</p>
@@ -136,7 +136,7 @@ const VoorraadDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#7C3AED" name="Aantal" />
+                <Bar dataKey="count" fill="#DC2626" name="Aantal" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -297,7 +297,7 @@ const VoorraadDashboard: React.FC = () => {
                 return value;
               }} />
               <Legend />
-              <Bar dataKey="waarde" fill="#7C3AED" name="Waarde (€)" />
+              <Bar dataKey="waarde" fill="#DC2626" name="Waarde (€)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
