@@ -317,6 +317,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
   };
 
   const handleEditStock = (stockItem: Stock) => {
+    // If product has no location (no stock entry), redirect to product edit instead
+    if (!stockItem.location_id) {
+      if (stockItem.product) {
+        handleEditFullProduct(stockItem.product);
+      }
+      return;
+    }
+
     setEditingStock(stockItem);
     setStockEditFormData({
       product_name: stockItem.product?.name || '',
