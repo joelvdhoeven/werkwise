@@ -111,8 +111,13 @@ const OnboardingTour: React.FC<OnboardingTourProps> = ({ setActiveSection, activ
   useEffect(() => {
     if (isOpen && steps[currentStep]) {
       setActiveSection(steps[currentStep].pageId);
+
+      // Collapse all sidebar sections on the final step
+      if (currentStep === steps.length - 1) {
+        window.dispatchEvent(new Event('sidebar-collapse-all'));
+      }
     }
-  }, [currentStep, isOpen]);
+  }, [currentStep, isOpen, steps.length]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {

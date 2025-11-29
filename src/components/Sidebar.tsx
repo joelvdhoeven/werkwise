@@ -68,6 +68,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, isOp
     localStorage.setItem('sidebar_expanded_groups', JSON.stringify(expandedGroups));
   }, [expandedGroups]);
 
+  // Listen for event to collapse all sidebar sections (used by OnboardingTour)
+  useEffect(() => {
+    const handleCollapseAll = () => {
+      setExpandedGroups([]);
+    };
+
+    window.addEventListener('sidebar-collapse-all', handleCollapseAll);
+    return () => {
+      window.removeEventListener('sidebar-collapse-all', handleCollapseAll);
+    };
+  }, []);
+
   useEffect(() => {
     loadModuleSettings();
 
