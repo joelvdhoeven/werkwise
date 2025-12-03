@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAgentAuth } from '../contexts/AgentAuthContext';
+import { useAgentAuth, SalesAgent } from '../contexts/AgentAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { supabase } from '../lib/supabase';
 import {
@@ -12,7 +12,9 @@ import {
   Filter,
   X,
   Globe,
-  Loader2
+  Loader2,
+  UserPlus,
+  Sparkles
 } from 'lucide-react';
 
 interface Lead {
@@ -38,10 +40,13 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [allAgents, setAllAgents] = useState<SalesAgent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [assigningLeadId, setAssigningLeadId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [newLead, setNewLead] = useState({
     company_name: '',
@@ -52,7 +57,23 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
 
   useEffect(() => {
     fetchLeads();
-  }, [agent, statusFilter]);
+    if (isAdmin()) {
+      fetchAgents();
+    }
+  }, [agent, statusFilter, sourceFilter]);
+
+  const fetchAgents = async () => {
+    try {
+      const { data } = await supabase
+        .from('sales_agents')
+        .select('*')
+        .eq('is_active', true)
+        .order('naam');
+      setAllAgents(data || []);
+    } catch (err) {
+      console.error('Error fetching agents:', err);
+    }
+  };
 
   const fetchLeads = async () => {
     if (!agent) return;
@@ -74,6 +95,11 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
       // Apply status filter
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
+      }
+
+      // Apply source filter
+      if (sourceFilter !== 'all') {
+        query = query.eq('source', sourceFilter);
       }
 
       const { data, error } = await query;
@@ -121,19 +147,42 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
     }
   };
 
+  const handleAssignLead = async (leadId: string, agentId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .update({ assigned_to: agentId })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      setAssigningLeadId(null);
+      fetchLeads();
+    } catch (err) {
+      console.error('Error assigning lead:', err);
+    }
+  };
+
   const filteredLeads = leads.filter(lead =>
     lead.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     lead.contact_email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const statusOptions = [
-    { value: 'all', label: 'Alle' },
+    { value: 'all', label: 'Alle Status' },
     { value: 'new', label: 'Nieuw' },
     { value: 'contacted', label: 'Gecontacteerd' },
     { value: 'in_progress', label: 'In Behandeling' },
     { value: 'converted', label: 'Geconverteerd' },
     { value: 'paid', label: 'Betaald' },
     { value: 'lost', label: 'Verloren' }
+  ];
+
+  const sourceOptions = [
+    { value: 'all', label: 'Alle Bronnen' },
+    { value: 'onboarding', label: 'Website' },
+    { value: 'manual', label: 'Handmatig' },
+    { value: 'referral', label: 'Doorverwijzing' }
   ];
 
   const getStatusBadge = (status: string) => {
@@ -154,23 +203,28 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
   };
 
   const getSourceBadge = (source: string) => {
-    const sourceConfig: Record<string, { label: string; className: string }> = {
-      onboarding: { label: 'Website', className: isDark ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-700' },
+    const sourceConfig: Record<string, { label: string; className: string; icon?: React.ReactNode }> = {
+      onboarding: { label: 'Website', className: isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700', icon: <Sparkles className="h-3 w-3" /> },
       manual: { label: 'Handmatig', className: isDark ? 'bg-gray-500/20 text-gray-400' : 'bg-gray-100 text-gray-700' },
       referral: { label: 'Doorverwijzing', className: isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-700' }
     };
     const config = sourceConfig[source] || sourceConfig.manual;
     return (
-      <span className={`px-2 py-1 rounded-lg text-xs font-medium ${config.className}`}>
+      <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 ${config.className}`}>
+        {config.icon}
         {config.label}
       </span>
     );
   };
 
+  // Stats
+  const unassignedCount = leads.filter(l => !l.assigned_to).length;
+  const onboardingCount = leads.filter(l => l.source === 'onboarding').length;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -184,12 +238,12 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
             Leads
           </h1>
           <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-            Beheer je potentiële klanten
+            {leads.length} leads • {onboardingCount} via website • {unassignedCount} niet toegewezen
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-medium shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all"
+          className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-medium shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all"
         >
           <Plus className="h-5 w-5" />
           Nieuwe Lead
@@ -207,7 +261,7 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Zoek op bedrijfsnaam of e-mail..."
-              className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+              className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 ${
                 isDark
                   ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -215,19 +269,32 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
+          {/* Filters */}
+          <div className="flex items-center gap-2 flex-wrap">
             <Filter className={`h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className={`px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+              className={`px-3 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 text-sm ${
                 isDark
                   ? 'bg-gray-800 border-gray-700 text-white'
                   : 'bg-gray-50 border-gray-200 text-gray-900'
               }`}
             >
               {statusOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className={`px-3 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 text-sm ${
+                isDark
+                  ? 'bg-gray-800 border-gray-700 text-white'
+                  : 'bg-gray-50 border-gray-200 text-gray-900'
+              }`}
+            >
+              {sourceOptions.map(option => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
@@ -241,66 +308,111 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
           <div className={`text-center py-16 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             <Building2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium mb-2">Geen leads gevonden</p>
-            <p className="text-sm">Maak een nieuwe lead aan om te beginnen</p>
+            <p className="text-sm">Maak een nieuwe lead aan of wacht op website registraties</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-800">
             {filteredLeads.map((lead) => (
-              <button
+              <div
                 key={lead.id}
-                onClick={() => onLeadSelect(lead.id)}
-                className={`w-full flex items-center gap-4 p-5 transition-all text-left ${
-                  isDark
-                    ? 'hover:bg-gray-800/50'
-                    : 'hover:bg-gray-50'
+                className={`flex items-center gap-4 p-5 transition-all ${
+                  isDark ? 'hover:bg-gray-800/50' : 'hover:bg-gray-50'
                 }`}
               >
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
-                  isDark ? 'bg-violet-500/20' : 'bg-violet-100'
-                }`}>
-                  <Building2 className={isDark ? 'h-7 w-7 text-violet-400' : 'h-7 w-7 text-violet-600'} />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className={`font-semibold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {lead.company_name}
-                    </p>
-                    {getStatusBadge(lead.status)}
-                    {getSourceBadge(lead.source)}
+                <button
+                  onClick={() => onLeadSelect(lead.id)}
+                  className="flex items-center gap-4 flex-1 text-left"
+                >
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
+                    lead.source === 'onboarding'
+                      ? isDark ? 'bg-red-500/20' : 'bg-red-100'
+                      : isDark ? 'bg-gray-700' : 'bg-gray-100'
+                  }`}>
+                    <Building2 className={`h-7 w-7 ${
+                      lead.source === 'onboarding'
+                        ? isDark ? 'text-red-400' : 'text-red-600'
+                        : isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`} />
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Mail className="h-4 w-4" />
-                      {lead.contact_email}
-                    </span>
-                    {lead.contact_phone && (
-                      <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <Phone className="h-4 w-4" />
-                        {lead.contact_phone}
-                      </span>
-                    )}
-                    {lead.website && (
-                      <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <Globe className="h-4 w-4" />
-                        {lead.website}
-                      </span>
-                    )}
-                  </div>
-                </div>
 
-                <div className="text-right shrink-0">
-                  {lead.assigned_agent && (
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <p className={`font-semibold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {lead.company_name}
+                      </p>
+                      {getStatusBadge(lead.status)}
+                      {getSourceBadge(lead.source)}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <Mail className="h-4 w-4" />
+                        {lead.contact_email}
+                      </span>
+                      {lead.contact_phone && (
+                        <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <Phone className="h-4 w-4" />
+                          {lead.contact_phone}
+                        </span>
+                      )}
+                      {lead.website && (
+                        <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <Globe className="h-4 w-4" />
+                          {lead.website}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+
+                <div className="text-right shrink-0 flex flex-col items-end gap-2">
+                  {isAdmin() && (
+                    <div className="relative">
+                      {assigningLeadId === lead.id ? (
+                        <select
+                          value={lead.assigned_to || ''}
+                          onChange={(e) => handleAssignLead(lead.id, e.target.value || null)}
+                          onBlur={() => setAssigningLeadId(null)}
+                          autoFocus
+                          className={`text-sm px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                            isDark
+                              ? 'bg-gray-800 border-gray-700 text-white'
+                              : 'bg-gray-50 border-gray-200 text-gray-900'
+                          }`}
+                        >
+                          <option value="">Niet toegewezen</option>
+                          {allAgents.map(a => (
+                            <option key={a.id} value={a.id}>{a.naam}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAssigningLeadId(lead.id);
+                          }}
+                          className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
+                            lead.assigned_agent
+                              ? isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              : isDark ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                          }`}
+                        >
+                          <UserPlus className="h-3.5 w-3.5" />
+                          {lead.assigned_agent?.naam || 'Toewijzen'}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {!isAdmin() && lead.assigned_agent && (
                     <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       {lead.assigned_agent.naam}
                     </p>
                   )}
-                  <p className={`text-xs flex items-center gap-1 justify-end ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                  <p className={`text-xs flex items-center gap-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                     <Calendar className="h-3 w-3" />
                     {new Date(lead.created_at).toLocaleDateString('nl-NL')}
                   </p>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}
@@ -335,7 +447,7 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                     onChange={(e) => setNewLead({ ...newLead, company_name: e.target.value })}
                     placeholder="Bijv. Bouwbedrijf De Vries"
                     required
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 ${
                       isDark
                         ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
                         : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -356,7 +468,7 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                     onChange={(e) => setNewLead({ ...newLead, contact_email: e.target.value })}
                     placeholder="info@bedrijf.nl"
                     required
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 ${
                       isDark
                         ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
                         : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -376,7 +488,7 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                     value={newLead.contact_phone}
                     onChange={(e) => setNewLead({ ...newLead, contact_phone: e.target.value })}
                     placeholder="+31 6 12345678"
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 ${
                       isDark
                         ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
                         : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -396,7 +508,7 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                     value={newLead.website}
                     onChange={(e) => setNewLead({ ...newLead, website: e.target.value })}
                     placeholder="www.bedrijf.nl"
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-red-500 ${
                       isDark
                         ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
                         : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
@@ -420,7 +532,7 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                  className="flex-1 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 transition-all disabled:opacity-50"
                 >
                   {creating ? (
                     <span className="flex items-center justify-center gap-2">
