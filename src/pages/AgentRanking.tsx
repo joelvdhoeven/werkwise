@@ -15,10 +15,9 @@ import {
 interface AgentStats {
   id: string;
   naam: string;
-  totalPaidLeads: number;
-  monthlyPaidLeads: number;
+  totalLeads: number;
+  monthlyLeads: number;
   commissionLevel: number;
-  commissionPercentage: number;
 }
 
 // Commission levels based on total paid leads
@@ -61,11 +60,10 @@ const AgentRanking: React.FC = () => {
         return;
       }
 
-      // Fetch all paid leads
+      // Fetch all leads (not just paid)
       const { data: leads, error: leadsError } = await supabase
         .from('leads')
-        .select('*')
-        .eq('status', 'paid');
+        .select('*');
 
       if (leadsError) {
         console.error('Error fetching leads:', leadsError);
@@ -79,27 +77,26 @@ const AgentRanking: React.FC = () => {
       // Calculate stats for each agent
       const agentStats: AgentStats[] = (agents || []).map(ag => {
         const agentLeads = (leads || []).filter(l => l.assigned_to === ag.id);
-        const monthlyLeads = agentLeads.filter(l => new Date(l.updated_at) >= monthStart);
+        const monthlyLeads = agentLeads.filter(l => new Date(l.created_at) >= monthStart);
         const level = getCommissionLevel(agentLeads.length);
 
         return {
           id: ag.id,
           naam: ag.naam,
-          totalPaidLeads: agentLeads.length,
-          monthlyPaidLeads: monthlyLeads.length,
-          commissionLevel: level.level,
-          commissionPercentage: level.percentage
+          totalLeads: agentLeads.length,
+          monthlyLeads: monthlyLeads.length,
+          commissionLevel: level.level
         };
       });
 
-      // Sort by total paid leads
-      const sortedByTotal = [...agentStats].sort((a, b) => b.totalPaidLeads - a.totalPaidLeads);
+      // Sort by total leads
+      const sortedByTotal = [...agentStats].sort((a, b) => b.totalLeads - a.totalLeads);
       setRankings(sortedByTotal);
 
       // Top 3 this month
       const sortedByMonth = [...agentStats]
-        .filter(a => a.monthlyPaidLeads > 0)
-        .sort((a, b) => b.monthlyPaidLeads - a.monthlyPaidLeads)
+        .filter(a => a.monthlyLeads > 0)
+        .sort((a, b) => b.monthlyLeads - a.monthlyLeads)
         .slice(0, 3);
       setMonthlyTop3(sortedByMonth);
 
@@ -172,34 +169,6 @@ const AgentRanking: React.FC = () => {
         </div>
       </div>
 
-      {/* Commission Levels Info */}
-      <div className={`rounded-2xl p-6 ${isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'}`}>
-        <h2 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Commissie Niveaus
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {[
-            { level: 1, name: 'Starter', leads: '0', pct: '10%' },
-            { level: 2, name: 'Bronze', leads: '1-4', pct: '10%' },
-            { level: 3, name: 'Silver', leads: '5-9', pct: '20%' },
-            { level: 4, name: 'Gold', leads: '10-49', pct: '30%' },
-            { level: 5, name: 'Diamond', leads: '50+', pct: '40%' }
-          ].map((lvl) => (
-            <div
-              key={lvl.level}
-              className={`p-4 rounded-xl text-center ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}
-            >
-              <div className="flex justify-center mb-2">
-                {getLevelBadge(lvl.level)}
-              </div>
-              <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{lvl.name}</p>
-              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{lvl.leads} leads</p>
-              <p className="text-lg font-bold text-red-500">{lvl.pct}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Top 3 This Month */}
       {monthlyTop3.length > 0 && (
         <div className={`rounded-2xl p-6 ${isDark ? 'bg-gradient-to-br from-red-900/30 to-rose-900/30 border border-red-800/50' : 'bg-gradient-to-br from-red-50 to-rose-50 border border-red-200'}`}>
@@ -235,7 +204,7 @@ const AgentRanking: React.FC = () => {
                   </div>
                   <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{ag.naam}</p>
                   <p className={`text-2xl font-bold mt-2 ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                    {ag.monthlyPaidLeads} leads
+                    {ag.monthlyLeads} leads
                   </p>
                 </div>
               </div>
@@ -295,7 +264,7 @@ const AgentRanking: React.FC = () => {
                       )}
                     </p>
                     <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {getLevelName(ag.commissionLevel)} • {ag.commissionPercentage}% commissie
+                      {getLevelName(ag.commissionLevel)}
                     </p>
                   </div>
 
@@ -305,10 +274,10 @@ const AgentRanking: React.FC = () => {
                   {/* Stats */}
                   <div className="text-right">
                     <p className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {ag.totalPaidLeads}
+                      {ag.totalLeads}
                     </p>
                     <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                      betaalde leads
+                      leads
                     </p>
                   </div>
                 </div>

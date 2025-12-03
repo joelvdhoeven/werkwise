@@ -267,9 +267,6 @@ const AgentFinance: React.FC = () => {
               <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {stats.commissionLevel}
               </p>
-              <p className={`text-lg font-semibold ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                {stats.commissionPercentage}% commissie
-              </p>
             </div>
           </div>
 
@@ -290,7 +287,7 @@ const AgentFinance: React.FC = () => {
                 />
               </div>
               <p className={`text-xs mt-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                Nog {stats.leadsToNextLevel} betaalde leads voor niveau {stats.nextLevelAt} leads
+                Nog {stats.leadsToNextLevel} betaalde leads voor volgend niveau
               </p>
             </div>
           )}
@@ -376,11 +373,7 @@ const AgentFinance: React.FC = () => {
         <ul className={`space-y-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           <li className="flex items-start gap-2">
             <CheckCircle className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />
-            <span>Elke betaalde lead is €{LEAD_VALUE} waard</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <CheckCircle className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />
-            <span>Je commissie percentage stijgt met meer leads (10% - 40%)</span>
+            <span>Je verdient commissie op elke betaalde lead</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />
