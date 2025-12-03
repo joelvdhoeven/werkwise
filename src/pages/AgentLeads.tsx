@@ -14,7 +14,9 @@ import {
   Globe,
   Loader2,
   UserPlus,
-  Sparkles
+  Sparkles,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface Lead {
@@ -54,6 +56,8 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
     contact_phone: '',
     website: ''
   });
+  const [deleteConfirm, setDeleteConfirm] = useState<Lead | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -160,6 +164,27 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
       fetchLeads();
     } catch (err) {
       console.error('Error assigning lead:', err);
+    }
+  };
+
+  const handleDeleteLead = async () => {
+    if (!deleteConfirm) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .delete()
+        .eq('id', deleteConfirm.id);
+
+      if (error) throw error;
+
+      setDeleteConfirm(null);
+      fetchLeads();
+    } catch (err) {
+      console.error('Error deleting lead:', err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -365,43 +390,61 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                 </button>
 
                 <div className="text-right shrink-0 flex flex-col items-end gap-2">
-                  {isAdmin() && (
-                    <div className="relative">
-                      {assigningLeadId === lead.id ? (
-                        <select
-                          value={lead.assigned_to || ''}
-                          onChange={(e) => handleAssignLead(lead.id, e.target.value || null)}
-                          onBlur={() => setAssigningLeadId(null)}
-                          autoFocus
-                          className={`text-sm px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                            isDark
-                              ? 'bg-gray-800 border-gray-700 text-white'
-                              : 'bg-gray-50 border-gray-200 text-gray-900'
-                          }`}
-                        >
-                          <option value="">Niet toegewezen</option>
-                          {allAgents.map(a => (
-                            <option key={a.id} value={a.id}>{a.naam}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setAssigningLeadId(lead.id);
-                          }}
-                          className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
-                            lead.assigned_agent
-                              ? isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              : isDark ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-100 text-red-700 hover:bg-red-200'
-                          }`}
-                        >
-                          <UserPlus className="h-3.5 w-3.5" />
-                          {lead.assigned_agent?.naam || 'Toewijzen'}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {isAdmin() && (
+                      <div className="relative">
+                        {assigningLeadId === lead.id ? (
+                          <select
+                            value={lead.assigned_to || ''}
+                            onChange={(e) => handleAssignLead(lead.id, e.target.value || null)}
+                            onBlur={() => setAssigningLeadId(null)}
+                            autoFocus
+                            className={`text-sm px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                              isDark
+                                ? 'bg-gray-800 border-gray-700 text-white'
+                                : 'bg-gray-50 border-gray-200 text-gray-900'
+                            }`}
+                          >
+                            <option value="">Niet toegewezen</option>
+                            {allAgents.map(a => (
+                              <option key={a.id} value={a.id}>{a.naam}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAssigningLeadId(lead.id);
+                            }}
+                            className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
+                              lead.assigned_agent
+                                ? isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                : isDark ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                            }`}
+                          >
+                            <UserPlus className="h-3.5 w-3.5" />
+                            {lead.assigned_agent?.naam || 'Toewijzen'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {isAdmin() && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteConfirm(lead);
+                        }}
+                        className={`p-2 rounded-lg transition-colors ${
+                          isDark
+                            ? 'text-gray-500 hover:text-red-400 hover:bg-red-500/20'
+                            : 'text-gray-400 hover:text-red-600 hover:bg-red-100'
+                        }`}
+                        title="Verwijderen"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                   {!isAdmin() && lead.assigned_agent && (
                     <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       {lead.assigned_agent.naam}
@@ -545,6 +588,67 @@ const AgentLeads: React.FC<AgentLeadsProps> = ({ onLeadSelect }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`rounded-2xl p-6 max-w-md w-full shadow-2xl ${isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
+            <div className="flex items-center gap-4 mb-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-red-500/20' : 'bg-red-100'}`}>
+                <AlertTriangle className={`h-6 w-6 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+              </div>
+              <div>
+                <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Lead verwijderen
+                </h2>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Deze actie kan niet ongedaan worden gemaakt
+                </p>
+              </div>
+            </div>
+
+            <div className={`p-4 rounded-xl mb-6 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+              <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {deleteConfirm.company_name}
+              </p>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                {deleteConfirm.contact_email}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deleting}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${
+                  isDark
+                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleDeleteLead}
+                disabled={deleting}
+                className="flex-1 py-3 px-4 rounded-xl font-medium bg-red-600 text-white hover:bg-red-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Bezig...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-5 w-5" />
+                    Verwijderen
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
