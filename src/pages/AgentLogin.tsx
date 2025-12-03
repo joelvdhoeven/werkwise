@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, Lock, Loader2, Users, User, Shield } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Loader2, Users, User } from 'lucide-react';
 import { useAgentAuth } from '../contexts/AgentAuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeToggle } from '../components/ui/theme-toggle';
 import { supabase } from '../lib/supabase';
-
-type AgentRole = 'sales' | 'admin' | 'superuser';
-
-const ROLE_OPTIONS: { value: AgentRole; label: string; description: string }[] = [
-  { value: 'sales', label: 'Sales Agent', description: 'Standaard sales medewerker' },
-  { value: 'admin', label: 'Admin', description: 'Beheertoegang tot alle functies' },
-  { value: 'superuser', label: 'Superuser', description: 'Volledige systeemtoegang' },
-];
 
 const AgentLogin: React.FC = () => {
   const { login } = useAgentAuth();
@@ -22,7 +14,6 @@ const AgentLogin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [naam, setNaam] = useState('');
-  const [role, setRole] = useState<AgentRole>('sales');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -72,7 +63,7 @@ const AgentLogin: React.FC = () => {
         options: {
           data: {
             name: naam,
-            role: role
+            role: 'sales'
           }
         }
       });
@@ -92,8 +83,8 @@ const AgentLogin: React.FC = () => {
           auth_user_id: authData.user.id,
           email: email,
           naam: naam,
-          role: role,
-          commission_percentage: role === 'sales' ? 10 : 0,
+          role: 'sales',
+          commission_percentage: 10,
           is_active: true
         });
 
@@ -211,59 +202,25 @@ const AgentLogin: React.FC = () => {
             {/* Form */}
             <form onSubmit={isRegister ? handleRegister : handleLogin} className="space-y-5">
               {isRegister && (
-                <>
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Volledige naam
-                    </label>
-                    <div className="relative">
-                      <User className={`absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
-                      <input
-                        type="text"
-                        value={naam}
-                        onChange={(e) => setNaam(e.target.value)}
-                        placeholder="Je volledige naam"
-                        className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all ${
-                          isDark
-                            ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
-                            : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
-                        }`}
-                      />
-                    </div>
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Volledige naam
+                  </label>
+                  <div className="relative">
+                    <User className={`absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                    <input
+                      type="text"
+                      value={naam}
+                      onChange={(e) => setNaam(e.target.value)}
+                      placeholder="Je volledige naam"
+                      className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all ${
+                        isDark
+                          ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
+                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
+                      }`}
+                    />
                   </div>
-
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Rol / Rechten
-                    </label>
-                    <div className="relative">
-                      <Shield className={`absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
-                      <select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value as AgentRole)}
-                        className={`w-full pl-12 pr-4 py-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none cursor-pointer ${
-                          isDark
-                            ? 'bg-gray-800 border-gray-700 text-white'
-                            : 'bg-gray-50 border-gray-200 text-gray-900'
-                        }`}
-                      >
-                        {ROLE_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                    <p className={`mt-1.5 text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                      {ROLE_OPTIONS.find(r => r.value === role)?.description}
-                    </p>
-                  </div>
-                </>
+                </div>
               )}
 
               <div>
