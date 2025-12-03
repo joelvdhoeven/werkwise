@@ -16,6 +16,7 @@ interface AgentStats {
   id: string;
   naam: string;
   totalLeads: number;
+  paidLeads: number;
   monthlyLeads: number;
   commissionLevel: number;
 }
@@ -77,13 +78,15 @@ const AgentRanking: React.FC = () => {
       // Calculate stats for each agent
       const agentStats: AgentStats[] = (agents || []).map(ag => {
         const agentLeads = (leads || []).filter(l => l.assigned_to === ag.id);
+        const paidLeads = agentLeads.filter(l => l.status === 'paid');
         const monthlyLeads = agentLeads.filter(l => new Date(l.created_at) >= monthStart);
-        const level = getCommissionLevel(agentLeads.length);
+        const level = getCommissionLevel(paidLeads.length);
 
         return {
           id: ag.id,
           naam: ag.naam,
           totalLeads: agentLeads.length,
+          paidLeads: paidLeads.length,
           monthlyLeads: monthlyLeads.length,
           commissionLevel: level.level
         };
@@ -272,13 +275,23 @@ const AgentRanking: React.FC = () => {
                   {getLevelBadge(ag.commissionLevel)}
 
                   {/* Stats */}
-                  <div className="text-right">
-                    <p className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {ag.totalLeads}
-                    </p>
-                    <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                      leads
-                    </p>
+                  <div className="text-right flex items-center gap-4">
+                    <div>
+                      <p className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {ag.totalLeads}
+                      </p>
+                      <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        totaal
+                      </p>
+                    </div>
+                    <div>
+                      <p className={`text-xl font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        {ag.paidLeads}
+                      </p>
+                      <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        betaald
+                      </p>
+                    </div>
                   </div>
                 </div>
               );
