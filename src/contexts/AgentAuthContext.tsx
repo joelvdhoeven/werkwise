@@ -17,6 +17,7 @@ interface AgentAuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: () => boolean;
+  refreshAgent: () => Promise<void>;
 }
 
 const AgentAuthContext = createContext<AgentAuthContextType | undefined>(undefined);
@@ -106,6 +107,36 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
     return agent?.role === 'sales_admin' || agent?.role === 'admin' || agent?.role === 'superuser';
   };
 
+  const refreshAgent = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const { data: agentProfile } = await supabase
+          .from('sales_agents')
+          .select('*')
+          .eq('auth_user_id', session.user.id)
+          .single();
+
+        if (agentProfile && agentProfile.is_active) {
+          const salesAgent: SalesAgent = {
+            id: agentProfile.id,
+            email: agentProfile.email,
+            naam: agentProfile.naam,
+            role: agentProfile.role,
+            commission_percentage: agentProfile.commission_percentage,
+            is_active: agentProfile.is_active,
+            created_at: agentProfile.created_at
+          };
+          setAgent(salesAgent);
+          localStorage.setItem('currentAgent', JSON.stringify(salesAgent));
+        }
+      }
+    } catch (error) {
+      console.error('Refresh agent error:', error);
+    }
+  };
+
   // Check for existing session on mount
   useEffect(() => {
     const getSession = async () => {
@@ -166,7 +197,7 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
   }
 
   return (
-    <AgentAuthContext.Provider value={{ agent, loading, login, logout, isAdmin }}>
+    <AgentAuthContext.Provider value={{ agent, loading, login, logout, isAdmin, refreshAgent }}>
       {children}
     </AgentAuthContext.Provider>
   );
