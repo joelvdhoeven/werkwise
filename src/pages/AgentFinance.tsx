@@ -17,7 +17,12 @@ import {
   Target
 } from 'lucide-react';
 
-const LEAD_VALUE = 300; // €300 per lead
+// Helper function to calculate commission for a lead
+const calculateLeadCommission = (lead: { monthly_amount: number | null; commission_percentage: number | null }): number => {
+  const amount = lead.monthly_amount || 0;
+  const percentage = lead.commission_percentage || 0;
+  return (amount * percentage) / 100;
+};
 
 interface FinanceStats {
   totalPaidLeads: number;
@@ -90,11 +95,10 @@ const AgentFinance: React.FC = () => {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthlyPaid = paidLeads.filter(l => new Date(l.updated_at) >= monthStart);
 
-      // Calculate earnings
-      const commission = level.percentage / 100;
-      const totalEarnings = paidLeads.length * LEAD_VALUE * commission;
-      const monthlyEarnings = monthlyPaid.length * LEAD_VALUE * commission;
-      const pendingEarnings = pendingLeads.length * LEAD_VALUE * commission;
+      // Calculate earnings based on actual lead amounts and commission percentages
+      const totalEarnings = paidLeads.reduce((sum, lead) => sum + calculateLeadCommission(lead), 0);
+      const monthlyEarnings = monthlyPaid.reduce((sum, lead) => sum + calculateLeadCommission(lead), 0);
+      const pendingEarnings = pendingLeads.reduce((sum, lead) => sum + calculateLeadCommission(lead), 0);
 
       setStats({
         totalPaidLeads: paidLeads.length,
@@ -120,13 +124,13 @@ const AgentFinance: React.FC = () => {
           return updated >= date && updated <= monthEnd;
         });
 
-        // Calculate commission for that period
-        const monthLevel = getCommissionLevel(monthPaid.length);
+        // Calculate commission based on actual lead amounts
+        const monthEarnings = monthPaid.reduce((sum, lead) => sum + calculateLeadCommission(lead), 0);
 
         monthlyStats.push({
           month: date.toLocaleDateString('nl-NL', { month: 'short' }),
           paidLeads: monthPaid.length,
-          earnings: monthPaid.length * LEAD_VALUE * (monthLevel.percentage / 100)
+          earnings: monthEarnings
         });
       }
       setMonthlyData(monthlyStats);

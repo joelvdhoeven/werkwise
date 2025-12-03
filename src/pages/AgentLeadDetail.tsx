@@ -29,6 +29,8 @@ interface Lead {
   status: string;
   source: string;
   assigned_to: string | null;
+  monthly_amount: number | null;
+  commission_percentage: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -60,7 +62,9 @@ const AgentLeadDetail: React.FC<AgentLeadDetailProps> = ({ leadId, onBack }) => 
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({
     status: '',
-    assigned_to: ''
+    assigned_to: '',
+    monthly_amount: '',
+    commission_percentage: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -84,7 +88,9 @@ const AgentLeadDetail: React.FC<AgentLeadDetailProps> = ({ leadId, onBack }) => 
       setLead(data);
       setEditData({
         status: data.status,
-        assigned_to: data.assigned_to || ''
+        assigned_to: data.assigned_to || '',
+        monthly_amount: data.monthly_amount?.toString() || '',
+        commission_percentage: data.commission_percentage?.toString() || ''
       });
     } catch (err) {
       console.error('Error fetching lead:', err);
@@ -161,13 +167,14 @@ const AgentLeadDetail: React.FC<AgentLeadDetailProps> = ({ leadId, onBack }) => 
         .update({
           status: editData.status,
           assigned_to: editData.assigned_to || null,
+          monthly_amount: editData.monthly_amount ? parseFloat(editData.monthly_amount) : null,
+          commission_percentage: editData.commission_percentage ? parseFloat(editData.commission_percentage) : null,
           updated_at: new Date().toISOString()
         })
         .eq('id', leadId);
 
       if (error) throw error;
 
-      setLead({ ...lead, ...editData });
       setEditing(false);
       fetchLead();
     } catch (err) {
@@ -315,7 +322,56 @@ const AgentLeadDetail: React.FC<AgentLeadDetailProps> = ({ leadId, onBack }) => 
                   </select>
                 </div>
               )}
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Maandelijks bedrag (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editData.monthly_amount}
+                  onChange={(e) => setEditData({ ...editData, monthly_amount: e.target.value })}
+                  placeholder="bijv. 300"
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                    isDark
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Commissie percentage (%)
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  value={editData.commission_percentage}
+                  onChange={(e) => setEditData({ ...editData, commission_percentage: e.target.value })}
+                  placeholder="bijv. 10"
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-violet-500 ${
+                    isDark
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-500'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
+                  }`}
+                />
+              </div>
             </div>
+
+            {/* Commission Preview */}
+            {editData.monthly_amount && editData.commission_percentage && (
+              <div className={`mt-4 p-4 rounded-xl ${isDark ? 'bg-violet-500/10 border border-violet-500/30' : 'bg-violet-50 border border-violet-200'}`}>
+                <p className={`text-sm ${isDark ? 'text-violet-300' : 'text-violet-700'}`}>
+                  <span className="font-medium">Commissie per maand:</span>{' '}
+                  €{((parseFloat(editData.monthly_amount) * parseFloat(editData.commission_percentage)) / 100).toFixed(2)}
+                </p>
+              </div>
+            )}
 
             <div className="flex justify-end mt-4">
               <button
