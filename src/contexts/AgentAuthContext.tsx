@@ -5,7 +5,7 @@ export interface SalesAgent {
   id: string;
   email: string;
   naam: string;
-  role: 'sales' | 'sales_admin';
+  role: 'sales' | 'manager' | 'admin' | 'superuser' | 'sales_admin';
   commission_percentage: number;
   is_active: boolean;
   created_at: string;
@@ -103,7 +103,7 @@ export const AgentAuthProvider: React.FC<AgentAuthProviderProps> = ({ children }
   };
 
   const isAdmin = (): boolean => {
-    return agent?.role === 'sales_admin';
+    return agent?.role === 'sales_admin' || agent?.role === 'admin' || agent?.role === 'superuser';
   };
 
   // Check for existing session on mount
