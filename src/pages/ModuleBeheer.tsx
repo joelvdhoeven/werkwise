@@ -22,6 +22,7 @@ const ModuleBeheer: React.FC = () => {
   const [seedResults, setSeedResults] = useState<{ success: string[]; errors: string[] } | null>(null);
   const [deleteResults, setDeleteResults] = useState<{ success: string[]; errors: string[] } | null>(null);
   const [showModuleSettingsModal, setShowModuleSettingsModal] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Work types for time registration
   const [workTypes, setWorkTypes] = useState<WorkType[]>([
@@ -58,6 +59,7 @@ const ModuleBeheer: React.FC = () => {
 
   useEffect(() => {
     loadModuleSettings();
+    loadUserRole();
     // Load work types from localStorage
     const savedWorkTypes = localStorage.getItem('werkwise_work_types');
     if (savedWorkTypes) {
@@ -68,6 +70,22 @@ const ModuleBeheer: React.FC = () => {
       }
     }
   }, []);
+
+  const loadUserRole = async () => {
+    if (!user?.id) return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      if (data) {
+        setUserRole(data.role);
+      }
+    } catch (error) {
+      console.error('Error loading user role:', error);
+    }
+  };
 
   const loadModuleSettings = async () => {
     try {
@@ -445,7 +463,8 @@ const ModuleBeheer: React.FC = () => {
           </div>
         </div>
 
-        {/* Demo Data Section */}
+        {/* Demo Data Section - Only visible for superusers */}
+        {userRole === 'superuser' && (
         <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex items-center gap-2 mb-4">
             <Database size={20} className="text-red-600" />
@@ -599,6 +618,7 @@ const ModuleBeheer: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
 
         <div className="flex justify-end">
           <button
