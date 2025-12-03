@@ -568,55 +568,55 @@ const Dashboard: React.FC = () => {
             {isAdminOrOffice ? (
               <div className="space-y-3">
                 {inactiveEmployees.length > 0 && (
-                  <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-100">
-                    <div className="bg-red-100 p-3 rounded-lg">
-                      <Users className="h-5 w-5 text-red-600" />
+                  <div className={`flex items-center gap-4 p-4 rounded-xl border ${isDark ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-100'}`}>
+                    <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/40' : 'bg-red-100'}`}>
+                      <Users className="h-5 w-5 text-red-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-red-800">Inactieve medewerkers</p>
-                      <p className="text-xs text-red-600 mt-0.5">{inactiveEmployees.length} medewerkers zonder recente uren</p>
+                      <p className={`text-sm font-bold ${isDark ? 'text-red-300' : 'text-red-800'}`}>Inactieve medewerkers</p>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-red-400' : 'text-red-600'}`}>{inactiveEmployees.length} medewerkers zonder recente uren</p>
                     </div>
                   </div>
                 )}
                 {lowStockItems.length > 0 && (
-                  <div className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl border border-orange-100">
-                    <div className="bg-orange-100 p-3 rounded-lg">
-                      <Package className="h-5 w-5 text-orange-600" />
+                  <div className={`flex items-center gap-4 p-4 rounded-xl border ${isDark ? 'bg-orange-900/20 border-orange-800' : 'bg-orange-50 border-orange-100'}`}>
+                    <div className={`p-3 rounded-lg ${isDark ? 'bg-orange-900/40' : 'bg-orange-100'}`}>
+                      <Package className="h-5 w-5 text-orange-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-orange-800">Lage voorraad</p>
-                      <p className="text-xs text-orange-600 mt-0.5">{lowStockItems.length} items bijbestellen</p>
+                      <p className={`text-sm font-bold ${isDark ? 'text-orange-300' : 'text-orange-800'}`}>Lage voorraad</p>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{lowStockItems.length} items bijbestellen</p>
                     </div>
                   </div>
                 )}
                 {toolsInMaintenance.length > 0 && (
-                  <div className="flex items-center gap-4 p-4 bg-yellow-50 rounded-xl border border-yellow-100">
-                    <div className="bg-yellow-100 p-3 rounded-lg">
-                      <Wrench className="h-5 w-5 text-yellow-600" />
+                  <div className={`flex items-center gap-4 p-4 rounded-xl border ${isDark ? 'bg-yellow-900/20 border-yellow-800' : 'bg-yellow-50 border-yellow-100'}`}>
+                    <div className={`p-3 rounded-lg ${isDark ? 'bg-yellow-900/40' : 'bg-yellow-100'}`}>
+                      <Wrench className="h-5 w-5 text-yellow-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-yellow-800">Tools in onderhoud</p>
-                      <p className="text-xs text-yellow-600 mt-0.5">{toolsInMaintenance.length} tools niet beschikbaar</p>
+                      <p className={`text-sm font-bold ${isDark ? 'text-yellow-300' : 'text-yellow-800'}`}>Tools in onderhoud</p>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`}>{toolsInMaintenance.length} tools niet beschikbaar</p>
                     </div>
                   </div>
                 )}
                 {pendingDamageReports.length > 0 && (
-                  <div className="flex items-center gap-4 p-4 bg-red-50 rounded-xl border border-red-100">
-                    <div className="bg-red-100 p-3 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <div className={`flex items-center gap-4 p-4 rounded-xl border ${isDark ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-100'}`}>
+                    <div className={`p-3 rounded-lg ${isDark ? 'bg-red-900/40' : 'bg-red-100'}`}>
+                      <AlertTriangle className="h-5 w-5 text-red-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-red-800">Openstaande schademeldingen</p>
-                      <p className="text-xs text-red-600 mt-0.5">{pendingDamageReports.length} meldingen te behandelen</p>
+                      <p className={`text-sm font-bold ${isDark ? 'text-red-300' : 'text-red-800'}`}>Openstaande schademeldingen</p>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-red-400' : 'text-red-600'}`}>{pendingDamageReports.length} meldingen te behandelen</p>
                     </div>
                   </div>
                 )}
                 {inactiveEmployees.length === 0 && lowStockItems.length === 0 && toolsInMaintenance.length === 0 &&
                  pendingDamageReports.length === 0 && (
                   <div className="text-center py-12">
-                    <CheckCircle className="mx-auto h-12 w-12 text-red-400 mb-3" />
-                    <p className="text-gray-500 font-medium">Geen aandachtspunten</p>
-                    <p className="text-sm text-gray-400 mt-1">Alles loopt soepel!</p>
+                    <CheckCircle className={`mx-auto h-12 w-12 mb-3 ${isDark ? 'text-red-500' : 'text-red-400'}`} />
+                    <p className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Geen aandachtspunten</p>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Alles loopt soepel!</p>
                   </div>
                 )}
               </div>
@@ -631,17 +631,19 @@ const Dashboard: React.FC = () => {
                     .reduce((sum, reg) => sum + reg.aantal_uren, 0);
 
                   return (
-                    <div key={projectId} className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div key={projectId} className={`flex justify-between items-center p-4 rounded-xl transition-colors ${isDark ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'}`}>
                       <div className="flex-1">
-                        <p className="text-sm font-bold text-gray-900">{project.naam}</p>
-                        <p className="text-xs text-gray-500 mt-1">{project.locatie}</p>
+                        <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.naam}</p>
+                        <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{project.locatie}</p>
                       </div>
                       <div className="text-right flex items-center gap-3">
-                        <p className="text-lg font-bold text-gray-900">{projectHours}h</p>
+                        <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{projectHours}h</p>
                         <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                          project.status === 'actief' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                          project.status === 'voltooid' ? 'bg-gray-100 text-gray-700' :
-                          'bg-orange-100 text-orange-700'
+                          project.status === 'actief'
+                            ? isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-700'
+                            : project.status === 'voltooid'
+                              ? isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                              : isDark ? 'bg-orange-900/30 text-orange-300' : 'bg-orange-100 text-orange-700'
                         }`}>
                           {project.status === 'actief' ? 'Actief' :
                            project.status === 'voltooid' ? 'Voltooid' : 'Gepauzeerd'}
@@ -652,8 +654,8 @@ const Dashboard: React.FC = () => {
                 })}
                 {workedProjects.length === 0 && (
                   <div className="text-center py-12">
-                    <FolderOpen className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                    <p className="text-gray-500 font-medium">Nog geen projecten gewerkt</p>
+                    <FolderOpen className={`mx-auto h-12 w-12 mb-3 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />
+                    <p className={`font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Nog geen projecten gewerkt</p>
                   </div>
                 )}
               </div>
