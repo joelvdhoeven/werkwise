@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FolderOpen, Plus, Calendar, Users, Clock, BarChart3, Eye, Search, Archive } from 'lucide-react';
+import { FolderOpen, Plus, Calendar, Users, Clock, BarChart3, Eye, Search, Archive, FileText, Download, Layers, ChevronDown, ChevronUp, MapPin, Pencil, Trash2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { nl } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -12,10 +12,13 @@ import Modal from '../components/Modal';
 import SupabaseErrorHelper from '../components/SupabaseErrorHelper';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ProjectDetailsModal from '../components/ProjectDetailsModal';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Projecten: React.FC = () => {
   const { t } = useLanguage();
   const { user, hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const { data: allProjecten, loading, refetch } = useSupabaseQuery<any>('projects');
   const { data: urenRegistraties = [] } = useSupabaseQuery<any>('time_registrations', 'id, user_id, project_id, datum, aantal_uren, werktype, werkomschrijving, locatie, status, project_naam, progress_percentage, created_at, updated_at, driven_kilometers');
   const { data: gebruikers = [] } = useSupabaseQuery<any>('profiles', 'id, naam');
@@ -50,15 +53,27 @@ const Projecten: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveSearchTerm, setArchiveSearchTerm] = useState('');
   const [showArchive, setShowArchive] = useState(false);
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+
+  const toggleProjectExpanded = (projectId: string) => {
+    setExpandedProjects(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId);
+      } else {
+        newSet.add(projectId);
+      }
+      return newSet;
+    });
+  };
 
   const [formData, setFormData] = useState({
     naam: '',
     beschrijving: '',
+    locatie: '',
     startDatum: '',
     status: 'actief' as const,
-    project_nummer: '',
     progressPercentage: '',
-    calculatedHours: '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -69,20 +84,25 @@ const Projecten: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.naam || !formData.beschrijving || !formData.startDatum) {
+    if (!formData.naam || !formData.beschrijving || !formData.startDatum || !formData.locatie) {
       alert(t('vulVerplichtVelden'));
       return;
     }
 
+    // Ensure user is authenticated with a valid ID
+    if (!user?.id) {
+      alert('Je bent niet ingelogd. Log opnieuw in en probeer het nog een keer.');
+      return;
+    }
+
+    // Only include columns that exist in the database schema
     const baseProjectData = {
       naam: formData.naam,
       beschrijving: formData.beschrijving,
+      locatie: formData.locatie,
       start_datum: formData.startDatum,
       status: formData.status,
-      estimated_hours: null,
       progress_percentage: formData.progressPercentage ? parseInt(formData.progressPercentage) : (editingProject ? editingProject.progress_percentage || 0 : 0),
-      project_nummer: formData.project_nummer || null,
-      calculated_hours: formData.calculatedHours ? parseInt(formData.calculatedHours) : null,
     };
 
     // Only include created_by for new projects (INSERT), not for updates
@@ -101,11 +121,10 @@ const Projecten: React.FC = () => {
         setFormData({
           naam: '',
           beschrijving: '',
+          locatie: '',
           startDatum: '',
           status: 'actief',
-          project_nummer: '',
           progressPercentage: '',
-          calculatedHours: '',
         });
 
         setShowModal(false);
@@ -128,11 +147,10 @@ const Projecten: React.FC = () => {
     setFormData({
       naam: '',
       beschrijving: '',
+      locatie: '',
       startDatum: new Date().toISOString().split('T')[0],
       status: 'actief',
-      project_nummer: '',
       progressPercentage: '',
-      calculatedHours: '',
     });
     setShowModal(true);
   };
@@ -142,11 +160,10 @@ const Projecten: React.FC = () => {
     setFormData({
       naam: project.naam,
       beschrijving: project.beschrijving,
+      locatie: project.locatie || '',
       startDatum: project.start_datum,
       status: project.status,
-      project_nummer: project.project_nummer || '',
       progressPercentage: project.progress_percentage?.toString() || '',
-      calculatedHours: project.calculated_hours?.toString() || '',
     });
     setShowModal(true);
   };
@@ -230,10 +247,7 @@ const Projecten: React.FC = () => {
 
   // Check if project is incomplete (created by employees/ZZPers, awaiting admin completion)
   const isProjectIncomplete = (project: any) => {
-    return (
-      project.beschrijving === 'Aangemaakt door medewerker - nog in te vullen' ||
-      !project.project_nummer
-    );
+    return project.beschrijving === 'Aangemaakt door medewerker - nog in te vullen';
   };
 
   const getMissingFields = (project: any): string[] => {
@@ -241,9 +255,6 @@ const Projecten: React.FC = () => {
 
     if (project.beschrijving === 'Aangemaakt door medewerker - nog in te vullen') {
       missing.push('Beschrijving');
-    }
-    if (!project.project_nummer) {
-      missing.push('Projectnummer');
     }
 
     return missing;
@@ -256,7 +267,6 @@ const Projecten: React.FC = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       project.naam?.toLowerCase().includes(searchLower) ||
-      project.project_nummer?.toLowerCase().includes(searchLower) ||
       project.beschrijving?.toLowerCase().includes(searchLower)
     );
   });
@@ -321,6 +331,140 @@ const Projecten: React.FC = () => {
     }
   };
 
+  const handleExportInvoice = async (project: any) => {
+    try {
+      // Get invoice settings
+      const { data: invoiceSettings } = await supabase
+        .from('invoice_settings')
+        .select('*')
+        .maybeSingle();
+
+      if (!invoiceSettings) {
+        alert('Configureer eerst je factuurinstellingen voordat je facturen kunt exporteren.');
+        return;
+      }
+
+      // Get time registrations for this project
+      const projectRegistrations = urenRegistraties.filter(
+        (reg: any) => reg.project_id === project.id
+      );
+
+      const totalHours = projectRegistrations.reduce(
+        (sum: number, reg: any) => sum + parseFloat(reg.aantal_uren || 0), 0
+      );
+
+      // Create invoice data
+      const invoiceNumber = `${invoiceSettings.invoice_prefix}-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+      const today = new Date().toLocaleDateString('nl-NL');
+      const dueDate = new Date(Date.now() + invoiceSettings.payment_terms_days * 24 * 60 * 60 * 1000).toLocaleDateString('nl-NL');
+
+      // Generate HTML for the invoice
+      const invoiceHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Factuur ${invoiceNumber}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+    .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .logo { max-height: 60px; }
+    .company-info { text-align: right; }
+    .invoice-title { font-size: 28px; font-weight: bold; color: #DC2626; margin-bottom: 20px; }
+    .invoice-details { margin-bottom: 30px; }
+    .project-info { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+    .table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    .table th { background: #f5f5f5; font-weight: bold; }
+    .totals { text-align: right; margin-top: 20px; }
+    .total-row { font-size: 18px; font-weight: bold; color: #DC2626; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+    .bank-info { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      ${invoiceSettings.logo_url ? `<img src="${invoiceSettings.logo_url}" alt="Logo" class="logo" />` : ''}
+      <h1 style="margin: 0;">${invoiceSettings.company_name}</h1>
+      <p style="margin: 5px 0; font-size: 12px;">
+        ${invoiceSettings.address_street}<br>
+        ${invoiceSettings.address_zip} ${invoiceSettings.address_city}<br>
+        ${invoiceSettings.phone}<br>
+        ${invoiceSettings.email}
+      </p>
+    </div>
+    <div class="company-info">
+      <div class="invoice-title">FACTUUR</div>
+      <p>
+        <strong>Factuurnummer:</strong> ${invoiceNumber}<br>
+        <strong>Factuurdatum:</strong> ${today}<br>
+        <strong>Vervaldatum:</strong> ${dueDate}
+      </p>
+    </div>
+  </div>
+
+  <div class="project-info">
+    <h3 style="margin-top: 0;">Projectgegevens</h3>
+    <p>
+      <strong>Project:</strong> ${project.naam}<br>
+      <strong>Locatie:</strong> ${project.locatie || 'N.v.t.'}<br>
+      <strong>Omschrijving:</strong> ${project.beschrijving || 'Geen omschrijving'}
+    </p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Omschrijving</th>
+        <th>Aantal</th>
+        <th>Eenheid</th>
+        <th style="text-align: right;">Bedrag</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Gewerkte uren - ${project.naam}</td>
+        <td>${totalHours.toFixed(2)}</td>
+        <td>uur</td>
+        <td style="text-align: right;">Op aanvraag</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <p><strong>Subtotaal:</strong> Op aanvraag</p>
+    <p><strong>BTW (21%):</strong> Op aanvraag</p>
+    <p class="total-row"><strong>Totaal:</strong> Op aanvraag</p>
+  </div>
+
+  <div class="bank-info">
+    <strong>Betalingsgegevens</strong><br>
+    IBAN: ${invoiceSettings.iban}<br>
+    KVK: ${invoiceSettings.kvk_number}<br>
+    BTW: ${invoiceSettings.btw_number}
+  </div>
+
+  <div class="footer">
+    ${invoiceSettings.invoice_footer}
+  </div>
+</body>
+</html>
+      `;
+
+      // Open print dialog
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(invoiceHTML);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    } catch (error) {
+      console.error('Error exporting invoice:', error);
+      alert('Er is een fout opgetreden bij het exporteren van de factuur.');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -330,48 +474,92 @@ const Projecten: React.FC = () => {
     );
   }
 
+  // Quick action definitions
+  const quickActions = [
+    {
+      id: 'new-project',
+      title: 'Nieuw Project',
+      description: 'Maak een nieuw project aan',
+      icon: <Plus className="h-6 w-6" />,
+      color: 'from-red-500 to-rose-600',
+      onClick: handleNewProject
+    },
+    {
+      id: 'search',
+      title: 'Project Zoeken',
+      description: 'Zoek in je projecten',
+      icon: <Search className="h-6 w-6" />,
+      color: 'from-blue-500 to-indigo-600',
+      onClick: () => document.getElementById('project-search')?.focus()
+    },
+    {
+      id: 'active',
+      title: 'Actieve Projecten',
+      description: `${projecten.filter((p: any) => p.status === 'actief').length} projecten`,
+      icon: <Layers className="h-6 w-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      onClick: () => setSearchTerm('')
+    },
+    {
+      id: 'archive',
+      title: 'Archief',
+      description: `${archivedProjecten.length} gearchiveerd`,
+      icon: <Archive className="h-6 w-6" />,
+      color: 'from-gray-500 to-slate-600',
+      onClick: () => setShowArchive(true)
+    }
+  ];
+
   return (
-    <div>
+    <div className="space-y-6">
       {showSuccessMessage && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
           {t('projectOpgeslagen')}
         </div>
       )}
-      
-      <SupabaseErrorHelper 
-        error={lastError} 
-        table="projects" 
-        operation="INSERT" 
+
+      <SupabaseErrorHelper
+        error={lastError}
+        table="projects"
+        operation="INSERT"
       />
-      
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center space-x-3">
-          <FolderOpen className="text-red-600" />
-          <span>{t('projecten')}</span>
-        </h1>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowArchive(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-          >
-            <Archive size={16} />
-            <span>Archief</span>
-          </button>
-          <button
-            onClick={handleNewProject}
-            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-          >
-            <Plus size={16} />
-            <span>{t('nieuwProject')}</span>
-          </button>
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2 sm:gap-3`}>
+            <FolderOpen className="h-6 w-6 sm:h-7 sm:w-7 text-red-600" />
+            {t('projecten')}
+          </h1>
+          <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Beheer al je projecten op één plek</p>
         </div>
       </div>
 
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {quickActions.map((action) => (
+          <button
+            key={action.id}
+            onClick={action.onClick}
+            className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl ${
+              isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
+            } shadow-md border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white mb-3 shadow-lg`}>
+              {action.icon}
+            </div>
+            <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{action.title}</h3>
+            <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{action.description}</p>
+          </button>
+        ))}
+      </div>
+
       {/* Projecten Overview */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">{t('projectOverzicht')}</h2>
-          <p className="text-sm text-gray-600">{t('beheerProjecten')}</p>
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
+        <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+          <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('projectOverzicht')}</h2>
+          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t('beheerProjecten')}</p>
         </div>
 
         {/* Search Bar (Only for Admins and Kantoor) */}
@@ -380,15 +568,18 @@ const Projecten: React.FC = () => {
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <input
+                id="project-search"
                 type="text"
-                placeholder="Zoek project op naam, nummer of beschrijving..."
+                placeholder="Zoek project op naam of beschrijving..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                }`}
               />
             </div>
             {searchTerm && (
-              <p className="mt-2 text-sm text-gray-600">
+              <p className={`mt-2 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 {filteredProjecten.length} {filteredProjecten.length === 1 ? 'project gevonden' : 'projecten gevonden'}
               </p>
             )}
@@ -403,7 +594,7 @@ const Projecten: React.FC = () => {
               <p className="text-gray-400 text-sm mt-2">
                 {t('voegProjectToe')}
               </p>
-              <button 
+              <button
                 onClick={handleNewProject}
                 className="mt-4 flex items-center space-x-2 mx-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
@@ -414,83 +605,248 @@ const Projecten: React.FC = () => {
           ) : filteredProjecten.length === 0 ? (
             <div className="text-center py-12">
               <Search className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">Geen projecten gevonden</p>
-              <p className="text-gray-400 text-sm mt-2">
+              <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Geen projecten gevonden</p>
+              <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                 Probeer een andere zoekterm
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-3">
               {filteredProjecten.map((project) => {
                 const projectUsers = getProjectUsers(project.id);
                 const totalHours = getTotalLoggedHours(project.id);
+                const totalKm = getTotalKilometers(project.id);
                 const incomplete = isProjectIncomplete(project);
+                const isExpanded = expandedProjects.has(project.id);
 
                 return (
-                  <div key={project.id} className={`rounded-lg p-6 hover:shadow-md transition-shadow ${
-                    incomplete ? 'bg-red-50 border-2 border-red-200' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{project.naam}</h3>
-                        <p className="text-sm text-gray-500">#{project.project_nummer || 'Geen nummer'}</p>
-                      </div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        project.status === 'actief' ? 'bg-green-100 text-green-800' :
-                        project.status === 'voltooid' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {t(project.status)}
-                      </span>
-                    </div>
+                  <div
+                    key={project.id}
+                    className={`rounded-xl overflow-hidden transition-all duration-200 ${
+                      incomplete
+                        ? (isDark ? 'bg-red-900/20 border border-red-500/50' : 'bg-red-50 border border-red-200')
+                        : (isDark ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100')
+                    }`}
+                  >
+                    {/* Main Row - Always Visible */}
+                    <button
+                      onClick={() => toggleProjectExpanded(project.id)}
+                      className="w-full px-5 py-4 flex items-center justify-between text-left"
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {/* Status Indicator */}
+                        <div className={`w-2 h-10 rounded-full flex-shrink-0 ${
+                          project.status === 'actief' ? 'bg-green-500' :
+                          project.status === 'voltooid' ? 'bg-blue-500' :
+                          'bg-yellow-500'
+                        }`} />
 
-                    {incomplete && hasPermission('view_reports') && (
-                      <div className="mb-3 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-700">
-                        ⚠️ Ontbrekende velden: {getMissingFields(project).join(', ')}
+                        {/* Project Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>{project.naam}</h3>
+                            <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                              project.status === 'actief' ? 'bg-green-100 text-green-700' :
+                              project.status === 'voltooid' ? 'bg-blue-100 text-blue-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {t(project.status)}
+                            </span>
+                            {incomplete && (
+                              <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                ⚠️ Incompleet
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 mt-1 text-sm flex-wrap">
+                            {project.locatie && (
+                              <span className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <MapPin size={12} />
+                                {project.locatie}
+                              </span>
+                            )}
+                            <span className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <Clock size={12} />
+                              {totalHours.toFixed(1)}h
+                            </span>
+                            <span className={`flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <Calendar size={12} />
+                              {formatDate(project.start_datum)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar - Desktop */}
+                        {project.progress_percentage > 0 && (
+                          <div className="hidden sm:flex items-center gap-2 w-32 flex-shrink-0">
+                            <div className="flex-1 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${project.progress_percentage}%` }}
+                              />
+                            </div>
+                            <span className={`text-xs font-medium w-8 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{project.progress_percentage}%</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Expand Icon */}
+                      <div className={`ml-4 p-2 rounded-lg ${isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}>
+                        {isExpanded ? (
+                          <ChevronUp className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                        ) : (
+                          <ChevronDown className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Expanded Content */}
+                    {isExpanded && (
+                      <div className={`px-5 pb-5 border-t ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                        <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Left Column - Details */}
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beschrijving</h4>
+                              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{project.beschrijving || 'Geen beschrijving'}</p>
+                            </div>
+
+                            {/* Progress Bar - Mobile */}
+                            {project.progress_percentage > 0 && (
+                              <div className="sm:hidden">
+                                <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Voortgang</h4>
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                      style={{ width: `${project.progress_percentage}%` }}
+                                    />
+                                  </div>
+                                  <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{project.progress_percentage}%</span>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Totaal Uren</div>
+                                <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{totalHours.toFixed(1)}h</div>
+                              </div>
+                              <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Kilometers</div>
+                                <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{totalKm.toFixed(0)} km</div>
+                              </div>
+                            </div>
+
+                            <ProtectedRoute permission="view_reports">
+                              <div className={`p-3 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mb-2`}>Medewerkers ({projectUsers.length})</div>
+                                {projectUsers.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {projectUsers.slice(0, 5).map((userInfo, idx) => (
+                                      <span key={idx} className={`inline-flex px-2 py-1 text-xs rounded-full ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                        {userInfo.naam}
+                                      </span>
+                                    ))}
+                                    {projectUsers.length > 5 && (
+                                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                        +{projectUsers.length - 5} meer
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Geen medewerkers</span>
+                                )}
+                              </div>
+                            </ProtectedRoute>
+                          </div>
+
+                          {/* Right Column - Actions */}
+                          <div className="space-y-3">
+                            <h4 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Acties</h4>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedProjectForDetails(project);
+                              }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                              } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                            >
+                              <Eye size={18} className="text-red-500" />
+                              <span className="font-medium">Bekijk volledige details</span>
+                            </button>
+
+                            <ProtectedRoute permission="manage_settings">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleExportInvoice(project);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                  isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                                } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                              >
+                                <FileText size={18} className="text-violet-500" />
+                                <span className="font-medium">Factuur exporteren</span>
+                              </button>
+                            </ProtectedRoute>
+
+                            <ProtectedRoute permission="manage_projects">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditProject(project);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                  isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                                } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                              >
+                                <Pencil size={18} className="text-blue-500" />
+                                <span className="font-medium">Project bewerken</span>
+                              </button>
+                            </ProtectedRoute>
+
+                            <ProtectedRoute permission="manage_projects">
+                              {project.status === 'actief' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Weet je zeker dat je dit project wilt archiveren?')) {
+                                      handleArchiveProject(project.id);
+                                    }
+                                  }}
+                                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'
+                                  } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                                >
+                                  <Archive size={18} className="text-green-500" />
+                                  <span className="font-medium">Archiveren</span>
+                                </button>
+                              )}
+                            </ProtectedRoute>
+
+                            <ProtectedRoute permission="manage_projects">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Weet je zeker dat je dit project wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+                                    handleDeleteProject(project.id);
+                                  }
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-red-500 ${
+                                  isDark ? 'bg-gray-800 hover:bg-red-900/30' : 'bg-white hover:bg-red-50'
+                                } border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+                              >
+                                <Trash2 size={18} />
+                                <span className="font-medium">Verwijderen</span>
+                              </button>
+                            </ProtectedRoute>
+                          </div>
+                        </div>
                       </div>
                     )}
-
-                    <p className="text-gray-600 text-sm mb-4 break-words line-clamp-3">{project.beschrijving}</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar size={14} className="mr-2" />
-                        <span>{formatDate(project.start_datum)}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Clock size={14} className="mr-2" />
-                        <span>{t('totalLoggedHours')}: {totalHours.toFixed(1)}h</span>
-                      </div>
-                      <ProtectedRoute permission="view_reports">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Users size={14} className="mr-2" />
-                          <span>{projectUsers.length} {projectUsers.length === 1 ? 'gebruiker' : 'gebruikers'}</span>
-                        </div>
-                      </ProtectedRoute>
-                      {project.progress_percentage > 0 && (
-                        <div className="mt-3">
-                          <div className="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Voortgang</span>
-                            <span className="font-medium">{project.progress_percentage}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-red-600 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${project.progress_percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={() => setSelectedProjectForDetails(project)}
-                        className="flex items-center space-x-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
-                      >
-                        <Eye size={16} />
-                        <span>Bekijk details</span>
-                      </button>
-                    </div>
                   </div>
                 );
               })}
@@ -506,35 +862,38 @@ const Projecten: React.FC = () => {
         title={editingProject ? t('editProject') : t('nieuwProject')}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNaam')} *</label>
+            <input
+              type="text"
+              name="naam"
+              value={formData.naam}
+              onChange={handleInputChange}
+              required
+              placeholder="Bijv. Renovatie kantoorpand"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectNaam')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('locatie')} *</label>
               <input
                 type="text"
-                name="naam"
-                value={formData.naam}
+                name="locatie"
+                value={formData.locatie}
                 onChange={handleInputChange}
                 required
-                placeholder="Bijv. Renovatie kantoorpand"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                placeholder="Bijv. Amsterdam, Noord-Holland"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                  isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectNumber')}</label>
-              <input
-                type="text"
-                name="project_nummer"
-                value={formData.project_nummer}
-                onChange={handleInputChange}
-                placeholder="Bijv. 2024-001"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('startDatum')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('startDatum')} *</label>
               <div className="relative">
                 <input
                   type="date"
@@ -542,21 +901,25 @@ const Projecten: React.FC = () => {
                   value={formData.startDatum}
                   onChange={handleInputChange}
                   required
-                  className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full pl-3 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                    isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
-                <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Calendar className={`absolute right-3 top-2.5 h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
               </div>
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectStatus')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectStatus')} *</label>
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="actief">{t('actief')}</option>
               <option value="gepauzeerd">{t('gepauzeerd')}</option>
@@ -565,7 +928,7 @@ const Projecten: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Voortgang (%)</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Voortgang (%)</label>
             <input
               type="number"
               name="progressPercentage"
@@ -574,27 +937,16 @@ const Projecten: React.FC = () => {
               min="0"
               max="100"
               placeholder="0-100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
-            <p className="text-xs text-gray-500 mt-1">{t('optioneelGeefAanHoeveelProcent')}</p>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gecalculeerde Uren</label>
-            <input
-              type="number"
-              name="calculatedHours"
-              value={formData.calculatedHours}
-              onChange={handleInputChange}
-              min="0"
-              placeholder="Geschatte uren voor dit project"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            />
-            <p className="text-xs text-gray-500 mt-1">Optioneel: vul in hoeveel uren je verwacht nodig te hebben voor dit project</p>
-          </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectBeschrijving')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectBeschrijving')} *</label>
             <textarea
               name="beschrijving"
               value={formData.beschrijving}
@@ -602,9 +954,12 @@ const Projecten: React.FC = () => {
               rows={4}
               required
               placeholder={t('beschrijfProject')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
+
           <div className="flex flex-col space-y-3 pt-4">
             {editingProject && editingProject.status === 'actief' && hasPermission('manage_projects') && (
               <button
@@ -624,14 +979,16 @@ const Projecten: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className={`px-6 py-2 border rounded-md transition-colors ${
+                  isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
                 {t('annuleren')}
               </button>
               <button
                 type="submit"
                 disabled={mutationLoading}
-                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-md hover:from-red-700 hover:to-rose-700 transition-colors"
               >
                 {mutationLoading ? 'Opslaan...' : t('opslaan')}
               </button>
@@ -649,17 +1006,19 @@ const Projecten: React.FC = () => {
         >
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-gray-700">
+              <p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Weet je zeker dat je dit project wilt verwijderen?
               </p>
-              <p className="text-red-600 font-medium text-sm">
+              <p className={`${isDark ? 'text-red-400' : 'text-red-600'} font-medium text-sm`}>
                 Let op: Alle urenregistraties die aan dit project gekoppeld zijn worden ook permanent verwijderd. Deze actie kan niet ongedaan worden gemaakt.
               </p>
             </div>
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setDeleteConfirmProject(null)}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className={`px-6 py-2 border rounded-md transition-colors ${
+                  isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
                 Annuleren
               </button>
@@ -705,13 +1064,15 @@ const Projecten: React.FC = () => {
         <div className="space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            <Search className={`absolute left-3 top-2.5 h-5 w-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
             <input
               type="text"
               placeholder="Zoek in gearchiveerde projecten..."
               value={archiveSearchTerm}
               onChange={(e) => setArchiveSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+                isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
@@ -720,7 +1081,6 @@ const Projecten: React.FC = () => {
             const searchLower = archiveSearchTerm.toLowerCase();
             return (
               project.naam?.toLowerCase().includes(searchLower) ||
-              project.project_nummer?.toLowerCase().includes(searchLower) ||
               project.beschrijving?.toLowerCase().includes(searchLower)
             );
           }).length === 0 ? (
@@ -734,7 +1094,6 @@ const Projecten: React.FC = () => {
                 const searchLower = archiveSearchTerm.toLowerCase();
                 return (
                   project.naam?.toLowerCase().includes(searchLower) ||
-                  project.project_nummer?.toLowerCase().includes(searchLower) ||
                   project.beschrijving?.toLowerCase().includes(searchLower)
                 );
               }).map((project: any) => {
@@ -747,14 +1106,11 @@ const Projecten: React.FC = () => {
                 return (
                   <div
                     key={project.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                    className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4 hover:shadow-md transition-shadow ${isDark ? 'bg-gray-800' : 'bg-white'}`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900 text-lg">{project.naam}</h3>
-                        {project.project_nummer && (
-                          <p className="text-sm text-gray-500 font-mono">#{project.project_nummer}</p>
-                        )}
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'} text-lg`}>{project.naam}</h3>
                       </div>
                       <span
                         className={`px-3 py-1 text-xs font-medium rounded-full ${
@@ -767,7 +1123,7 @@ const Projecten: React.FC = () => {
                       </span>
                     </div>
 
-                    <p className="text-gray-600 text-sm mb-4">{project.beschrijving}</p>
+                    <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-sm mb-4`}>{project.beschrijving}</p>
 
                     {/* Project Stats Grid */}
                     <div className="grid grid-cols-2 gap-3 mb-4 bg-gray-50 p-3 rounded-md">

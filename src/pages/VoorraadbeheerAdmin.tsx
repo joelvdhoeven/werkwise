@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Search, Plus, AlertCircle, Truck, Warehouse, Download, Upload, ScanLine, Filter, X, Edit, Trash2, Eye, ArrowRightLeft } from 'lucide-react';
+import { Package, Search, Plus, AlertCircle, Truck, Warehouse, Download, Upload, ScanLine, Filter, X, Edit, Trash2, Eye, ArrowRightLeft, Camera, Image as ImageIcon, ChevronRight, ShoppingCart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface Product {
   id: string;
@@ -55,6 +56,8 @@ interface Project {
 const VoorraadbeheerAdmin: React.FC = () => {
   const { user, profile } = useAuth();
   const { getCsvSeparator } = useSystemSettings();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [activeTab, setActiveTab] = useState<'overzicht' | 'boeken' | 'producten' | 'locaties'>('overzicht');
   const [products, setProducts] = useState<Product[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -86,6 +89,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
   const [productStockByLocation, setProductStockByLocation] = useState<Stock[]>([]);
 
   const [showStockEditModal, setShowStockEditModal] = useState(false);
+  const [showLowStockModal, setShowLowStockModal] = useState(false);
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [stockEditFormData, setStockEditFormData] = useState({
     product_name: '',
@@ -132,8 +136,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
     supplier: '',
     price: 0,
     purchase_price: 0,
-    sale_price: 0
+    sale_price: 0,
+    photo_url: ''
   });
+  const [productPhotoFile, setProductPhotoFile] = useState<File | null>(null);
+  const [productPhotoPreview, setProductPhotoPreview] = useState<string>('');
+  const [showEanScanner, setShowEanScanner] = useState(false);
+  const [eanVideoRef, setEanVideoRef] = useState<HTMLVideoElement | null>(null);
 
   const [showMoveStockModal, setShowMoveStockModal] = useState(false);
   const [moveStockData, setMoveStockData] = useState<{
@@ -309,6 +318,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
   };
 
   const handleEditStock = (stockItem: Stock) => {
+    // If product has no location (no stock entry), redirect to product edit instead
+    if (!stockItem.location_id) {
+      if (stockItem.product) {
+        handleEditFullProduct(stockItem.product);
+      }
+      return;
+    }
+
     setEditingStock(stockItem);
     setStockEditFormData({
       product_name: stockItem.product?.name || '',
@@ -781,6 +798,102 @@ const VoorraadbeheerAdmin: React.FC = () => {
     reader.readAsText(file);
   };
 
+  // Photo handling for product
+  const handleProductPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProductPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleProductPhotoCapture = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+
+      // Wait for video to be ready
+      await new Promise(resolve => video.onloadedmetadata = resolve);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d')?.drawImage(video, 0, 0);
+
+      // Stop the stream
+      stream.getTracks().forEach(track => track.stop());
+
+      // Convert to blob and file
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `product-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          setProductPhotoFile(file);
+          setProductPhotoPreview(canvas.toDataURL('image/jpeg'));
+        }
+      }, 'image/jpeg', 0.8);
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+      alert('Kon camera niet openen. Controleer of je toestemming hebt gegeven.');
+    }
+  };
+
+  // EAN Scanner
+  const startEanScanner = async () => {
+    setShowEanScanner(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+
+      // We'll use a simple approach - user types the scanned code
+      // For a real barcode scanner, you'd need a library like quagga or zxing
+      const video = document.getElementById('ean-scanner-video') as HTMLVideoElement;
+      if (video) {
+        video.srcObject = stream;
+        video.play();
+      }
+    } catch (error) {
+      console.error('Error starting scanner:', error);
+      alert('Kon camera niet openen voor scanner');
+      setShowEanScanner(false);
+    }
+  };
+
+  const stopEanScanner = () => {
+    const video = document.getElementById('ean-scanner-video') as HTMLVideoElement;
+    if (video && video.srcObject) {
+      const stream = video.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setShowEanScanner(false);
+  };
+
+  const uploadProductPhoto = async (productId: string): Promise<string | null> => {
+    if (!productPhotoFile) return null;
+
+    const fileExt = productPhotoFile.name.split('.').pop();
+    const fileName = `${productId}.${fileExt}`;
+    const filePath = `product-photos/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('inventory')
+      .upload(filePath, productPhotoFile, { upsert: true });
+
+    if (uploadError) {
+      console.error('Error uploading photo:', uploadError);
+      return null;
+    }
+
+    const { data } = supabase.storage.from('inventory').getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
   const handleAddProduct = async () => {
     if (!newProductData.name || !newProductData.sku || !newProductData.category || !newProductData.unit) {
       alert('Vul minimaal naam, SKU, categorie en eenheid in');
@@ -788,7 +901,8 @@ const VoorraadbeheerAdmin: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase
+      // First insert the product
+      const { data: insertedProduct, error } = await supabase
         .from('inventory_products')
         .insert({
           name: newProductData.name,
@@ -802,9 +916,22 @@ const VoorraadbeheerAdmin: React.FC = () => {
           price: newProductData.price || null,
           purchase_price: newProductData.purchase_price || null,
           sale_price: newProductData.sale_price || null
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Upload photo if exists and update product
+      if (productPhotoFile && insertedProduct) {
+        const photoUrl = await uploadProductPhoto(insertedProduct.id);
+        if (photoUrl) {
+          await supabase
+            .from('inventory_products')
+            .update({ photo_url: photoUrl })
+            .eq('id', insertedProduct.id);
+        }
+      }
 
       alert('Product succesvol toegevoegd!');
       setShowAddProductModal(false);
@@ -819,8 +946,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
         supplier: '',
         price: 0,
         purchase_price: 0,
-        sale_price: 0
+        sale_price: 0,
+        photo_url: ''
       });
+      setProductPhotoFile(null);
+      setProductPhotoPreview('');
       loadData();
     } catch (error) {
       console.error('Error adding product:', error);
@@ -983,12 +1113,34 @@ const VoorraadbeheerAdmin: React.FC = () => {
     event.target.value = '';
   };
 
-  const filteredStock = stock.filter(s => {
+  // Create a combined list of all products with their stock (including products with no stock)
+  const allProductsWithStock = React.useMemo(() => {
+    // Get products that have stock entries
+    const productsWithStock = new Set(stock.map(s => s.product_id));
+
+    // Create entries for products without stock (shown with quantity 0)
+    const productsWithoutStock = products
+      .filter(p => !productsWithStock.has(p.id))
+      .map(p => ({
+        id: `no-stock-${p.id}`,
+        product_id: p.id,
+        location_id: null,
+        quantity: 0,
+        product: p,
+        location: null,
+        updated_at: null
+      }));
+
+    // Combine stock entries with products without stock
+    return [...stock, ...productsWithoutStock];
+  }, [products, stock]);
+
+  const filteredStock = allProductsWithStock.filter(s => {
     const matchesSearch = !searchTerm ||
       s.product?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.product?.sku.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !categoryFilter || s.product?.category === categoryFilter;
-    const matchesLocation = !locationFilter || s.location_id === locationFilter;
+    const matchesLocation = !locationFilter || (s.location_id === null || s.location_id === locationFilter);
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
@@ -1002,52 +1154,140 @@ const VoorraadbeheerAdmin: React.FC = () => {
     );
   }
 
+  // Quick action cards for the landing view
+  const quickActions = [
+    {
+      id: 'add-product',
+      title: 'Product Toevoegen',
+      description: 'Scan of handmatig toevoegen',
+      icon: <Plus className="h-6 w-6" />,
+      color: 'from-red-500 to-rose-600',
+      onClick: () => setShowAddProductModal(true),
+      show: canManage
+    },
+    {
+      id: 'book-material',
+      title: 'Materiaal Boeken',
+      description: 'Boek materiaal af op project',
+      icon: <ScanLine className="h-6 w-6" />,
+      color: 'from-blue-500 to-indigo-600',
+      onClick: () => setShowBookingModal(true),
+      show: true
+    },
+    {
+      id: 'products-overview',
+      title: 'Producten Overzicht',
+      description: `${products.length} producten in systeem`,
+      icon: <Package className="h-6 w-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      onClick: () => setActiveTab('producten'),
+      show: true
+    },
+    {
+      id: 'locations-overview',
+      title: 'Locatie Overzicht',
+      description: `${locations.length} locaties beschikbaar`,
+      icon: <Warehouse className="h-6 w-6" />,
+      color: 'from-orange-500 to-amber-600',
+      onClick: () => setActiveTab('locaties'),
+      show: true
+    },
+    {
+      id: 'search-product',
+      title: 'Product Zoeken',
+      description: 'Zoek snel in je voorraad',
+      icon: <Search className="h-6 w-6" />,
+      color: 'from-purple-500 to-violet-600',
+      onClick: () => {
+        setActiveTab('overzicht');
+        setTimeout(() => document.getElementById('stock-search')?.focus(), 100);
+      },
+      show: true
+    },
+    {
+      id: 'add-location',
+      title: 'Locatie Toevoegen',
+      description: 'Bus of magazijn toevoegen',
+      icon: <Truck className="h-6 w-6" />,
+      color: 'from-cyan-500 to-blue-600',
+      onClick: () => setShowAddLocationModal(true),
+      show: canManage
+    }
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Voorraadbeheer</h1>
-          <p className="text-gray-600">Beheer voorraad en boek materiaal af op projecten</p>
-        </div>
-        <div className="flex gap-2">
+          <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2 sm:gap-3`}>
+            <Package className="h-6 w-6 sm:h-7 sm:w-7 text-red-600" />
+            Voorraadbeheer
+          </h1>
+          <p className={`text-sm sm:text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Beheer voorraad en boek materiaal af op projecten</p>
         </div>
       </div>
 
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {quickActions.filter(action => action.show).map((action) => (
+          <button
+            key={action.id}
+            onClick={action.onClick}
+            className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl ${
+              isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
+            } shadow-md border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white mb-3 shadow-lg`}>
+              {action.icon}
+            </div>
+            <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{action.title}</h3>
+            <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{action.description}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Low Stock Alerts Button */}
       {canManage && lowStockAlerts.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="text-yellow-600 mt-0.5" size={20} />
-            <div className="flex-1">
-              <h3 className="font-semibold text-yellow-900 mb-2">Voorraad Waarschuwingen ({lowStockAlerts.length})</h3>
-              <div className="space-y-1">
-                {lowStockAlerts.slice(0, 5).map((alert, idx) => (
-                  <div key={idx} className="text-sm text-yellow-800">
-                    {alert.product_name} bij {alert.location_name}: {alert.current_stock} {products.find(p => p.id === alert.product_id)?.unit} (min: {alert.minimum_stock})
-                  </div>
-                ))}
-                {lowStockAlerts.length > 5 && (
-                  <div className="text-sm text-yellow-700 font-medium">+ {lowStockAlerts.length - 5} meer...</div>
-                )}
+        <button
+          onClick={() => setShowLowStockModal(true)}
+          className={`w-full rounded-xl p-4 text-left transition-all hover:shadow-md ${isDark ? 'bg-orange-900/30 border border-orange-700 hover:bg-orange-900/40' : 'bg-orange-50 border border-orange-200 hover:bg-orange-100'}`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-800/50' : 'bg-orange-200'}`}>
+                <AlertCircle className={`${isDark ? 'text-orange-400' : 'text-orange-600'}`} size={20} />
+              </div>
+              <div>
+                <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Waarschuwingen</h3>
+                <p className={`text-sm ${isDark ? 'text-orange-300' : 'text-orange-700'}`}>{lowStockAlerts.length} items onder minimum voorraad</p>
               </div>
             </div>
+            <ChevronRight className={`${isDark ? 'text-orange-400' : 'text-orange-600'}`} size={20} />
           </div>
-        </div>
+        </button>
       )}
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200">
-          <div className="flex space-x-1 p-1">
-            {['overzicht', 'producten', 'locaties'].map((tab) => (
+      {/* Main Content Area with Tabs */}
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
+        <div className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} px-4 pt-4`}>
+          <div className="flex space-x-1">
+            {[
+              { id: 'overzicht', label: 'Voorraad Overzicht', icon: <Package size={16} /> },
+              { id: 'producten', label: 'Producten', icon: <Package size={16} /> },
+              { id: 'locaties', label: 'Locaties', icon: <Warehouse size={16} /> }
+            ].map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === tab
-                    ? 'bg-red-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                  activeTab === tab.id
+                    ? `${isDark ? 'bg-gray-700 text-white' : 'bg-red-50 text-red-700'} border-b-2 border-red-600`
+                    : `${isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab.icon}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -1056,22 +1296,23 @@ const VoorraadbeheerAdmin: React.FC = () => {
         <div className="p-6">
           {activeTab === 'overzicht' && (
             <div className="space-y-4">
+              {/* Bulk Selection Bar */}
               {selectedStockIds.size > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className={`rounded-lg p-4 ${isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-blue-900 font-medium">
+                    <span className={`font-medium ${isDark ? 'text-blue-300' : 'text-blue-900'}`}>
                       {selectedStockIds.size} item(s) geselecteerd
                     </span>
                     <div className="flex gap-2">
                       <button
                         onClick={selectAllStock}
-                        className="px-3 py-1.5 text-sm bg-white border border-blue-300 text-blue-700 rounded hover:bg-blue-50"
+                        className={`px-3 py-1.5 text-sm ${isDark ? 'bg-gray-700 border-blue-500 text-blue-400 hover:bg-gray-600' : 'bg-white border-blue-300 text-blue-700 hover:bg-blue-50'} border rounded`}
                       >
                         Alles Selecteren
                       </button>
                       <button
                         onClick={deselectAllStock}
-                        className="px-3 py-1.5 text-sm bg-white border border-blue-300 text-blue-700 rounded hover:bg-blue-50"
+                        className={`px-3 py-1.5 text-sm ${isDark ? 'bg-gray-700 border-blue-500 text-blue-400 hover:bg-gray-600' : 'bg-white border-blue-300 text-blue-700 hover:bg-blue-50'} border rounded`}
                       >
                         Alles Deselecteren
                       </button>
@@ -1097,77 +1338,24 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="flex justify-between items-center gap-2 pb-4 border-b border-gray-200">
-                <button
-                  onClick={() => setShowBookingModal(true)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                >
-                  <ScanLine size={18} />
-                  Materiaal Boeken
-                </button>
-                <div className="flex gap-2">
-                  {canManage && (
-                    <>
-                      <button
-                        onClick={() => setShowAddProductModal(true)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                      >
-                        <Plus size={18} />
-                        Product Toevoegen
-                      </button>
-                      <button
-                        onClick={() => setShowAddLocationModal(true)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                      >
-                        <Plus size={18} />
-                        Locatie Toevoegen
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={exportToCSV}
-                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                  >
-                    <Download size={18} />
-                    Export Voorraad
-                  </button>
-                  {canManage && (
-                    <div className="flex flex-col items-end gap-1">
-                      <label className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2 cursor-pointer">
-                        <Upload size={18} />
-                        Import Voorraad
-                        <input
-                          type="file"
-                          accept=".csv"
-                          onChange={handleImportProducts}
-                          className="hidden"
-                        />
-                      </label>
-                      <button
-                        onClick={downloadImportTemplate}
-                        className="text-xs text-blue-600 hover:text-blue-800 underline"
-                      >
-                        Download import sjabloon
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1 relative">
+
+              {/* Search and Filters */}
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex-1 min-w-[200px] relative">
                   <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
                   <input
+                    id="stock-search"
                     type="text"
                     placeholder="Zoek op naam of SKU..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Alle Categorieën</option>
                   {categories.map(cat => (
@@ -1177,18 +1365,39 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <select
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Alle Locaties</option>
                   {locations.map(loc => (
                     <option key={loc.id} value={loc.id}>{loc.name}</option>
                   ))}
                 </select>
+                <div className="flex gap-2 ml-auto">
+                  <button
+                    onClick={exportToCSV}
+                    className={`px-3 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-lg flex items-center gap-2 text-sm`}
+                  >
+                    <Download size={16} />
+                    Export
+                  </button>
+                  {canManage && (
+                    <label className={`px-3 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-lg flex items-center gap-2 text-sm cursor-pointer`}>
+                      <Upload size={16} />
+                      Import
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleImportProducts}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                     <tr>
                       <th className="px-4 py-3 w-12">
                         <input
@@ -1198,23 +1407,23 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                         />
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categorie</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Locatie</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Voorraad</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Min.</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acties</th>
+                      <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Product</th>
+                      <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>SKU</th>
+                      <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Categorie</th>
+                      <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Locatie</th>
+                      <th className={`px-4 py-3 text-right text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Voorraad</th>
+                      <th className={`px-4 py-3 text-right text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Min.</th>
+                      <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Status</th>
+                      <th className={`px-4 py-3 text-center text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase`}>Acties</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {filteredStock.map((item) => {
                       const isLow = item.quantity < (item.product?.minimum_stock || 0);
                       const stockId = `${item.product_id}|||${item.location_id}`;
                       const isSelected = selectedStockIds.has(stockId);
                       return (
-                        <tr key={stockId} className={isLow ? 'bg-yellow-50' : ''}>
+                        <tr key={stockId} className={isLow ? (isDark ? 'bg-yellow-900/20' : 'bg-yellow-50') : ''}>
                           <td className="px-4 py-3">
                             <input
                               type="checkbox"
@@ -1223,28 +1432,36 @@ const VoorraadbeheerAdmin: React.FC = () => {
                               className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                             />
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">{item.product?.name}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{item.product?.sku}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{item.product?.category}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              {item.location?.type === 'bus' ? <Truck size={16} /> : <Warehouse size={16} />}
-                              {item.location?.name}
-                            </div>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.product?.name}</td>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{item.product?.sku}</td>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{item.product?.category}</td>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {item.location ? (
+                              <div className="flex items-center gap-2">
+                                {item.location.type === 'bus' ? <Truck size={16} /> : <Warehouse size={16} />}
+                                {item.location.name}
+                              </div>
+                            ) : (
+                              <span className={`italic ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Geen locatie</span>
+                            )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-medium">
+                          <td className={`px-4 py-3 text-sm text-right font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                             {item.quantity} {item.product?.unit}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-600">
+                          <td className={`px-4 py-3 text-sm text-right ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                             {item.product?.minimum_stock}
                           </td>
                           <td className="px-4 py-3 text-sm">
                             {isLow ? (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                isDark ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
                                 Laag
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                isDark ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-green-100 text-green-800'
+                              }`}>
                                 OK
                               </span>
                             )}
@@ -1253,7 +1470,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handleEditStock(item)}
-                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                className={`p-1 ${isDark ? 'text-blue-400 hover:bg-gray-700' : 'text-blue-600 hover:bg-blue-50'} rounded`}
                                 title="Bewerk voorraad"
                               >
                                 <Edit size={16} />
@@ -1270,7 +1487,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                                   });
                                   setShowMoveStockModal(true);
                                 }}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                className={`p-1 ${isDark ? 'text-green-400 hover:bg-gray-700' : 'text-green-600 hover:bg-green-50'} rounded`}
                                 title="Verplaats naar andere locatie"
                               >
                                 <ArrowRightLeft size={16} />
@@ -1305,7 +1522,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     placeholder="Zoek op naam, SKU of categorie..."
                     value={productSearchTerm}
                     onChange={(e) => setProductSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 {canManage && (
@@ -1344,23 +1561,23 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   p.sku.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
                   p.category.toLowerCase().includes(productSearchTerm.toLowerCase())
                 ).map((product) => (
-                  <div key={product.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div key={product.id} className={`border ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} rounded-lg p-4 hover:shadow-md transition-shadow`}>
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                      <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{product.name}</h3>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">{product.sku}</span>
+                        <span className={`text-xs ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'} px-2 py-1 rounded`}>{product.sku}</span>
                         {canManage && (
                           <>
                             <button
                               onClick={() => handleEditFullProduct(product)}
-                              className="p-1 text-gray-600 hover:bg-gray-50 rounded"
+                              className={`p-1 ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'} rounded`}
                               title="Bewerk product"
                             >
                               <Edit size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteProduct(product.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              className={`p-1 text-red-500 ${isDark ? 'hover:bg-red-900/30' : 'hover:bg-red-50'} rounded`}
                               title="Verwijder product"
                             >
                               <Trash2 size={16} />
@@ -1369,16 +1586,16 @@ const VoorraadbeheerAdmin: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{product.category}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>{product.category}</p>
                     {product.description && (
-                      <p className="text-sm text-gray-500 mb-2">{product.description}</p>
+                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mb-2`}>{product.description}</p>
                     )}
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Min. voorraad: {product.minimum_stock}</span>
-                      <span className="text-gray-600">Eenheid: {product.unit}</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Min. voorraad: {product.minimum_stock}</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Eenheid: {product.unit}</span>
                     </div>
                     {product.ean && (
-                      <div className="mt-2 text-xs text-gray-500">EAN: {product.ean}</div>
+                      <div className={`mt-2 text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>EAN: {product.ean}</div>
                     )}
                   </div>
                 ))}
@@ -1403,7 +1620,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 {locations.map((location) => (
                   <div
                     key={location.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                    className={`border ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer`}
                     onClick={() => handleViewLocationDetails(location)}
                   >
                     <div className="flex items-start gap-3 mb-2">
@@ -1413,32 +1630,32 @@ const VoorraadbeheerAdmin: React.FC = () => {
                         <Warehouse className="text-green-600" size={24} />
                       )}
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{location.name}</h3>
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{location.name}</h3>
                         {location.license_plate && (
-                          <p className="text-sm text-gray-600">{location.license_plate}</p>
+                          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{location.license_plate}</p>
                         )}
                       </div>
                     </div>
                     {location.description && (
-                      <p className="text-sm text-gray-500 mt-2">{location.description}</p>
+                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-2`}>{location.description}</p>
                     )}
-                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+                    <div className={`mt-3 pt-3 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} space-y-3`}>
                       <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-600">
+                        <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                           {stock.filter(s => s.location_id === location.id).length} producten
                         </div>
                         {canManage && (
                           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleEditLocation(location)}
-                              className="p-1 text-gray-600 hover:bg-gray-50 rounded"
+                              className={`p-1 ${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'} rounded`}
                               title="Bewerk locatie"
                             >
                               <Edit size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteLocation(location.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              className={`p-1 text-red-500 ${isDark ? 'hover:bg-red-900/30' : 'hover:bg-red-50'} rounded`}
                               title="Verwijder locatie"
                             >
                               <Trash2 size={16} />
@@ -1475,10 +1692,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showEditModal && editingProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Bewerk Product: {editingProduct.name}</h2>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Bewerk Product: {editingProduct.name}</h2>
+              <button onClick={() => setShowEditModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
@@ -1486,68 +1703,68 @@ const VoorraadbeheerAdmin: React.FC = () => {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Minimale Voorraad</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Minimale Voorraad</label>
                   <input
                     type="number"
                     min="0"
-                    value={editFormData.minimum_stock}
-                    onChange={(e) => setEditFormData({ ...editFormData, minimum_stock: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    value={editFormData.minimum_stock || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, minimum_stock: e.target.value === '' ? 0 : parseInt(e.target.value) })}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">EAN Code</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>EAN Code</label>
                   <input
                     type="text"
                     value={editFormData.ean}
                     onChange={(e) => setEditFormData({ ...editFormData, ean: e.target.value })}
                     placeholder="EAN barcode"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Inkoopprijs (€)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Inkoopprijs (€)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.purchase_price}
-                    onChange={(e) => setEditFormData({ ...editFormData, purchase_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    value={editFormData.purchase_price || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, purchase_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Verkoopprijs (€)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Verkoopprijs (€)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.sale_price}
-                    onChange={(e) => setEditFormData({ ...editFormData, sale_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    value={editFormData.sale_price || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, sale_price: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Leverancier</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Leverancier</label>
                   <input
                     type="text"
                     value={editFormData.supplier}
                     onChange={(e) => setEditFormData({ ...editFormData, supplier: e.target.value })}
                     placeholder="Leverancier naam"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Voorraad per Locatie</h3>
+                <h3 className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-3`}>Voorraad per Locatie</h3>
                 <div className="space-y-2">
                   {productStockByLocation.map((stockItem) => (
-                    <div key={stockItem.location_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={stockItem.location_id} className={`flex items-center justify-between p-3 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg`}>
                       <div className="flex items-center gap-2">
                         {stockItem.location?.type === 'bus' ? <Truck size={18} /> : <Warehouse size={18} />}
                         <span className="font-medium">{stockItem.location?.name}</span>
@@ -1555,7 +1772,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateStockQuantity(stockItem.location_id, stockItem.quantity - 1)}
-                          className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                          className={`px-2 py-1 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded`}
                         >
                           -
                         </button>
@@ -1564,12 +1781,12 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           min="0"
                           value={stockItem.quantity}
                           onChange={(e) => updateStockQuantity(stockItem.location_id, parseInt(e.target.value) || 0)}
-                          className="w-20 px-2 py-1 text-center border border-gray-300 rounded"
+                          className={`w-20 px-2 py-1 text-center border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded`}
                         />
-                        <span className="text-sm text-gray-600">{editingProduct.unit}</span>
+                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{editingProduct.unit}</span>
                         <button
                           onClick={() => updateStockQuantity(stockItem.location_id, stockItem.quantity + 1)}
-                          className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                          className={`px-2 py-1 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded`}
                         >
                           +
                         </button>
@@ -1579,10 +1796,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -1600,22 +1817,22 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showBookingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Materiaal Boeken</h2>
-              <button onClick={() => setShowBookingModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Materiaal Boeken</h2>
+              <button onClick={() => setShowBookingModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Project</label>
                   <select
                     value={selectedProject}
                     onChange={(e) => setSelectedProject(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Selecteer project</option>
                     {projects.map(project => (
@@ -1625,11 +1842,11 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Locatie</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Locatie</label>
                   <select
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Selecteer locatie</option>
                     {locations.map(location => (
@@ -1640,7 +1857,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Scan of Zoek Product</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Scan of Zoek Product</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1648,7 +1865,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                     onChange={(e) => setScanInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleScan()}
                     placeholder="Scan barcode of zoek op naam/SKU"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   <button
                     onClick={handleScan}
@@ -1660,7 +1877,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </div>
 
               {bookingProducts.length > 0 && (
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg overflow-hidden`}>
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
@@ -1669,12 +1886,12 @@ const VoorraadbeheerAdmin: React.FC = () => {
                         <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acties</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                       {bookingProducts.map((bp, idx) => (
                         <tr key={idx}>
                           <td className="px-4 py-3 text-sm">
-                            <div className="font-medium text-gray-900">{bp.product.name}</div>
-                            <div className="text-gray-500">{bp.product.sku}</div>
+                            <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{bp.product.name}</div>
+                            <div className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{bp.product.sku}</div>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <div className="flex items-center justify-center gap-2">
@@ -1686,7 +1903,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                                     ));
                                   }
                                 }}
-                                className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                className={`px-2 py-1 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded`}
                               >
                                 -
                               </button>
@@ -1697,7 +1914,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                                     i === idx ? { ...p, quantity: p.quantity + 1 } : p
                                   ));
                                 }}
-                                className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                className={`px-2 py-1 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded`}
                               >
                                 +
                               </button>
@@ -1718,10 +1935,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowBookingModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -1740,88 +1957,88 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showStockEditModal && editingStock && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Bewerk Voorraad</h2>
-              <button onClick={() => setShowStockEditModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Bewerk Voorraad</h2>
+              <button onClick={() => setShowStockEditModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Productnaam</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Productnaam</label>
                 <input
                   type="text"
                   value={stockEditFormData.product_name}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, product_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Aantal in Voorraad</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Aantal in Voorraad</label>
                 <input
                   type="number"
                   min="0"
                   value={stockEditFormData.quantity}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, quantity: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Minimale Voorraad</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Minimale Voorraad</label>
                 <input
                   type="number"
                   min="0"
                   value={stockEditFormData.minimum_stock}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, minimum_stock: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">EAN Code</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>EAN Code</label>
                 <input
                   type="text"
                   value={stockEditFormData.ean}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, ean: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Inkoopprijs (€)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Inkoopprijs (€)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={stockEditFormData.purchase_price}
                     onChange={(e) => setStockEditFormData({ ...stockEditFormData, purchase_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Verkoopprijs (€)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Verkoopprijs (€)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={stockEditFormData.sale_price}
                     onChange={(e) => setStockEditFormData({ ...stockEditFormData, sale_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Locatie</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Locatie</label>
                 <select
                   value={stockEditFormData.location_id}
                   onChange={(e) => setStockEditFormData({ ...stockEditFormData, location_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   {locations.map(loc => (
                     <option key={loc.id} value={loc.id}>{loc.name}</option>
@@ -1829,7 +2046,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </select>
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+              <div className={`flex justify-between items-center pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => handleDeleteProductConfirm(editingStock.product_id)}
                   className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 flex items-center gap-2"
@@ -1840,7 +2057,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowStockEditModal(false)}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                   >
                     Annuleren
                   </button>
@@ -1859,32 +2076,32 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showAddLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Nieuwe Locatie Toevoegen</h2>
-              <button onClick={() => setShowAddLocationModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Nieuwe Locatie Toevoegen</h2>
+              <button onClick={() => setShowAddLocationModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Naam *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Naam *</label>
                 <input
                   type="text"
                   value={newLocationData.name}
                   onChange={(e) => setNewLocationData({ ...newLocationData, name: e.target.value })}
                   placeholder="Bijv. Magazijn A, Bus 1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Type *</label>
                 <select
                   value={newLocationData.type}
                   onChange={(e) => setNewLocationData({ ...newLocationData, type: e.target.value as 'magazijn' | 'bus' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="magazijn">Magazijn</option>
                   <option value="bus">Bus</option>
@@ -1892,31 +2109,31 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kenteken (optioneel)</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Kenteken (optioneel)</label>
                 <input
                   type="text"
                   value={newLocationData.license_plate}
                   onChange={(e) => setNewLocationData({ ...newLocationData, license_plate: e.target.value })}
                   placeholder="Bijv. XX-123-YY"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving (optioneel)</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Beschrijving (optioneel)</label>
                 <textarea
                   value={newLocationData.description}
                   onChange={(e) => setNewLocationData({ ...newLocationData, description: e.target.value })}
                   rows={3}
                   placeholder="Extra informatie over deze locatie"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowAddLocationModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -1934,35 +2151,35 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showLocationDetailsModal && selectedLocationForDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
               <div className="flex items-center gap-3">
                 {selectedLocationForDetails.type === 'bus' ? <Truck size={24} className="text-blue-600" /> : <Warehouse size={24} className="text-green-600" />}
-                <h2 className="text-xl font-bold text-gray-900">{selectedLocationForDetails.name}</h2>
+                <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedLocationForDetails.name}</h2>
               </div>
-              <button onClick={() => setShowLocationDetailsModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowLocationDetailsModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+              <div className={`grid grid-cols-2 gap-4 pb-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Type</label>
-                  <p className="text-gray-900">{selectedLocationForDetails.type === 'bus' ? 'Bus' : 'Magazijn'}</p>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Type</label>
+                  <p className={`${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedLocationForDetails.type === 'bus' ? 'Bus' : 'Magazijn'}</p>
                 </div>
                 {selectedLocationForDetails.license_plate && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Kenteken</label>
-                    <p className="text-gray-900">{selectedLocationForDetails.license_plate}</p>
+                    <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Kenteken</label>
+                    <p className={`${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedLocationForDetails.license_plate}</p>
                   </div>
                 )}
               </div>
 
               {selectedLocationForDetails.description && (
-                <div className="pb-4 border-b border-gray-200">
-                  <label className="text-sm font-medium text-gray-500">Beschrijving</label>
-                  <p className="text-gray-900">{selectedLocationForDetails.description}</p>
+                <div className={`pb-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <label className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Beschrijving</label>
+                  <p className={`${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedLocationForDetails.description}</p>
                 </div>
               )}
 
@@ -1973,7 +2190,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
@@ -1983,26 +2200,26 @@ const VoorraadbeheerAdmin: React.FC = () => {
                           <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acties</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                         {stock.filter(s => s.location_id === selectedLocationForDetails.id).map((item) => {
                           const isLow = item.quantity < (item.product?.minimum_stock || 0);
                           return (
-                            <tr key={item.product_id} className={isLow ? 'bg-yellow-50' : ''}>
-                              <td className="px-4 py-3 text-sm text-gray-900">{item.product?.name}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{item.product?.sku}</td>
-                              <td className="px-4 py-3 text-sm text-right font-medium">
+                            <tr key={item.product_id} className={isLow ? (isDark ? 'bg-yellow-900/20' : 'bg-yellow-50') : ''}>
+                              <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.product?.name}</td>
+                              <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{item.product?.sku}</td>
+                              <td className={`px-4 py-3 text-sm text-right font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                 {item.quantity} {item.product?.unit}
                               </td>
-                              <td className="px-4 py-3 text-sm text-right text-gray-600">
+                              <td className={`px-4 py-3 text-sm text-right ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                                 {item.product?.minimum_stock}
                               </td>
                               <td className="px-4 py-3 text-sm">
                                 {isLow ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-yellow-100 text-yellow-800'}`}>
                                     Laag
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-green-100 text-green-800'}`}>
                                     OK
                                   </span>
                                 )}
@@ -2011,7 +2228,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                                 <div className="flex items-center justify-center gap-2">
                                   <button
                                     onClick={() => handleEditStock(item)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                    className={`p-1 ${isDark ? 'text-blue-400 hover:bg-gray-700' : 'text-blue-600 hover:bg-blue-50'} rounded`}
                                     title="Bewerk voorraad"
                                   >
                                     <Edit size={16} />
@@ -2027,10 +2244,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end pt-4 border-t border-gray-200">
+              <div className={`flex justify-end pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowLocationDetailsModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Sluiten
                 </button>
@@ -2042,32 +2259,32 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showEditLocationModal && editingLocation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Bewerk Locatie</h2>
-              <button onClick={() => setShowEditLocationModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Bewerk Locatie</h2>
+              <button onClick={() => setShowEditLocationModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Naam *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Naam *</label>
                 <input
                   type="text"
                   value={editLocationData.name}
                   onChange={(e) => setEditLocationData({ ...editLocationData, name: e.target.value })}
                   placeholder="Bijv. Magazijn A, Bus 1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Type *</label>
                 <select
                   value={editLocationData.type}
                   onChange={(e) => setEditLocationData({ ...editLocationData, type: e.target.value as 'magazijn' | 'bus' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="magazijn">Magazijn</option>
                   <option value="bus">Bus</option>
@@ -2075,31 +2292,31 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kenteken (optioneel)</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Kenteken (optioneel)</label>
                 <input
                   type="text"
                   value={editLocationData.license_plate}
                   onChange={(e) => setEditLocationData({ ...editLocationData, license_plate: e.target.value })}
                   placeholder="Bijv. XX-123-YY"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving (optioneel)</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Beschrijving (optioneel)</label>
                 <textarea
                   value={editLocationData.description}
                   onChange={(e) => setEditLocationData({ ...editLocationData, description: e.target.value })}
                   rows={3}
                   placeholder="Extra informatie over deze locatie"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowEditLocationModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -2117,10 +2334,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showImportLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Importeer Producten</h2>
-              <button onClick={() => setShowImportLocationModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Importeer Producten</h2>
+              <button onClick={() => setShowImportLocationModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
@@ -2139,27 +2356,27 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                   Selecteer CSV Bestand
                 </label>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={handleImportCSV}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
+              <div className={`${isDark ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3`}>
+                <p className={`text-sm ${isDark ? 'text-yellow-300' : 'text-yellow-800'}`}>
                   Let op: Producten die al bestaan op deze locatie worden bijgewerkt met de nieuwe aantallen (opgeteld).
                 </p>
               </div>
 
-              <div className="flex justify-end pt-4 border-t border-gray-200">
+              <div className={`flex justify-end pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowImportLocationModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Sluiten
                 </button>
@@ -2171,10 +2388,10 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showAddProductModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold text-gray-900">Product Toevoegen</h2>
-              <button onClick={() => setShowAddProductModal(false)} className="text-gray-400 hover:text-gray-600">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center sticky top-0 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Product Toevoegen</h2>
+              <button onClick={() => setShowAddProductModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
@@ -2182,122 +2399,182 @@ const VoorraadbeheerAdmin: React.FC = () => {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Productnaam *</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Productnaam *</label>
                   <input
                     type="text"
                     value={newProductData.name}
                     onChange={(e) => setNewProductData({ ...newProductData, name: e.target.value })}
                     placeholder="Bijv. Cement 25kg"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>SKU *</label>
                   <input
                     type="text"
                     value={newProductData.sku}
                     onChange={(e) => setNewProductData({ ...newProductData, sku: e.target.value })}
                     placeholder="Bijv. CEM-001"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categorie *</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Categorie *</label>
                   <input
                     type="text"
                     value={newProductData.category}
                     onChange={(e) => setNewProductData({ ...newProductData, category: e.target.value })}
                     placeholder="Bijv. Bouwmateriaal"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Eenheid *</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Eenheid *</label>
                   <input
                     type="text"
                     value={newProductData.unit}
                     onChange={(e) => setNewProductData({ ...newProductData, unit: e.target.value })}
                     placeholder="Bijv. stuks, kg, m"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Minimale Voorraad</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Minimale Voorraad</label>
                   <input
                     type="number"
                     min="0"
                     value={newProductData.minimum_stock}
                     onChange={(e) => setNewProductData({ ...newProductData, minimum_stock: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">EAN Code</label>
-                  <input
-                    type="text"
-                    value={newProductData.ean}
-                    onChange={(e) => setNewProductData({ ...newProductData, ean: e.target.value })}
-                    placeholder="EAN barcode"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>EAN Code</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newProductData.ean}
+                      onChange={(e) => setNewProductData({ ...newProductData, ean: e.target.value })}
+                      placeholder="EAN barcode"
+                      className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                    />
+                    <button
+                      type="button"
+                      onClick={startEanScanner}
+                      className={`px-3 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md`}
+                      title="Scan EAN code"
+                    >
+                      <ScanLine size={20} />
+                    </button>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Inkoopprijs (€)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Inkoopprijs (€)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={newProductData.purchase_price}
                     onChange={(e) => setNewProductData({ ...newProductData, purchase_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Verkoopprijs (€)</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Verkoopprijs (€)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={newProductData.sale_price}
                     onChange={(e) => setNewProductData({ ...newProductData, sale_price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Leverancier</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Leverancier</label>
                   <input
                     type="text"
                     value={newProductData.supplier}
                     onChange={(e) => setNewProductData({ ...newProductData, supplier: e.target.value })}
                     placeholder="Leverancier naam"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Beschrijving</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Beschrijving</label>
                 <textarea
                   value={newProductData.description}
                   onChange={(e) => setNewProductData({ ...newProductData, description: e.target.value })}
                   rows={3}
                   placeholder="Extra informatie over dit product"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              {/* Photo Upload Section */}
+              <div>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Product Foto</label>
+                <div className="flex items-center gap-4">
+                  {productPhotoPreview ? (
+                    <div className="relative">
+                      <img
+                        src={productPhotoPreview}
+                        alt="Product preview"
+                        className="w-24 h-24 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProductPhotoFile(null);
+                          setProductPhotoPreview('');
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={`w-24 h-24 ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-300'} border-2 border-dashed rounded-lg flex items-center justify-center`}>
+                      <ImageIcon className={`${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={32} />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <label className={`flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md cursor-pointer`}>
+                      <Upload size={18} />
+                      <span>Upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProductPhotoChange}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleProductPhotoCapture}
+                      className={`flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md`}
+                    >
+                      <Camera size={18} />
+                      <span>Camera</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => setShowAddProductModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -2315,9 +2592,9 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showDeleteConfirm && productToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Product Verwijderen</h2>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Product Verwijderen</h2>
             </div>
             <div className="p-6">
               <p className="text-gray-700 mb-4">
@@ -2325,13 +2602,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </p>
               <p className="text-red-600 font-semibold">Deze actie kan niet ongedaan worden gemaakt.</p>
             </div>
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <div className={`p-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-end gap-3`}>
               <button
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setProductToDelete(null);
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Annuleren
               </button>
@@ -2348,40 +2625,40 @@ const VoorraadbeheerAdmin: React.FC = () => {
 
       {showMoveStockModal && moveStockData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Voorraad Verplaatsen</h2>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Verplaatsen</h2>
               <button onClick={() => {
                 setShowMoveStockModal(false);
                 setMoveStockData(null);
-              }} className="text-gray-400 hover:text-gray-600">
+              }} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
                 <X size={24} />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <p className="text-sm text-gray-600 mb-2">Product</p>
-                <p className="font-semibold text-gray-900">{moveStockData.productName}</p>
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Product</p>
+                <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{moveStockData.productName}</p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-2">Van Locatie</p>
-                <p className="font-semibold text-gray-900">
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Van Locatie</p>
+                <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {locations.find(l => l.id === moveStockData.fromLocationId)?.name || 'Onbekend'}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Beschikbaar: {moveStockData.maxQuantity} stuks
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Naar Locatie *
                 </label>
                 <select
                   value={moveStockData.toLocationId}
                   onChange={(e) => setMoveStockData({ ...moveStockData, toLocationId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">Selecteer locatie</option>
                   {locations
@@ -2395,7 +2672,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Hoeveelheid *
                 </label>
                 <div className="flex items-center gap-2">
@@ -2404,7 +2681,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                       ...moveStockData,
                       quantity: Math.max(1, moveStockData.quantity - 1)
                     })}
-                    className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className={`px-3 py-2 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded`}
                   >
                     -
                   </button>
@@ -2417,14 +2694,14 @@ const VoorraadbeheerAdmin: React.FC = () => {
                       ...moveStockData,
                       quantity: Math.min(moveStockData.maxQuantity, Math.max(1, parseInt(e.target.value) || 1))
                     })}
-                    className="flex-1 px-3 py-2 text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`flex-1 px-3 py-2 text-center border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   <button
                     onClick={() => setMoveStockData({
                       ...moveStockData,
                       quantity: Math.min(moveStockData.maxQuantity, moveStockData.quantity + 1)
                     })}
-                    className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className={`px-3 py-2 ${isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} rounded`}
                   >
                     +
                   </button>
@@ -2434,13 +2711,13 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <div className={`p-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-end gap-3`}>
               <button
                 onClick={() => {
                   setShowMoveStockModal(false);
                   setMoveStockData(null);
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Annuleren
               </button>
@@ -2459,21 +2736,21 @@ const VoorraadbeheerAdmin: React.FC = () => {
       {/* Bulk Delete Confirmation Modal */}
       {showBulkDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Weet je het zeker?</h3>
-            <p className="text-gray-600 mb-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
+            <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Weet je het zeker?</h3>
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
               Je staat op het punt om {selectedStockIds.size} voorraad item(s) permanent te verwijderen.
               Deze actie kan niet ongedaan worden gemaakt.
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
-              <p className="text-sm text-yellow-800 font-medium">
+            <div className={`${isDark ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3 mb-6`}>
+              <p className={`text-sm ${isDark ? 'text-yellow-300' : 'text-yellow-800'} font-medium`}>
                 Dit is een tweede waarschuwing. Weet je zeker dat je wilt doorgaan?
               </p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowBulkDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Nee, Annuleren
               </button>
@@ -2491,30 +2768,30 @@ const VoorraadbeheerAdmin: React.FC = () => {
       {/* Bulk Location Change Modal */}
       {showBulkLocationChange && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Locatie Wijzigen</h3>
+              <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Locatie Wijzigen</h3>
               <button
                 onClick={() => {
                   setShowBulkLocationChange(false);
                   setBulkNewLocationId('');
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
               Selecteer de nieuwe locatie voor {selectedStockIds.size} geselecteerde item(s).
             </p>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                 Nieuwe Locatie *
               </label>
               <select
                 value={bulkNewLocationId}
                 onChange={(e) => setBulkNewLocationId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">Selecteer locatie</option>
                 {locations.map(loc => (
@@ -2528,7 +2805,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   setShowBulkLocationChange(false);
                   setBulkNewLocationId('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Annuleren
               </button>
@@ -2547,9 +2824,9 @@ const VoorraadbeheerAdmin: React.FC = () => {
       {/* Bulk Location Change Confirmation Modal */}
       {showBulkLocationConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Bevestig Locatie Wijziging</h3>
-            <p className="text-gray-600 mb-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
+            <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Bevestig Locatie Wijziging</h3>
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
               Weet je zeker dat je {selectedStockIds.size} voorraad item(s) wilt verplaatsen naar de nieuwe locatie?
             </p>
             <div className="flex gap-3">
@@ -2558,7 +2835,7 @@ const VoorraadbeheerAdmin: React.FC = () => {
                   setShowBulkLocationConfirm(false);
                   setBulkNewLocationId('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Nee, Annuleren
               </button>
@@ -2567,6 +2844,152 @@ const VoorraadbeheerAdmin: React.FC = () => {
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Ja, Wijzigen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EAN Scanner Modal */}
+      {showEanScanner && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-lg w-full`}>
+            <div className={`p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Scan EAN Code</h3>
+              <button onClick={stopEanScanner} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="relative bg-black rounded-lg overflow-hidden mb-4">
+                <video
+                  id="ean-scanner-video"
+                  className="w-full h-64 object-cover"
+                  autoPlay
+                  playsInline
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-3/4 h-16 border-2 border-red-500 rounded-lg" />
+                </div>
+              </div>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4 text-center`}>
+                Richt de camera op de barcode en voer de code hieronder in
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Voer EAN code in..."
+                  className={`flex-1 px-3 py-2 border ${isDark ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const input = e.target as HTMLInputElement;
+                      setNewProductData({ ...newProductData, ean: input.value });
+                      stopEanScanner();
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    const input = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                    if (input?.value) {
+                      setNewProductData({ ...newProductData, ean: input.value });
+                      stopEanScanner();
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Bevestigen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Low Stock Modal */}
+      {showLowStockModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-900/50' : 'bg-orange-100'}`}>
+                  <AlertCircle className="h-6 w-6 text-orange-500" />
+                </div>
+                <div>
+                  <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Waarschuwingen</h2>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{lowStockAlerts.length} items onder minimum voorraad</p>
+                </div>
+              </div>
+              <button onClick={() => setShowLowStockModal(false)} className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-3">
+                {lowStockAlerts.map((alert, idx) => {
+                  const product = products.find(p => p.id === alert.product_id);
+                  const stockItem = stock.find(s => s.product_id === alert.product_id && s.location_id === alert.location_id);
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-center justify-between p-4 rounded-lg border ${
+                        isDark ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className={`p-3 rounded-lg ${isDark ? 'bg-orange-900/30' : 'bg-orange-50'}`}>
+                          <Package className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{alert.product_name}</h4>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            SKU: {alert.sku} | Locatie: {alert.location_name}
+                          </p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className={`text-sm font-medium ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
+                              Voorraad: {alert.current_stock} {product?.unit || 'stuk'}
+                            </span>
+                            <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                              (min: {alert.minimum_stock})
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowLowStockModal(false);
+                          if (stockItem) {
+                            handleEditStock(stockItem);
+                          } else {
+                            // Create a temporary stock object to edit
+                            const tempStock: Stock = {
+                              product_id: alert.product_id,
+                              location_id: alert.location_id,
+                              quantity: alert.current_stock,
+                              product: product
+                            };
+                            handleEditStock(tempStock);
+                          }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+                      >
+                        <ShoppingCart size={16} />
+                        Besteld
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={`p-4 border-t ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
+              <button
+                onClick={() => setShowLowStockModal(false)}
+                className={`w-full px-4 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'} rounded-lg transition-colors`}
+              >
+                Sluiten
               </button>
             </div>
           </div>

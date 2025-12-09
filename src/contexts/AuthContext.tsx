@@ -70,7 +70,10 @@ const rolePermissions: Record<UserRole, string[]> = {
     'view_notifications',
     'view_damage_reports',
     'manage_damage_reports',
-    'view_own_reports'
+    'view_own_reports',
+    'view_projects',
+    'view_tools',
+    'view_inventory'
   ],
   zzper: [
     'view_dashboard',
@@ -78,7 +81,10 @@ const rolePermissions: Record<UserRole, string[]> = {
     'view_notifications',
     'view_damage_reports',
     'manage_damage_reports',
-    'view_own_reports'
+    'view_own_reports',
+    'view_projects',
+    'view_tools',
+    'view_inventory'
   ],
   superuser: [
     'view_dashboard',
@@ -123,6 +129,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem('currentUser');
+
+    // Reset onboarding tour so it always shows on login
+    localStorage.removeItem('werkwise_tour_completed');
+    localStorage.setItem('werkwise_tour_open', 'true');
 
     // Sign in with Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -339,7 +349,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Laden...</p>

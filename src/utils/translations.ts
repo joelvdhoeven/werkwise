@@ -16,7 +16,7 @@ export const translations = {
     uitloggen: 'Uitloggen',
     
     // Login & Welcome
-    welcomeToGouweBouw: 'Welkom bij GouweBouw',
+    welcomeToGouweBouw: 'Welkom bij WerkWise',
     loginToContinue: 'Log in om door te gaan',
     login: 'Inloggen',
     register: 'Registreren',
@@ -66,12 +66,12 @@ export const translations = {
     registratieOpgeslagen: 'Registratie succesvol opgeslagen!',
     vulVerplichtVelden: 'Vul alle verplichte velden in',
     selecteerType: 'Selecteer type',
-    projectbasis: 'Projectbasis',
-    meerwerk: 'Meerwerk',
-    regie: 'Regie/Indicatie',
+    projectbasis: 'Geoffreerd',
+    meerwerk: 'Extra Werk',
+    regie: 'Nacalculatie',
     overuren: 'Over uren',
     beschrijfWerk: 'Beschrijf het uitgevoerde werk...',
-    beschrijfMeerwerk: 'Beschrijf het meerwerk en de reden...',
+    beschrijfMeerwerk: 'Beschrijf het extra werk en de reden...',
     projectOrdernummerPlaceholder: 'Bijv. 25-110',
     
     // Filters
@@ -318,7 +318,7 @@ export const translations = {
     uitloggen: 'Logout',
     
     // Login & Welcome
-    welcomeToGouweBouw: 'Welcome to GouweBouw',
+    welcomeToGouweBouw: 'Welcome to WerkWise',
     loginToContinue: 'Login to continue',
     login: 'Login',
     register: 'Register',
@@ -368,12 +368,12 @@ export const translations = {
     registratieOpgeslagen: 'Registration saved successfully!',
     vulVerplichtVelden: 'Please fill in all required fields',
     selecteerType: 'Select type',
-    projectbasis: 'Project Basis',
-    meerwerk: 'Additional Work',
+    projectbasis: 'Quoted Work',
+    meerwerk: 'Extra Work',
     regie: 'Time & Materials',
     overuren: 'Overtime',
     beschrijfWerk: 'Describe the work performed...',
-    beschrijfMeerwerk: 'Describe the additional work and reason...',
+    beschrijfMeerwerk: 'Describe the extra work and reason...',
     projectOrdernummerPlaceholder: 'E.g. 25-110',
     
     // Filters
@@ -621,7 +621,7 @@ export const translations = {
     uitloggen: 'Wyloguj',
     
     // Login & Welcome
-    welcomeToGouweBouw: 'Witamy w GouweBouw',
+    welcomeToGouweBouw: 'Witamy w WerkWise',
     loginToContinue: 'Zaloguj się, aby kontynuować',
     login: 'Zaloguj',
     register: 'Zarejestruj',

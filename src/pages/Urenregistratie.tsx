@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Calendar, X, Trash2, Pencil, Minus, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, Plus, Calendar, X, Trash2, Pencil, Minus, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, FileText, Timer, ListChecks, Play, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
@@ -11,11 +11,15 @@ import { formatDate } from '../utils/dateUtils';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Modal from '../components/Modal';
 import DatePickerField from '../components/DatePickerField';
+import { useTheme } from '../contexts/ThemeContext';
+import TimerWidget from '../components/TimerWidget';
 
 const Urenregistratie: React.FC = () => {
   const { t } = useLanguage();
   const { hasPermission, user, profile } = useAuth();
   const { settings } = useSystemSettings();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Admin and kantoorpersoneel can see all registrations, others only their own
   const canViewAll = profile?.role === 'admin' || profile?.role === 'kantoorpersoneel' || profile?.role === 'superuser';
@@ -56,6 +60,34 @@ const Urenregistratie: React.FC = () => {
   const [showProjectCreatingModal, setShowProjectCreatingModal] = useState(false);
   const [showNewRegistration, setShowNewRegistration] = useState(true);
   const [showOverview, setShowOverview] = useState(false);
+  const [activeTab, setActiveTab] = useState<'registreren' | 'timer' | 'overzicht'>('registreren');
+  const [isTimerOpen, setIsTimerOpen] = useState(false);
+
+  // For normal users, show selection menu first
+  const isNormalUser = profile?.role === 'medewerker' || profile?.role === 'zzper';
+  const [showSelectionMenu, setShowSelectionMenu] = useState(true);
+
+  // Update showSelectionMenu when profile changes
+  useEffect(() => {
+    if (profile) {
+      setShowSelectionMenu(isNormalUser);
+    }
+  }, [profile, isNormalUser]);
+
+  const handleSelectOption = (option: 'registreren' | 'timer' | 'overzicht') => {
+    setShowSelectionMenu(false);
+    setActiveTab(option);
+    if (option === 'registreren') {
+      setShowNewRegistration(true);
+      setShowOverview(false);
+    } else if (option === 'timer') {
+      setIsTimerOpen(true);
+    } else if (option === 'overzicht') {
+      setShowNewRegistration(false);
+      setShowOverview(true);
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [startDateFilter, setStartDateFilter] = useState(new Date().toISOString().split('T')[0]);
   const [endDateFilter, setEndDateFilter] = useState(new Date().toISOString().split('T')[0]);
@@ -739,6 +771,56 @@ const Urenregistratie: React.FC = () => {
     }
   };
 
+  // Handle timer save
+  const handleTimerSave = async (data: {
+    project_id: string;
+    aantal_uren: number;
+    werkomschrijving: string;
+    werktype: string;
+  }) => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+
+      if (!authUser?.id) {
+        setFormError('Gebruiker niet ingelogd');
+        return;
+      }
+
+      const project = projecten.find((p: any) => p.id === data.project_id);
+
+      const registration = {
+        user_id: authUser.id,
+        project_id: data.project_id,
+        project_naam: project?.naam || null,
+        datum: new Date().toISOString().split('T')[0],
+        werktype: data.werktype,
+        aantal_uren: data.aantal_uren,
+        werkomschrijving: data.werkomschrijving || 'Timer registratie',
+        status: 'submitted',
+        materials: []
+      };
+
+      const { error: insertError } = await supabase.from('time_registrations').insert([registration]);
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        setFormError('Er is een fout opgetreden bij het opslaan.');
+        return;
+      }
+
+      setSuccessMessage('Timer uren succesvol geboekt!');
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
+      refetch();
+    } catch (error) {
+      console.error('Error saving timer:', error);
+      setFormError('Er is een fout opgetreden bij het opslaan van de timer.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -747,8 +829,254 @@ const Urenregistratie: React.FC = () => {
     );
   }
 
+  // Quick action definitions for admin users
+  const adminQuickActions = [
+    {
+      id: 'registreren',
+      title: 'Uren Registreren',
+      description: 'Handmatig uren invoeren',
+      icon: <FileText className="h-6 w-6" />,
+      color: 'from-red-500 to-rose-600',
+      onClick: () => handleSelectOption('registreren')
+    },
+    {
+      id: 'timer',
+      title: 'Timer Starten',
+      description: 'Tijd automatisch bijhouden',
+      icon: <Timer className="h-6 w-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      onClick: () => handleSelectOption('timer')
+    },
+    {
+      id: 'overzicht',
+      title: 'Alle Registraties',
+      description: `${registraties?.length || 0} registraties`,
+      icon: <ListChecks className="h-6 w-6" />,
+      color: 'from-amber-500 to-orange-600',
+      onClick: () => handleSelectOption('overzicht')
+    },
+    {
+      id: 'export',
+      title: 'Exporteren',
+      description: 'Download als CSV',
+      icon: <Download className="h-6 w-6" />,
+      color: 'from-blue-500 to-indigo-600',
+      onClick: handleExport
+    }
+  ];
+
   return (
     <div>
+      {/* Timer Widget */}
+      <TimerWidget
+        projects={projecten}
+        onSaveTime={handleTimerSave}
+        isOpen={isTimerOpen}
+        onToggle={() => setIsTimerOpen(!isTimerOpen)}
+      />
+
+      {/* Quick Actions for Admin Users */}
+      {canViewAll && (
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <div>
+              <h1 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2 sm:gap-3`}>
+                <Clock className="h-6 w-6 sm:h-7 sm:w-7 text-red-600" />
+                {t('urenregistratie')}
+              </h1>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Beheer alle urenregistraties</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {adminQuickActions.map((action) => (
+              <button
+                key={action.id}
+                onClick={action.onClick}
+                className={`group relative overflow-hidden rounded-xl p-4 text-left transition-all hover:scale-105 hover:shadow-xl ${
+                  isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
+                } shadow-md border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center text-white mb-3 shadow-lg`}>
+                  {action.icon}
+                </div>
+                <h3 className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{action.title}</h3>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{action.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Selection Menu for Normal Users */}
+      {showSelectionMenu && isNormalUser && (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center">
+          <div className="text-center mb-10">
+            <h1 className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {t('urenregistratie')}
+            </h1>
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Wat wil je doen?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full px-4">
+            {/* Uren Registreren Card */}
+            <button
+              onClick={() => handleSelectOption('registreren')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-red-900/50 to-rose-900/50 border-2 border-red-600/50 hover:border-red-500'
+                  : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-200 hover:border-red-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-500/30'
+                    : 'bg-gradient-to-br from-red-500 to-rose-500 shadow-lg shadow-red-500/30'
+                }`}>
+                  <FileText className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Uren Registreren
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Registreer je gewerkte uren op een project
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                  <span>Start</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Timer Card */}
+            <button
+              onClick={() => handleSelectOption('timer')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-emerald-900/50 to-teal-900/50 border-2 border-emerald-600/50 hover:border-emerald-500'
+                  : 'bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-emerald-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-teal-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg shadow-emerald-500/30'
+                    : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30'
+                }`}>
+                  <Play className="h-10 w-10 text-white ml-1" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Timer
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Start een timer en registreer automatisch
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  <span>Start</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Overzicht Card */}
+            <button
+              onClick={() => handleSelectOption('overzicht')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-amber-900/50 to-orange-900/50 border-2 border-amber-600/50 hover:border-amber-500'
+                  : 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 hover:border-amber-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-amber-600 to-orange-600 shadow-lg shadow-amber-500/30'
+                    : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30'
+                }`}>
+                  <ListChecks className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Overzicht
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Bekijk je geregistreerde uren
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                  <span>Bekijken</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Regular Tab View for Admins or after selection */}
+      {(!showSelectionMenu || !isNormalUser) && (
+        <>
+          {/* Tab Navigation */}
+          <div className={`mb-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        <nav className="flex space-x-1" aria-label="Tabs">
+          <button
+            onClick={() => {
+              setActiveTab('registreren');
+              setShowNewRegistration(true);
+              setShowOverview(false);
+            }}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'registreren'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
+                : isDark
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            Uren registreren
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('timer');
+              setIsTimerOpen(true);
+            }}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'timer'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
+                : isDark
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Timer className="h-4 w-4" />
+            Timer
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('overzicht');
+              setShowNewRegistration(false);
+              setShowOverview(true);
+            }}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'overzicht'
+                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white'
+                : isDark
+                  ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Clock className="h-4 w-4" />
+            Overzicht
+          </button>
+        </nav>
+      </div>
+
       {showSuccessMessage && (
         <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
           {successMessage}
@@ -771,39 +1099,47 @@ const Urenregistratie: React.FC = () => {
       )}
       
       {showNewRegistration && (
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">{t('nieuweRegistratie')}</h1>
-            <button 
-              onClick={() => {
-                setShowNewRegistration(false);
-                setShowOverview(true);
-              }}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-            >
-              <span>{t('overzicht')}</span>
-            </button>
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className={`text-2xl sm:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('nieuweRegistratie')}</h1>
+            <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Registreer je gewerkte uren in een paar eenvoudige stappen</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <h3 className="text-md font-medium text-gray-700 mb-4">{t('basisInformatie')}</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Step 1: Project & Date */}
+            <div className={`rounded-2xl overflow-hidden shadow-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className={`px-6 py-4 ${isDark ? 'bg-gradient-to-r from-red-900/50 to-rose-900/50' : 'bg-gradient-to-r from-red-50 to-rose-50'}`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                  <div>
+                    <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Project & Datum</h3>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Selecteer het project en de werkdatum</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('datum')} *</label>
+                    <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                      <Calendar className="inline h-4 w-4 mr-1 text-red-500" />
+                      {t('datum')} *
+                    </label>
                     <input
                       type="date"
                       name="datum"
                       value={formData.datum}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className={`w-full px-4 py-3 border-2 ${isDark ? 'border-gray-700 bg-gray-900 text-white focus:border-red-500' : 'border-gray-200 bg-white text-gray-900 focus:border-red-500'} rounded-xl focus:outline-none transition-colors`}
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')} *</label>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                  <div>
+                    <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                      <FileText className="inline h-4 w-4 mr-1 text-red-500" />
+                      {t('project')} *
+                    </label>
+                    <div className="flex gap-2">
                       <select
                         name="project_id"
                         value={selectedProject?.id || ''}
@@ -812,109 +1148,125 @@ const Urenregistratie: React.FC = () => {
                           setSelectedProject(project || null);
                         }}
                         required
-                        className="flex-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`flex-1 px-4 py-3 border-2 ${isDark ? 'border-gray-700 bg-gray-900 text-white focus:border-red-500' : 'border-gray-200 bg-white text-gray-900 focus:border-red-500'} rounded-xl focus:outline-none transition-colors`}
                       >
                         <option value="">Selecteer een project</option>
                         {projecten.map((project: any) => (
                           <option key={project.id} value={project.id}>
-                            {project.naam} {project.project_nummer ? `(#${project.project_nummer})` : ''}
+                            {project.naam}
                           </option>
                         ))}
                       </select>
                       <button
                         type="button"
                         onClick={() => setShowConfirmProjectModal(true)}
-                        className="w-full sm:w-auto px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center"
-                        title="Snel nieuw project aanmaken"
+                        className="px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all shadow-lg hover:shadow-red-500/25"
+                        title="Nieuw project aanmaken"
                       >
                         <Plus size={20} />
-                        <span className="ml-2 sm:hidden">Nieuw Project</span>
                       </button>
                     </div>
-                    {selectedProject && selectedProject.calculated_hours && (
-                      <p className="text-xs text-blue-600 mt-1">
-                        Gecalculeerde uren: {selectedProject.calculated_hours} uur
-                      </p>
-                    )}
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Voortgang project (%)</label>
-                  <input
-                    type="number"
-                    name="voortgang"
-                    value={formData.voortgang}
-                    onChange={handleInputChange}
-                    min="0"
-                    max="100"
-                    placeholder="0-100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{t('optioneelGeefAanHoeveelProcent')}</p>
-                </div>
+                {/* Progress & Kilometers in a nice grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                  <div className={`p-4 rounded-xl ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                    <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                      Voortgang project (%)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        name="voortgang"
+                        value={formData.voortgang || 0}
+                        onChange={handleInputChange}
+                        min="0"
+                        max="100"
+                        className="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-red-600"
+                      />
+                      <span className={`w-12 text-center font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formData.voortgang || 0}%</span>
+                    </div>
+                    <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'} mt-2`}>Optioneel - sleep de slider om voortgang aan te geven</p>
+                  </div>
 
-                <div className="mt-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm font-medium text-gray-700">Gereden kilometers</label>
-                    <div className="group relative">
-                      <Info size={16} className="text-gray-400 cursor-help" />
-                      <div className="invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-md shadow-lg -top-2 left-6">
-                        Dit zijn kilometers die niet met een zakelijke auto gereden worden en ook geen woon-werk kilometers zijn.
+                  <div className={`p-4 rounded-xl ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Gereden kilometers</label>
+                      <div className="group relative">
+                        <Info size={14} className={`${isDark ? 'text-gray-500' : 'text-gray-400'} cursor-help`} />
+                        <div className="invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg -top-2 left-6">
+                          Dit zijn kilometers die niet met een zakelijke auto gereden worden en ook geen woon-werk kilometers zijn.
+                        </div>
                       </div>
                     </div>
+                    <input
+                      type="number"
+                      name="kilometers"
+                      value={formData.kilometers}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.1"
+                      placeholder="0 km"
+                      className={`w-full px-4 py-3 border-2 ${isDark ? 'border-gray-700 bg-gray-800 text-white focus:border-red-500' : 'border-gray-200 bg-white text-gray-900 focus:border-red-500'} rounded-xl focus:outline-none transition-colors`}
+                    />
                   </div>
-                  <input
-                    type="number"
-                    name="kilometers"
-                    value={formData.kilometers}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.1"
-                    placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Optioneel - vul alleen in indien van toepassing</p>
                 </div>
               </div>
+            </div>
 
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Werkregels</h3>
+            {/* Step 2: Work Lines */}
+            <div className={`rounded-2xl overflow-hidden shadow-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className={`px-6 py-4 ${isDark ? 'bg-gradient-to-r from-red-900/50 to-rose-900/50' : 'bg-gradient-to-r from-red-50 to-rose-50'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+                    <div>
+                      <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Werkregels</h3>
+                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Voeg je gewerkte uren per type toe</p>
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={addWorkLine}
-                    className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors shadow-lg hover:shadow-red-500/25"
                   >
                     <Plus size={16} />
-                    Regel toevoegen
+                    <span className="hidden sm:inline">Regel toevoegen</span>
                   </button>
                 </div>
+              </div>
+              <div className="p-6">
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {workLines.map((line, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between mb-3">
-                        <span className="text-sm font-medium text-gray-700">Regel {index + 1}</span>
+                    <div key={index} className={`border-2 ${isDark ? 'border-gray-700 bg-gray-900' : 'border-gray-100 bg-gray-50'} rounded-xl p-5 relative`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-6 h-6 rounded-full ${isDark ? 'bg-red-900/50' : 'bg-red-100'} flex items-center justify-center`}>
+                            <span className="text-red-600 text-xs font-bold">{index + 1}</span>
+                          </div>
+                          <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Werkregel {index + 1}</span>
+                        </div>
                         {workLines.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeWorkLine(index)}
-                            className="text-red-600 hover:text-red-800"
+                            className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                           >
-                            <Minus size={18} />
+                            <Trash2 size={16} />
                           </button>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">{t('werktype')} *</label>
+                          <label className={`block text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>{t('werktype')} *</label>
                           <select
                             value={line.werktype}
                             onChange={(e) => updateWorkLine(index, 'werktype', e.target.value)}
                             required
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className={`w-full px-4 py-2.5 text-sm border-2 ${isDark ? 'border-gray-700 bg-gray-800 text-white focus:border-red-500' : 'border-gray-200 bg-white text-gray-900 focus:border-red-500'} rounded-lg focus:outline-none transition-colors`}
                           >
                             <option value="">{t('selecteerType')}</option>
                             <option value="projectbasis">{t('projectbasis')}</option>
@@ -924,7 +1276,7 @@ const Urenregistratie: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">{t('aantalUren')} *</label>
+                          <label className={`block text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>{t('aantalUren')} *</label>
                           <input
                             type="number"
                             value={line.aantal_uren || ''}
@@ -932,28 +1284,28 @@ const Urenregistratie: React.FC = () => {
                             step="0.5"
                             min="0"
                             required
-                            placeholder="bv. 8 of 4.5"
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="bv. 8"
+                            className={`w-full px-4 py-2.5 text-sm border-2 ${isDark ? 'border-gray-700 bg-gray-800 text-white focus:border-red-500' : 'border-gray-200 bg-white text-gray-900 focus:border-red-500'} rounded-lg focus:outline-none transition-colors`}
                           />
                         </div>
 
                         <div className="md:col-span-1">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">{t('werkomschrijving')} *</label>
+                          <label className={`block text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>{t('werkomschrijving')} *</label>
                           <input
                             type="text"
                             value={line.werkomschrijving}
                             onChange={(e) => updateWorkLine(index, 'werkomschrijving', e.target.value)}
                             required
-                            placeholder="Beschrijf het uitgevoerde werk"
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="Wat heb je gedaan?"
+                            className={`w-full px-4 py-2.5 text-sm border-2 ${isDark ? 'border-gray-700 bg-gray-800 text-white focus:border-red-500' : 'border-gray-200 bg-white text-gray-900 focus:border-red-500'} rounded-lg focus:outline-none transition-colors`}
                           />
                         </div>
                       </div>
 
                       {(line.werktype === 'regie' || line.werktype === 'meerwerk') && (
-                        <div className="mt-4 pt-4 border-t border-gray-300">
+                        <div className={`mt-4 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-300'}`}>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block text-xs font-semibold text-gray-700">Materialen</label>
+                            <label className={`block text-xs font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Materialen</label>
                             <button
                               type="button"
                               onClick={() => addMaterialToWorkLine(index)}
@@ -967,20 +1319,20 @@ const Urenregistratie: React.FC = () => {
                           {line.materials && line.materials.length > 0 && (
                             <div className="space-y-2">
                               {line.materials.map((material, matIdx) => (
-                                <div key={matIdx} className="border border-gray-200 rounded bg-white">
-                                  <div className="p-2 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
+                                <div key={matIdx} className={`border ${isDark ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'} rounded`}>
+                                  <div className={`p-2 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'} border-b flex items-center justify-between`}>
                                     <div className="flex items-center gap-2">
                                       <button
                                         type="button"
                                         onClick={() => updateMaterial(index, matIdx, 'type', material.type === 'product' ? 'description' : 'product')}
-                                        className={`px-2 py-1 text-xs rounded ${material.type === 'product' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                                        className={`px-2 py-1 text-xs rounded ${material.type === 'product' ? 'bg-blue-600 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}
                                       >
                                         Product
                                       </button>
                                       <button
                                         type="button"
                                         onClick={() => updateMaterial(index, matIdx, 'type', material.type === 'description' ? 'product' : 'description')}
-                                        className={`px-2 py-1 text-xs rounded ${material.type === 'description' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                                        className={`px-2 py-1 text-xs rounded ${material.type === 'description' ? 'bg-blue-600 text-white' : isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}
                                       >
                                         Omschrijving
                                       </button>
@@ -1001,7 +1353,7 @@ const Urenregistratie: React.FC = () => {
                                           <select
                                             value={material.product_id || ''}
                                             onChange={(e) => updateMaterial(index, matIdx, 'product_id', e.target.value)}
-                                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-full px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           >
                                             <option value="">Selecteer product</option>
                                             {products.map((product: any) => (
@@ -1019,9 +1371,9 @@ const Urenregistratie: React.FC = () => {
                                             placeholder="Aantal"
                                             min="0"
                                             step="0.1"
-                                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-full px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
-                                          <span className="text-xs text-gray-600 min-w-[40px]">{material.unit || '-'}</span>
+                                          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} min-w-[40px]`}>{material.unit || '-'}</span>
                                         </div>
                                       </div>
                                     ) : (
@@ -1032,7 +1384,7 @@ const Urenregistratie: React.FC = () => {
                                             value={material.description || ''}
                                             onChange={(e) => updateMaterial(index, matIdx, 'description', e.target.value)}
                                             placeholder="Beschrijving materiaal"
-                                            className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-full px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
                                         </div>
                                         <div className="flex gap-2 items-center">
@@ -1043,14 +1395,14 @@ const Urenregistratie: React.FC = () => {
                                             placeholder="Aantal"
                                             min="0"
                                             step="0.1"
-                                            className="w-20 px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-20 px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
                                           <input
                                             type="text"
                                             value={material.unit || ''}
                                             onChange={(e) => updateMaterial(index, matIdx, 'unit', e.target.value)}
                                             placeholder="Eenheid"
-                                            className="w-20 px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className={`w-20 px-2 py-1.5 text-xs border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                           />
                                         </div>
                                       </div>
@@ -1066,52 +1418,65 @@ const Urenregistratie: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    <strong>Totaal uren:</strong> {workLines.reduce((sum, line) => sum + (line.aantal_uren || 0), 0).toFixed(1)} uur
-                  </p>
+                {/* Total Hours Summary */}
+                <div className={`mt-4 p-4 rounded-xl ${isDark ? 'bg-gradient-to-r from-red-900/30 to-rose-900/30 border border-red-800' : 'bg-gradient-to-r from-red-50 to-rose-50 border border-red-100'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Totaal uren</span>
+                    <span className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      {workLines.reduce((sum, line) => sum + (line.aantal_uren || 0), 0).toFixed(1)} <span className="text-sm font-normal">uur</span>
+                    </span>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-end space-x-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setShowNewRegistration(false);
-                    setShowOverview(true);
-                  }}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  {t('annuleren')}
-                </button>
-                <button 
-                  type="submit"
-                  disabled={mutationLoading}
-                  className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                >
-                  {mutationLoading ? 'Opslaan...' : t('registratieOpslaan')}
-                </button>
+            {/* Submit Button Section */}
+            <div className={`rounded-2xl overflow-hidden shadow-lg ${isDark ? 'bg-gray-800' : 'bg-white'} p-6`}>
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className={`text-center sm:text-left ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <p className="text-sm">Klaar om op te slaan?</p>
+                  <p className="text-xs">Controleer je gegevens voor het verzenden</p>
+                </div>
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewRegistration(false);
+                      setShowOverview(true);
+                    }}
+                    className={`flex-1 sm:flex-none px-6 py-3 border-2 ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'} rounded-xl transition-all font-medium`}
+                  >
+                    {t('annuleren')}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={mutationLoading}
+                    className="flex-1 sm:flex-none px-8 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-all font-semibold shadow-lg hover:shadow-red-500/25 disabled:opacity-50"
+                  >
+                    {mutationLoading ? 'Opslaan...' : t('registratieOpslaan')}
+                  </button>
+                </div>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       )}
       
       {showOverview && (
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">{t('urenregistratie')}</h1>
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t('urenregistratie')}</h1>
             <div className="flex space-x-3">
               <ProtectedRoute permission="export_data">
-                <button 
+                <button
                   onClick={handleExport}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  className={`flex items-center space-x-2 px-4 py-2 ${isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} rounded-md transition-colors`}
                 >
                   <Download size={16} />
                   <span>{t('exporteren')}</span>
                 </button>
               </ProtectedRoute>
-              <button 
+              <button
                 onClick={handleNewRegistration}
                 className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
@@ -1122,15 +1487,15 @@ const Urenregistratie: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow mb-6 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow mb-6 p-4`}>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               {hasPermission('view_reports') && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gebruiker</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Gebruiker</label>
                   <select
                     value={userFilter}
                     onChange={(e) => setUserFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Alle gebruikers</option>
                     {gebruikers.map((gebruiker: any) => (
@@ -1142,11 +1507,11 @@ const Urenregistratie: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Periode</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Periode</label>
                 <select
                   value={dateRangeFilter}
                   onChange={(e) => handleDateRangeChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="custom">Aangepast</option>
                   <option value="deze-week">Deze week</option>
@@ -1173,11 +1538,11 @@ const Urenregistratie: React.FC = () => {
                 placeholder={t('dateInputPlaceholder')}
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('type')}</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('type')}</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="alleTypes">{t('alleTypes')}</option>
                   <option value="projectbasis">{t('projectbasis')}</option>
@@ -1192,35 +1557,35 @@ const Urenregistratie: React.FC = () => {
                 placeholder={t('zoekProjectOfOrdernummer')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-80 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full md:w-80 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
           </div>
 
           {/* Registraties overzicht */}
           {filteredRegistraties.length > 0 && (
-            <div className="bg-white rounded-lg shadow mt-6">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-800">
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow mt-6`}>
+              <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   {searchTerm ? `Zoekresultaten (${filteredRegistraties.length})` : `Registraties (${filteredRegistraties.length})`}
                 </h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className={isDark ? 'bg-gray-900' : 'bg-gray-50'}>
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('datum')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('datum')}</th>
                       {hasPermission('view_reports') && (
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gebruiker</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Gebruiker</th>
                       )}
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('werktype')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('aantalUren')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('werkomschrijving')}</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('acties')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Project</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('werktype')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('aantalUren')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('werkomschrijving')}</th>
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>{t('acties')}</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className={`${isDark ? 'bg-gray-800' : 'bg-white'} divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {paginatedRegistraties.map((registratie) => {
                       const hasExtraInfo = (registratie.driven_kilometers && registratie.driven_kilometers > 0) ||
                                           (registratie.materials && registratie.materials.length > 0) ||
@@ -1229,28 +1594,28 @@ const Urenregistratie: React.FC = () => {
 
                       return (
                         <React.Fragment key={registratie.id}>
-                          <tr className={isExpanded ? 'bg-gray-50' : 'hover:bg-gray-50'}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <tr className={isExpanded ? (isDark ? 'bg-gray-900' : 'bg-gray-50') : (isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-50')}>
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {formatDate(registratie.datum)}
                             </td>
                             {hasPermission('view_reports') && (
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                                 {gebruikers.find((g: any) => g.id === registratie.user_id)?.naam || 'Onbekend'}
                               </td>
                             )}
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {registratie.project_id ?
                                 projecten.find(p => p.id === registratie.project_id)?.naam || 'Onbekend project' :
                                 '-'
                               }
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {registratie.werktype}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
                               {registratie.aantal_uren.toString().replace('.', ',')}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                            <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'} max-w-xs`}>
                               <div className="break-words">{registratie.werkomschrijving}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -1258,7 +1623,7 @@ const Urenregistratie: React.FC = () => {
                                 {hasExtraInfo && (
                                   <button
                                     onClick={() => toggleRowExpansion(registratie.id)}
-                                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                                    className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'} transition-colors`}
                                     title={isExpanded ? 'Verberg details' : 'Toon details'}
                                   >
                                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -1276,7 +1641,7 @@ const Urenregistratie: React.FC = () => {
                                     {hasPermission('approve_hours') && (
                                       <button
                                         onClick={() => handleDeleteRegistration(registratie.id)}
-                                        className="text-gray-600 hover:text-gray-900"
+                                        className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'}`}
                                         title="Verwijderen"
                                       >
                                         <Trash2 size={16} />
@@ -1288,28 +1653,28 @@ const Urenregistratie: React.FC = () => {
                             </td>
                           </tr>
                           {isExpanded && hasExtraInfo && (
-                            <tr className="bg-gray-50">
+                            <tr className={isDark ? 'bg-gray-900' : 'bg-gray-50'}>
                               <td colSpan={hasPermission('view_reports') ? 7 : 6} className="px-6 py-4">
-                                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                                <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg p-4 shadow-sm border`}>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {registratie.driven_kilometers && registratie.driven_kilometers > 0 && (
-                                      <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-                                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Kilometers</div>
-                                        <div className="text-2xl font-bold text-gray-900">
+                                      <div className={`${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border p-4 rounded-lg shadow-sm`}>
+                                        <div className={`text-xs font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-2`}>Kilometers</div>
+                                        <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                           {registratie.driven_kilometers.toString().replace('.', ',')} km
                                         </div>
                                       </div>
                                     )}
                                     {registratie.materials && registratie.materials.length > 0 && (
-                                      <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-                                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Materialen</div>
+                                      <div className={`${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border p-4 rounded-lg shadow-sm`}>
+                                        <div className={`text-xs font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-3`}>Materialen</div>
                                         <div className="space-y-2">
                                           {registratie.materials.map((mat: any, idx: number) => (
-                                            <div key={idx} className="flex justify-between items-center text-sm py-1 border-b border-gray-100 last:border-0">
-                                              <span className="font-medium text-gray-900">
+                                            <div key={idx} className={`flex justify-between items-center text-sm py-1 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'} last:border-0`}>
+                                              <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                                 {mat.type === 'product' ? mat.product_name : mat.description}
                                               </span>
-                                              <span className="text-gray-600 font-semibold">{mat.quantity} {mat.unit}</span>
+                                              <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'} font-semibold`}>{mat.quantity} {mat.unit}</span>
                                             </div>
                                           ))}
                                         </div>
@@ -1336,29 +1701,29 @@ const Urenregistratie: React.FC = () => {
               </div>
 
               {/* Pagination Controls */}
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className={`px-6 py-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
                 <div className="flex items-center space-x-2">
-                  <label className="text-sm text-gray-700">Toon:</label>
+                  <label className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Toon:</label>
                   <select
                     value={itemsPerPage}
                     onChange={(e) => {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`px-3 py-1 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <span className="text-sm text-gray-700">
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     resultaten per pagina
                   </span>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-700">
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     Pagina {currentPage} van {totalPages} ({totalItems} resultaten)
                   </span>
 
@@ -1366,7 +1731,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed`}
                       title="Eerste pagina"
                     >
                       «
@@ -1374,7 +1739,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center`}
                       title="Vorige pagina"
                     >
                       <ChevronLeft size={16} />
@@ -1400,7 +1765,7 @@ const Urenregistratie: React.FC = () => {
                           className={`px-3 py-1 border rounded-md ${
                             currentPage === pageNumber
                               ? 'bg-red-600 text-white border-red-600'
-                              : 'border-gray-300 hover:bg-gray-50'
+                              : isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
                           }`}
                         >
                           {pageNumber}
@@ -1411,7 +1776,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center`}
                       title="Volgende pagina"
                     >
                       <ChevronRight size={16} />
@@ -1419,7 +1784,7 @@ const Urenregistratie: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`px-3 py-1 border ${isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'} rounded-md disabled:opacity-50 disabled:cursor-not-allowed`}
                       title="Laatste pagina"
                     >
                       »
@@ -1431,44 +1796,46 @@ const Urenregistratie: React.FC = () => {
           )}
         </div>
       )}
+        </>
+      )}
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={t('nieuweRegistratie')}>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <h3 className="text-md font-medium text-gray-700 mb-4">{t('basisInformatie')}</h3>
+            <h3 className={`text-md font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-4`}>{t('basisInformatie')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('datum')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('datum')} *</label>
                 <input
                   type="date"
                   name="datum"
                   value={formData.datum}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')}</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('project')}</label>
                 <input
                   type="text"
                   name="ordernummer"
                   value={formData.ordernummer}
                   onChange={handleInputChange}
                   placeholder={t('projectOrdernummerPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('werktype')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werktype')} *</label>
                 <select
                   name="werktype"
                   value={formData.werktype}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 >
                   <option value="">{t('selecteerType')}</option>
                   <option value="projectbasis">{t('projectbasis')}</option>
@@ -1477,7 +1844,7 @@ const Urenregistratie: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('aantalUren')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('aantalUren')} *</label>
                 <input
                   type="number"
                   name="aantalUren"
@@ -1487,7 +1854,7 @@ const Urenregistratie: React.FC = () => {
                   min="0"
                   required
                   placeholder="bv. 8 of 4.5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             </div>
@@ -1495,7 +1862,7 @@ const Urenregistratie: React.FC = () => {
             {/* Conditional Location field for Meerwerk */}
             {(formData.werktype === 'meerwerk' || formData.werktype === 'regie') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('verbruiktMateriaal')} *</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('verbruiktMateriaal')} *</label>
                 <input
                   type="text"
                   name="locatie"
@@ -1503,14 +1870,14 @@ const Urenregistratie: React.FC = () => {
                   onChange={handleInputChange}
                   required={formData.werktype === 'meerwerk' || formData.werktype === 'regie'}
                   placeholder={t('verbruiktMateriaalPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Voortgang project (%)</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Voortgang project (%)</label>
             <input
               type="number"
               name="voortgang"
@@ -1519,13 +1886,13 @@ const Urenregistratie: React.FC = () => {
               min="0"
               max="100"
               placeholder="0-100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
-            <p className="text-xs text-gray-500 mt-1">Optioneel: geef aan hoeveel procent van het project is voltooid</p>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel: geef aan hoeveel procent van het project is voltooid</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('werkomschrijving')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werkomschrijving')} *</label>
             <textarea
               name="werkomschrijving"
               value={formData.werkomschrijving}
@@ -1533,19 +1900,19 @@ const Urenregistratie: React.FC = () => {
               rows={4}
               required
               placeholder={formData.werktype === 'meerwerk' ? t('beschrijfMeerwerk') : t('beschrijfWerk')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               onClick={() => setShowModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               {t('annuleren')}
             </button>
-            <button 
+            <button
               type="submit"
               disabled={mutationLoading}
               className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
@@ -1599,10 +1966,10 @@ const Urenregistratie: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <form onSubmit={handleNewProjectAndRegister} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectNaam')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectNaam')} *</label>
             <input
               type="text"
               name="naam"
@@ -1610,12 +1977,12 @@ const Urenregistratie: React.FC = () => {
               onChange={handleNewProjectDetailsChange}
               required
               placeholder="Bijv. Renovatie kantoorpand"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectLocatie')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectLocatie')} *</label>
             <input
               type="text"
               name="locatie"
@@ -1623,12 +1990,12 @@ const Urenregistratie: React.FC = () => {
               onChange={handleNewProjectDetailsChange}
               required
               placeholder="Bijv. Amsterdam, Damrak 1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('projectBeschrijving')} *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('projectBeschrijving')} *</label>
             <textarea
               name="beschrijving"
               value={newProjectDetails.beschrijving}
@@ -1636,23 +2003,23 @@ const Urenregistratie: React.FC = () => {
               rows={3}
               required
               placeholder={t('beschrijfProject')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             />
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <button
               type="button"
               onClick={() => {
                 setShowNewProjectModal(false);
                 setPendingTimeRegistration(null);
                 setNewProjectDetails({ naam: '', locatie: '', beschrijving: '' });
               }}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               {t('annuleren')}
             </button>
-            <button 
+            <button
               type="submit"
               className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
@@ -1674,25 +2041,25 @@ const Urenregistratie: React.FC = () => {
         {editingRegistration && (
           <form onSubmit={handleUpdateRegistration} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('datum')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('datum')} *</label>
               <input
                 type="date"
                 name="datum"
                 value={editingRegistration.datum}
                 onChange={handleEditInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('project')} *</label>
               <select
                 name="project_id"
                 value={editingRegistration.project_id || ''}
                 onChange={handleEditInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">Selecteer een project</option>
                 {projecten.map((project: any) => (
@@ -1704,13 +2071,13 @@ const Urenregistratie: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('werktype')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werktype')} *</label>
               <select
                 name="werktype"
                 value={editingRegistration.werktype}
                 onChange={handleEditInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               >
                 <option value="">{t('selecteerType')}</option>
                 <option value="projectbasis">{t('projectbasis')}</option>
@@ -1720,7 +2087,7 @@ const Urenregistratie: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('aantalUren')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('aantalUren')} *</label>
               <input
                 type="number"
                 step="0.5"
@@ -1731,26 +2098,26 @@ const Urenregistratie: React.FC = () => {
                 min="0.5"
                 max="24"
                 placeholder={t('aantalUrenPlaceholder')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
 
             {(editingRegistration.werktype === 'meerwerk' || editingRegistration.werktype === 'regie') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('locatie')}</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('locatie')}</label>
                 <input
                   type="text"
                   name="locatie"
                   value={editingRegistration.locatie}
                   onChange={handleEditInputChange}
                   placeholder={t('locatiePlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('voortgang')} (%)</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('voortgang')} (%)</label>
               <input
                 type="number"
                 name="voortgang"
@@ -1759,16 +2126,16 @@ const Urenregistratie: React.FC = () => {
                 min="0"
                 max="100"
                 placeholder="0-100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
-              <p className="text-xs text-gray-500 mt-1">{t('optioneelGeefAanHoeveelProcent')}</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{t('optioneelGeefAanHoeveelProcent')}</p>
             </div>
 
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <label className="block text-sm font-medium text-gray-700">Gereden kilometers</label>
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Gereden kilometers</label>
                 <div className="group relative">
-                  <Info size={16} className="text-gray-400 cursor-help" />
+                  <Info size={16} className={`${isDark ? 'text-gray-400' : 'text-gray-400'} cursor-help`} />
                   <div className="invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded-md shadow-lg -top-2 left-6">
                     Dit zijn kilometers die niet met een zakelijke auto gereden worden en ook geen woon-werk kilometers zijn.
                   </div>
@@ -1782,13 +2149,13 @@ const Urenregistratie: React.FC = () => {
                 min="0"
                 step="0.1"
                 placeholder="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
-              <p className="text-xs text-gray-500 mt-1">Optioneel - vul alleen in indien van toepassing</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Optioneel - vul alleen in indien van toepassing</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('werkomschrijving')} *</label>
+              <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('werkomschrijving')} *</label>
               <textarea
                 name="werkomschrijving"
                 value={editingRegistration.werkomschrijving}
@@ -1796,7 +2163,7 @@ const Urenregistratie: React.FC = () => {
                 rows={4}
                 required
                 placeholder={t('werkomschrijvingPlaceholder')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               />
             </div>
 
@@ -1807,7 +2174,7 @@ const Urenregistratie: React.FC = () => {
                   setShowEditModal(false);
                   setEditingRegistration(null);
                 }}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
               >
                 {t('annuleren')}
               </button>
@@ -1829,14 +2196,14 @@ const Urenregistratie: React.FC = () => {
         title="Project Niet Gevonden?"
       >
         <div className="space-y-6">
-          <p className="text-gray-700">
+          <p className={isDark ? 'text-gray-300' : 'text-gray-700'}>
             Weet je zeker dat het project niet in het keuzemenu staat?
           </p>
           <div className="flex justify-end space-x-3">
             <button
               type="button"
               onClick={() => setShowConfirmProjectModal(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               Nee
             </button>
@@ -1863,17 +2230,17 @@ const Urenregistratie: React.FC = () => {
         title="Snel Project Aanmaken"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Maak snel een nieuw project aan. Kantoorpersoneel zal later de details aanvullen.
           </p>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Projectnaam *</label>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Projectnaam *</label>
             <input
               type="text"
               value={quickProjectName}
               onChange={(e) => setQuickProjectName(e.target.value)}
               placeholder="Bijv: Renovatie Hoofdstraat 123"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500`}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleQuickProjectCreate();
@@ -1888,7 +2255,7 @@ const Urenregistratie: React.FC = () => {
                 setShowQuickProjectModal(false);
                 setQuickProjectName('');
               }}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}
             >
               Annuleren
             </button>
@@ -1915,9 +2282,9 @@ const Urenregistratie: React.FC = () => {
               <div className="absolute top-0 left-0 w-20 h-20 border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold text-gray-800">Project wordt aangemaakt...</h3>
-              <p className="text-sm text-gray-600">Even geduld, we maken het project aan en slaan je urenregistratie op.</p>
-              <p className="text-xs text-gray-500 mt-4">De pagina wordt automatisch ververst...</p>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Project wordt aangemaakt...</h3>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Even geduld, we maken het project aan en slaan je urenregistratie op.</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-4`}>De pagina wordt automatisch ververst...</p>
             </div>
           </div>
         </div>

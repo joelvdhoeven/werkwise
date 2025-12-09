@@ -137,6 +137,9 @@ export interface User {
   naam: string;
   email: string;
   role: UserRole;
+  avatar?: string;
+  vacation_hours_total?: number;
+  vacation_hours_used?: number;
 }
 
 export interface TicketAttachment {

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Scan, X, Plus, Minus, CheckCircle, AlertCircle, Trash2, FileText, Download, Search, Upload, FileSpreadsheet } from 'lucide-react';
+import { Scan, X, Plus, Minus, CheckCircle, AlertCircle, Trash2, FileText, Download, Search, Upload, FileSpreadsheet, Package, ArrowRight, ListChecks } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
 import { exportToCSV } from '../utils/exportUtils';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useSystemSettings } from '../contexts/SystemSettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Html5Qrcode } from 'html5-qrcode';
 
 interface Product {
@@ -70,6 +71,8 @@ type DateFilter = 'vandaag' | 'deze_week' | 'deze_maand' | 'dit_jaar' | 'custom'
 const VoorraadbeheerAfboeken: React.FC = () => {
   const { user } = useAuth();
   const { getCsvSeparator } = useSystemSettings();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [projects, setProjects] = useState<Project[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -97,8 +100,46 @@ const VoorraadbeheerAfboeken: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
+  const [showProjectSearch, setShowProjectSearch] = useState(false);
+  const [projectSearchTerm, setProjectSearchTerm] = useState('');
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // For normal users, show selection menu first
+  const [profile, setProfile] = useState<any>(null);
+  const isNormalUser = profile?.role === 'medewerker' || profile?.role === 'zzper';
+  const [showSelectionMenu, setShowSelectionMenu] = useState(true);
+
+  // Load user profile to determine role
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        setProfile(data);
+        if (data?.role !== 'medewerker' && data?.role !== 'zzper') {
+          setShowSelectionMenu(false);
+        }
+      }
+    };
+    loadProfile();
+  }, [user?.id]);
+
+  const handleSelectOption = (option: 'scannen' | 'afboeken' | 'overzicht') => {
+    setShowSelectionMenu(false);
+    if (option === 'scannen') {
+      // Start scanning immediately with a new line
+      startScanning(0);
+    } else if (option === 'afboeken') {
+      // Just show the main form
+    } else if (option === 'overzicht') {
+      setShowOverview(true);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -129,15 +170,17 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [productsRes, locationsRes, projectsRes] = await Promise.all([
+      const [productsRes, locationsRes, projectsRes, allProjectsRes] = await Promise.all([
         supabase.from('inventory_products').select('*').order('name'),
         supabase.from('inventory_locations').select('*').order('name'),
-        supabase.from('projects').select('id, naam, project_nummer').eq('status', 'actief').order('naam')
+        supabase.from('projects').select('id, naam, project_nummer').eq('status', 'actief').order('naam'),
+        supabase.from('projects').select('id, naam, project_nummer').order('naam')
       ]);
 
       if (productsRes.data) setProducts(productsRes.data);
       if (locationsRes.data) setLocations(locationsRes.data);
       if (projectsRes.data) setProjects(projectsRes.data);
+      if (allProjectsRes.data) setAllProjects(allProjectsRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -235,6 +278,21 @@ const VoorraadbeheerAfboeken: React.FC = () => {
       p.sku.toLowerCase().includes(search) ||
       (p.ean && p.ean.toLowerCase().includes(search))
     ).slice(0, 5);
+  };
+
+  const getFilteredProjects = () => {
+    if (!projectSearchTerm) return allProjects;
+    const search = projectSearchTerm.toLowerCase();
+    return allProjects.filter(p =>
+      p.naam.toLowerCase().includes(search) ||
+      (p.project_nummer && p.project_nummer.toLowerCase().includes(search))
+    );
+  };
+
+  const selectProjectFromSearch = (project: Project) => {
+    setSelectedProject(project.id);
+    setShowProjectSearch(false);
+    setProjectSearchTerm('');
   };
 
   const updateLineQuantity = (index: number, delta: number) => {
@@ -708,19 +766,133 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Voorraad Afboeken</h1>
-          <p className="text-gray-600">Scan of zoek producten en boek ze af op een project</p>
+      {/* Selection Menu for Normal Users */}
+      {showSelectionMenu && isNormalUser && (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center">
+          <div className="text-center mb-10">
+            <h1 className={`text-3xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Voorraad Afboeken
+            </h1>
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Wat wil je doen?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full px-4">
+            {/* Product Scannen Card */}
+            <button
+              onClick={() => handleSelectOption('scannen')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-red-900/50 to-rose-900/50 border-2 border-red-600/50 hover:border-red-500'
+                  : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-200 hover:border-red-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-rose-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-500/30'
+                    : 'bg-gradient-to-br from-red-500 to-rose-500 shadow-lg shadow-red-500/30'
+                }`}>
+                  <Scan className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Product Scannen
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Scan een barcode om een product af te boeken
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                  <span>Start Scanner</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Product Afboeken Card */}
+            <button
+              onClick={() => handleSelectOption('afboeken')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-emerald-900/50 to-teal-900/50 border-2 border-emerald-600/50 hover:border-emerald-500'
+                  : 'bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 hover:border-emerald-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-teal-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-emerald-600 to-teal-600 shadow-lg shadow-emerald-500/30'
+                    : 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/30'
+                }`}>
+                  <Package className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Product Zoeken
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Zoek een product en voer het aantal in
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  <span>Start</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+
+            {/* Overzicht Card */}
+            <button
+              onClick={() => handleSelectOption('overzicht')}
+              className={`group relative overflow-hidden rounded-2xl p-8 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                isDark
+                  ? 'bg-gradient-to-br from-amber-900/50 to-orange-900/50 border-2 border-amber-600/50 hover:border-amber-500'
+                  : 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 hover:border-amber-400'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-orange-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 ${
+                  isDark
+                    ? 'bg-gradient-to-br from-amber-600 to-orange-600 shadow-lg shadow-amber-500/30'
+                    : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30'
+                }`}>
+                  <ListChecks className="h-10 w-10 text-white" />
+                </div>
+                <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  Mijn Afboekingen
+                </h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Bekijk je afgeboekte producten
+                </p>
+                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                  <span>Bekijken</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowOverview(true)}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-        >
-          <FileText size={20} />
-          Overzicht
-        </button>
-      </div>
+      )}
+
+      {/* Regular View for Admins or after selection */}
+      {(!showSelectionMenu || !isNormalUser) && (
+        <>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Voorraad Afboeken</h1>
+              <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Scan of zoek producten en boek ze af op een project</p>
+            </div>
+            <button
+              onClick={() => setShowOverview(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+            >
+              <FileText size={20} />
+              Overzicht
+            </button>
+          </div>
+        </>
+      )}
 
       {successMessage && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
@@ -738,12 +910,12 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showScanner && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-4`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Scan Barcode</h3>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Scan Barcode</h3>
               <button
                 onClick={stopScanning}
-                className="p-2 text-gray-400 hover:text-gray-600"
+                className={`p-2 ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -755,31 +927,49 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+      {/* Main Form Content - Hidden when selection menu is shown */}
+      {(!showSelectionMenu || !isNormalUser) && (
+        <>
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6 space-y-4`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
-            <select
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="">Selecteer project</option>
-              {projects.map(project => (
-                <option key={project.id} value={project.id}>
-                  {project.naam} {project.project_nummer ? `(#${project.project_nummer})` : ''}
-                </option>
-              ))}
-            </select>
+            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Project *</label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <select
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                className={`w-full sm:flex-1 px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+              >
+                <option value="">Selecteer project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>
+                    {project.naam} {project.project_nummer ? `(#${project.project_nummer})` : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => setShowProjectSearch(true)}
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center gap-2"
+                title="Zoek in alle projecten"
+              >
+                <Search size={20} />
+                <span className="sm:hidden">Zoek project</span>
+              </button>
+            </div>
+            {selectedProject && (
+              <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                Geselecteerd: {allProjects.find(p => p.id === selectedProject)?.naam || projects.find(p => p.id === selectedProject)?.naam}
+              </p>
+            )}
           </div>
 
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6 space-y-4`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Producten</h2>
-          <span className="text-sm text-gray-600">
+          <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Producten</h2>
+          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             {getTotalItems()} {getTotalItems() === 1 ? 'artikel' : 'artikelen'}
           </span>
         </div>
@@ -787,12 +977,14 @@ const VoorraadbeheerAfboeken: React.FC = () => {
         <div className="space-y-3">
           {bookingLines.map((line, index) => (
             <div key={index} className="space-y-2">
-              <div className="flex gap-2">
-                <div className="w-48">
+              {/* Mobile layout: stacked */}
+              <div className="flex flex-col gap-2">
+                {/* Row 1: Location select */}
+                <div className="w-full">
                   <select
                     value={line.location}
                     onChange={(e) => updateLineLocation(index, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="">Selecteer locatie</option>
                     {locations.map(location => (
@@ -802,6 +994,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     ))}
                   </select>
                 </div>
+                {/* Row 2: Product search input */}
                 <div className="flex-1 relative product-search-container">
                   <input
                     type="text"
@@ -815,68 +1008,73 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                         setBookingLines(newLines);
                       }
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                   {line.showDropdown && getFilteredProducts(line.searchValue).length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className={`absolute z-10 w-full mt-1 ${isDark ? 'bg-gray-800' : 'bg-white'} border ${isDark ? 'border-gray-700' : 'border-gray-300'} rounded-md shadow-lg max-h-60 overflow-y-auto`}>
                       {getFilteredProducts(line.searchValue).map((product) => (
                         <button
                           key={product.id}
                           onClick={() => selectProduct(index, product)}
-                          className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          className={`w-full px-3 py-2 text-left ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} border-b ${isDark ? 'border-gray-700' : 'border-gray-100'} last:border-b-0`}
                         >
-                          <div className="font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-600">{product.sku} - {product.category}</div>
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{product.name}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{product.sku} - {product.category}</div>
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={() => loadLocationStock(index)}
-                  disabled={!line.location}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2"
-                  title="Bekijk voorraad"
-                >
-                  <Search size={20} />
-                </button>
-                <button
-                  onClick={() => startScanning(index)}
-                  disabled={scanning}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Scan size={20} />
-                </button>
-                {bookingLines.length > 1 && (
+                {/* Row 3: Action buttons */}
+                <div className="flex gap-2">
                   <button
-                    onClick={() => removeLine(index)}
-                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
+                    onClick={() => loadLocationStock(index)}
+                    disabled={!line.location}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                    title="Bekijk voorraad"
                   >
-                    <Trash2 size={20} />
+                    <Search size={18} />
+                    <span className="sm:hidden">Voorraad</span>
                   </button>
-                )}
+                  <button
+                    onClick={() => startScanning(index)}
+                    disabled={scanning}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                  >
+                    <Scan size={18} />
+                    <span className="sm:hidden">Scan</span>
+                  </button>
+                  {bookingLines.length > 1 && (
+                    <button
+                      onClick={() => removeLine(index)}
+                      className={`px-3 py-2 text-red-600 ${isDark ? 'hover:bg-gray-700' : 'hover:bg-red-50'} rounded-md`}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {line.product && (
-                <div className="ml-2 p-3 bg-gray-50 rounded-md">
+                <div className={`ml-2 p-3 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-md`}>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">{line.product.name}</div>
-                      <div className="text-sm text-gray-600">{line.product.sku} - {line.product.category}</div>
+                      <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{line.product.name}</div>
+                      <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{line.product.sku} - {line.product.category}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateLineQuantity(index, -1)}
-                        className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-100"
+                        className={`p-1 ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded ${isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-100'}`}
                       >
                         <Minus size={16} />
                       </button>
-                      <span className="font-medium w-16 text-center">
+                      <span className={`font-medium w-16 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         {line.quantity} {line.product.unit}
                       </span>
                       <button
                         onClick={() => updateLineQuantity(index, 1)}
-                        className="p-1 bg-white border border-gray-300 rounded hover:bg-gray-100"
+                        className={`p-1 ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded ${isDark ? 'hover:bg-gray-900' : 'hover:bg-gray-100'}`}
                       >
                         <Plus size={16} />
                       </button>
@@ -902,13 +1100,13 @@ const VoorraadbeheerAfboeken: React.FC = () => {
           Voeg regel toe
         </button>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className={`flex justify-end gap-3 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
           <button
             onClick={() => {
               setBookingLines([{ searchValue: '', product: null, quantity: 1, showDropdown: false, location: '' }]);
               setSelectedProject('');
             }}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            className={`px-6 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
           >
             Annuleren
           </button>
@@ -921,15 +1119,17 @@ const VoorraadbeheerAfboeken: React.FC = () => {
           </button>
         </div>
       </div>
+        </>
+      )}
 
       {showOverview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold text-gray-900">Overzicht Afboekingen</h2>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} flex justify-between items-center sticky top-0`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Overzicht Afboekingen</h2>
               <button
                 onClick={() => setShowOverview(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -938,19 +1138,19 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <div className="p-6 space-y-4">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <Search className={`absolute left-3 top-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={20} />
                   <input
                     type="text"
                     placeholder="Zoek op project, medewerker, product, locatie..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full pl-10 pr-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={loadTransactions}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center gap-2"
+                    className={`px-4 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md flex items-center gap-2`}
                     title="Ververs overzicht"
                   >
                     <Search size={20} />
@@ -1005,11 +1205,11 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Periode</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Periode</label>
                   <select
                     value={dateFilter}
                     onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                   >
                     <option value="vandaag">Vandaag</option>
                     <option value="deze_week">Deze Week</option>
@@ -1022,41 +1222,41 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 {dateFilter === 'custom' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Van Datum</label>
+                      <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Van Datum</label>
                       <input
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Tot Datum</label>
+                      <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Tot Datum</label>
                       <input
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className={`w-full px-3 py-2 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
                       />
                     </div>
                   </>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${isDark ? 'bg-gray-700' : 'bg-gray-50'} p-4 rounded-lg`}>
                 <div>
-                  <div className="text-sm text-gray-600">Totaal Afboekingen</div>
-                  <div className="text-2xl font-bold text-gray-900">{filteredTransactions.length}</div>
+                  <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Afboekingen</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{filteredTransactions.length}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Totaal Producten</div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Producten</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {filteredTransactions.reduce((sum, t) => sum + Math.abs(t.quantity), 0).toFixed(0)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Unieke Producten</div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Unieke Producten</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {new Set(filteredTransactions.map(t => t.product_id)).size}
                   </div>
                 </div>
@@ -1067,14 +1267,14 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
                 </div>
               ) : filteredTransactions.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
+                <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Geen afboekingen gevonden
                 </div>
               ) : (
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg overflow-hidden`}>
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50">
+                      <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                         <tr>
                           {(userRole === 'admin' || userRole === 'kantoor_medewerker') && (
                             <th className="px-4 py-3 text-center">
@@ -1086,19 +1286,19 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                               />
                             </th>
                           )}
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum & Tijd</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categorie</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aantal</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Locatie</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medewerker</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opmerkingen</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Datum & Tijd</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Project</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Product</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Categorie</th>
+                          <th className={`px-4 py-3 text-center text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Aantal</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Locatie</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Medewerker</th>
+                          <th className={`px-4 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>Opmerkingen</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200 bg-white">
+                      <tbody className={`divide-y ${isDark ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
                         {filteredTransactions.map((transaction) => (
-                          <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                          <tr key={transaction.id} className={`${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
                             {(userRole === 'admin' || userRole === 'kantoor_medewerker') && (
                               <td className="px-4 py-3 text-center">
                                 <input
@@ -1109,39 +1309,39 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                                 />
                               </td>
                             )}
-                            <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                            <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'} whitespace-nowrap`}>
                               <div>{new Date(transaction.created_at).toLocaleDateString('nl-NL')}</div>
-                              <div className="text-xs text-gray-500">{new Date(transaction.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
+                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{new Date(transaction.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{transaction.project?.naam}</div>
+                              <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.project?.naam}</div>
                               {transaction.project?.project_nummer && (
-                                <div className="text-xs text-gray-500">#{transaction.project.project_nummer}</div>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>#{transaction.project.project_nummer}</div>
                               )}
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{transaction.product?.name}</div>
-                              <div className="text-xs text-gray-500">{transaction.product?.sku}</div>
+                              <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.product?.name}</div>
+                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.product?.sku}</div>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
                                 {transaction.product?.category}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-center">
-                              <div className="font-semibold text-gray-900">{Math.abs(transaction.quantity)}</div>
-                              <div className="text-xs text-gray-500">{transaction.product?.unit}</div>
+                              <div className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{Math.abs(transaction.quantity)}</div>
+                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.product?.unit}</div>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <div className="font-medium text-gray-900">{transaction.location?.name}</div>
+                              <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.location?.name}</div>
                               {transaction.location?.type && (
-                                <div className="text-xs text-gray-500 capitalize">{transaction.location.type}</div>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} capitalize`}>{transaction.location.type}</div>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-900">
+                            <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
                               {transaction.user?.naam || transaction.user?.email}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={transaction.notes || '-'}>
+                            <td className={`px-4 py-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-xs truncate`} title={transaction.notes || '-'}>
                               {transaction.notes || '-'}
                             </td>
                           </tr>
@@ -1158,15 +1358,15 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showImportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-lg w-full p-6`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Afboekingen Importeren</h3>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Afboekingen Importeren</h3>
               <button
                 onClick={() => {
                   setShowImportModal(false);
                   setImportFile(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -1174,10 +1374,10 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-3`}>
                   Upload een CSV bestand met afboekingen. Het bestand moet de volgende kolommen bevatten:
                 </p>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1 mb-3">
+                <ul className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} list-disc list-inside space-y-1 mb-3`}>
                   <li>Datum (bijv. 14-10-2025)</li>
                   <li>Project (naam)</li>
                   <li>Product SKU</li>
@@ -1204,7 +1404,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-400 text-gray-600 hover:text-red-600 flex items-center justify-center gap-2"
+                  className={`w-full px-4 py-3 border-2 border-dashed ${isDark ? 'border-gray-700 text-gray-300 hover:border-red-500 hover:text-red-400' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-600'} rounded-lg flex items-center justify-center gap-2`}
                 >
                   <Upload size={20} />
                   {importFile ? importFile.name : 'Selecteer CSV bestand'}
@@ -1217,7 +1417,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     setShowImportModal(false);
                     setImportFile(null);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
                 >
                   Annuleren
                 </button>
@@ -1236,9 +1436,9 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showStockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold text-gray-900">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} flex justify-between items-center sticky top-0`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Voorraad - {stockModalLineIndex !== null && bookingLines[stockModalLineIndex]?.location
                   ? locations.find(l => l.id === bookingLines[stockModalLineIndex!].location)?.name
                   : 'Locatie'}
@@ -1248,7 +1448,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   setShowStockModal(false);
                   setStockModalLineIndex(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X size={24} />
               </button>
@@ -1260,7 +1460,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
                 </div>
               ) : locationStock.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
+                <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Geen voorraad beschikbaar op deze locatie
                 </div>
               ) : (
@@ -1269,21 +1469,21 @@ const VoorraadbeheerAfboeken: React.FC = () => {
                     <button
                       key={stockItem.product_id}
                       onClick={() => selectProductFromStock(stockItem)}
-                      className="w-full p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 text-left transition-colors"
+                      className={`w-full p-4 border ${isDark ? 'border-gray-700 hover:border-red-500 hover:bg-gray-700' : 'border-gray-200 hover:border-red-500 hover:bg-red-50'} rounded-lg text-left transition-colors`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">{stockItem.product.name}</div>
-                          <div className="text-sm text-gray-600">
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{stockItem.product.name}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                             SKU: {stockItem.product.sku} | Categorie: {stockItem.product.category}
                           </div>
                           {stockItem.product.ean && (
-                            <div className="text-sm text-gray-500">EAN: {stockItem.product.ean}</div>
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>EAN: {stockItem.product.ean}</div>
                           )}
                         </div>
                         <div className="ml-4 text-right">
-                          <div className="text-lg font-bold text-gray-900">{stockItem.quantity}</div>
-                          <div className="text-sm text-gray-600">{stockItem.product.unit}</div>
+                          <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stockItem.quantity}</div>
+                          <div className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{stockItem.product.unit}</div>
                         </div>
                       </div>
                     </button>
@@ -1297,14 +1497,14 @@ const VoorraadbeheerAfboeken: React.FC = () => {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-md w-full p-6`}>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                 <AlertCircle className="text-red-600" size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Afboekingen Verwijderen</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Afboekingen Verwijderen</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   Weet je zeker dat je {selectedTransactions.size} {selectedTransactions.size === 1 ? 'afboeking' : 'afboekingen'} wilt verwijderen?
                 </p>
               </div>
@@ -1319,7 +1519,7 @@ const VoorraadbeheerAfboeken: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className={`flex-1 px-4 py-2 border ${isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
               >
                 Annuleren
               </button>
@@ -1329,6 +1529,79 @@ const VoorraadbeheerAfboeken: React.FC = () => {
               >
                 Verwijderen
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Search Modal */}
+      {showProjectSearch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col`}>
+            <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Zoek Project</h2>
+              <button
+                onClick={() => {
+                  setShowProjectSearch(false);
+                  setProjectSearchTerm('');
+                }}
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className={`p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="relative">
+                <Search className={`absolute left-3 top-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} size={20} />
+                <input
+                  type="text"
+                  placeholder="Zoek op projectnaam of nummer..."
+                  value={projectSearchTerm}
+                  onChange={(e) => setProjectSearchTerm(e.target.value)}
+                  autoFocus
+                  className={`w-full pl-10 pr-4 py-3 border ${isDark ? 'border-gray-700 bg-gray-900 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg`}
+                />
+              </div>
+              <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                {getFilteredProjects().length} projecten gevonden
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {getFilteredProjects().length === 0 ? (
+                <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Geen projecten gevonden
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {getFilteredProjects().map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => selectProjectFromSearch(project)}
+                      className={`w-full p-4 border ${
+                        selectedProject === project.id
+                          ? isDark ? 'border-red-500 bg-red-900/30' : 'border-red-500 bg-red-50'
+                          : isDark ? 'border-gray-700 hover:border-red-500 hover:bg-gray-700' : 'border-gray-200 hover:border-red-500 hover:bg-red-50'
+                      } rounded-lg text-left transition-colors`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{project.naam}</div>
+                          {project.project_nummer && (
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              Project #{project.project_nummer}
+                            </div>
+                          )}
+                        </div>
+                        {selectedProject === project.id && (
+                          <CheckCircle className="text-red-600" size={24} />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

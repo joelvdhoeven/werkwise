@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, DollarSign, Calendar, Filter } from 'lucide-react';
-import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp, DollarSign, Calendar, Filter, Package, Box, TrendingDown, CheckCircle, AlertTriangle, ChevronDown, ChevronUp, Users } from 'lucide-react';
+import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useSupabaseQuery } from '../hooks/useSupabase';
 
 type TimeRange = '1day' | '7days' | '1month' | 'quarter' | '1year';
 type ViewMode = 'total' | 'project' | 'employee';
@@ -31,6 +33,8 @@ interface Employee {
 
 const FinancieelDashboard: React.FC = () => {
   const { hasPermission } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [timeRange, setTimeRange] = useState<TimeRange>('1month');
   const [viewMode, setViewMode] = useState<ViewMode>('total');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -38,6 +42,28 @@ const FinancieelDashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showLowStockDetails, setShowLowStockDetails] = useState(false);
+
+  // Inventory data for Magazijn Overzicht
+  const { data: inventoryProducts = [] } = useSupabaseQuery<any>('inventory_products');
+  const { data: inventoryStock = [] } = useSupabaseQuery<any>('inventory_stock');
+
+  // Combine inventory products with their stock levels
+  const inventoryItems = inventoryProducts.map((product: any) => {
+    const totalStock = inventoryStock
+      .filter((stock: any) => stock.product_id === product.id)
+      .reduce((sum: number, stock: any) => sum + parseFloat(stock.quantity || 0), 0);
+    return {
+      ...product,
+      voorraad: totalStock,
+      minimum_voorraad: product.minimum_stock,
+      prijs: parseFloat(product.price || 0)
+    };
+  });
+
+  const lowStockItems = inventoryItems.filter((item: any) => item.voorraad <= item.minimum_voorraad);
+  const totalInventoryValue = inventoryItems.reduce((sum: number, item: any) => sum + (item.prijs || 0) * item.voorraad, 0);
+
   const [financialData, setFinancialData] = useState<FinancialData>({
     totalRevenue: 0,
     totalCosts: 0,
@@ -421,7 +447,7 @@ const FinancieelDashboard: React.FC = () => {
     { value: '1year', label: '1 Jaar' },
   ];
 
-  const COLORS = ['#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2', '#7F1D1D', '#991B1B', '#B91C1C'];
+  const COLORS = ['#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2', '#B91C1C', '#991B1B', '#DC2626'];
 
   const handleViewModeChange = (newMode: ViewMode) => {
     setViewMode(newMode);
@@ -432,7 +458,7 @@ const FinancieelDashboard: React.FC = () => {
   if (!hasPermission('manage_settings')) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Geen toegang tot financieel dashboard</p>
+        <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Geen toegang tot financieel dashboard</p>
       </div>
     );
   }
@@ -449,8 +475,8 @@ const FinancieelDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financieel Dashboard</h1>
-          <p className="text-gray-600">Inzicht in omzet, kosten en winst</p>
+          <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Financieel Dashboard</h1>
+          <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Inzicht in omzet, kosten en winst</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -459,7 +485,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={viewMode}
               onChange={(e) => handleViewModeChange(e.target.value as ViewMode)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="total">Totale Omzet</option>
               <option value="project">Per Project</option>
@@ -471,7 +497,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="">Alle Projecten</option>
               {projects.map(project => (
@@ -486,7 +512,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               <option value="">Alle Medewerkers</option>
               {employees.map(employee => (
@@ -502,7 +528,7 @@ const FinancieelDashboard: React.FC = () => {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className={`px-4 py-2 border ${isDark ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500`}
             >
               {timeRangeOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -516,11 +542,11 @@ const FinancieelDashboard: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Totale Omzet</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Omzet</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mt-1`}>
                 {formatCurrency(financialData.totalRevenue)}
               </p>
             </div>
@@ -530,11 +556,11 @@ const FinancieelDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Totale Kosten</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Kosten</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mt-1`}>
                 {formatCurrency(financialData.totalCosts)}
               </p>
             </div>
@@ -544,30 +570,30 @@ const FinancieelDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Winst</p>
-              <p className={`text-2xl font-bold mt-1 ${financialData.profit >= 0 ? 'text-red-600' : 'text-gray-600'}`}>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Winst</p>
+              <p className={`text-2xl font-bold mt-1 ${financialData.profit >= 0 ? 'text-red-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
                 {formatCurrency(financialData.profit)}
               </p>
             </div>
             <div className={`p-3 rounded-lg ${financialData.profit >= 0 ? 'bg-red-100' : 'bg-gray-100'}`}>
-              <DollarSign size={24} className={financialData.profit >= 0 ? 'text-red-600' : 'text-gray-600'} />
+              <DollarSign size={24} className={financialData.profit >= 0 ? 'text-red-600' : (isDark ? 'text-gray-300' : 'text-gray-600')} />
             </div>
           </div>
           <div className="mt-2">
-            <span className={`text-sm font-medium ${financialData.profitMargin >= 0 ? 'text-red-600' : 'text-gray-600'}`}>
+            <span className={`text-sm font-medium ${financialData.profitMargin >= 0 ? 'text-red-600' : (isDark ? 'text-gray-300' : 'text-gray-600')}`}>
               {financialData.profitMargin.toFixed(1)}% marge
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Gewerkte Uren</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Gewerkte Uren</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mt-1`}>
                 {financialData.hoursWorked.toFixed(1)}
               </p>
             </div>
@@ -576,7 +602,7 @@ const FinancieelDashboard: React.FC = () => {
             </div>
           </div>
           <div className="mt-2">
-            <span className="text-sm text-gray-600">
+            <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
               {financialData.projectCount} projecten
             </span>
           </div>
@@ -586,8 +612,8 @@ const FinancieelDashboard: React.FC = () => {
       {/* Charts Row 1 - Pie Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Total Costs vs Profit Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Totale Kosten vs Winst</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Totale Kosten vs Winst</h3>
           {financialData.totalCosts > 0 || financialData.profit > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -605,21 +631,21 @@ const FinancieelDashboard: React.FC = () => {
                   dataKey="value"
                 >
                   <Cell fill="#F87171" />
-                  <Cell fill="#7F1D1D" />
+                  <Cell fill="#B91C1C" />
                 </Pie>
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Geen data beschikbaar
             </div>
           )}
         </div>
 
         {/* Worked Hours by Employee Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Gewerkte Uren per Medewerker</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Gewerkte Uren per Medewerker</h3>
           {financialData.revenueByItem.length > 0 && viewMode === 'employee' ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -644,7 +670,7 @@ const FinancieelDashboard: React.FC = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               {viewMode === 'employee' ? 'Geen data beschikbaar' : 'Selecteer "Per Medewerker" om gewerkte uren te zien'}
             </div>
           )}
@@ -654,8 +680,8 @@ const FinancieelDashboard: React.FC = () => {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue/Cost Line Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Omzet vs Kosten per Maand</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Omzet vs Kosten per Maand</h3>
           {financialData.revenueByMonth.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={financialData.revenueByMonth}>
@@ -666,19 +692,19 @@ const FinancieelDashboard: React.FC = () => {
                 <Legend />
                 <Line type="monotone" dataKey="revenue" stroke="#DC2626" strokeWidth={2} name="Omzet" />
                 <Line type="monotone" dataKey="costs" stroke="#F87171" strokeWidth={2} name="Kosten" />
-                <Line type="monotone" dataKey="profit" stroke="#7F1D1D" strokeWidth={2} name="Winst" />
+                <Line type="monotone" dataKey="profit" stroke="#991B1B" strokeWidth={2} name="Winst" />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Geen data beschikbaar
             </div>
           )}
         </div>
 
         {/* Cost Breakdown Pie Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Kosten Verdeling (Personeel/Materiaal)</h3>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Kosten Verdeling (Personeel/Materiaal)</h3>
           {financialData.costBreakdown.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -700,7 +726,7 @@ const FinancieelDashboard: React.FC = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className={`flex items-center justify-center h-[300px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Geen data beschikbaar
             </div>
           )}
@@ -709,8 +735,8 @@ const FinancieelDashboard: React.FC = () => {
 
       {/* Revenue by Project/Employee */}
       {viewMode !== 'total' && financialData.revenueByItem.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>
             {viewMode === 'project'
               ? (selectedProjectId ? 'Project Details' : 'Omzet per Project (Top 10)')
               : (selectedEmployeeId ? 'Medewerker Details' : 'Omzet per Medewerker (Top 10)')
@@ -725,7 +751,182 @@ const FinancieelDashboard: React.FC = () => {
               <Legend />
               <Bar dataKey="revenue" fill="#DC2626" name="Omzet" />
               <Bar dataKey="costs" fill="#F87171" name="Kosten" />
-              <Bar dataKey="profit" fill="#7F1D1D" name="Winst" />
+              <Bar dataKey="profit" fill="#991B1B" name="Winst" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Magazijn Overzicht Section */}
+      <div className={`rounded-2xl shadow-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+        <div className={`px-8 py-6 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-red-900/20 to-gray-800' : 'border-gray-100 bg-gradient-to-r from-red-50 to-white'}`}>
+          <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+            <Package className="h-6 w-6 text-red-600" />
+            Magazijn Overzicht
+          </h3>
+        </div>
+        <div className="p-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                  <Package className="h-5 w-5 text-red-600" />
+                </div>
+                <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totale Waarde</p>
+              </div>
+              <p className="text-3xl font-bold text-red-600">€{totalInventoryValue.toLocaleString()}</p>
+            </div>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                  <Box className="h-5 w-5 text-red-600" />
+                </div>
+                <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Totaal Items</p>
+              </div>
+              <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{inventoryItems.length}</p>
+            </div>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-900/30' : 'bg-orange-100'}`}>
+                  <TrendingDown className="h-5 w-5 text-orange-600" />
+                </div>
+                <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Lage Voorraad</p>
+              </div>
+              <p className="text-3xl font-bold text-orange-600">{lowStockItems.length}</p>
+            </div>
+            <div className={`rounded-xl p-6 border-2 border-red-500 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-lg ${isDark ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+                <p className={`text-sm font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Op Voorraad</p>
+              </div>
+              <p className="text-3xl font-bold text-green-600">{inventoryItems.length - lowStockItems.length}</p>
+            </div>
+          </div>
+
+          {lowStockItems.length > 0 && (
+            <div className={`rounded-xl border ${isDark ? 'bg-orange-900/20 border-orange-700' : 'bg-orange-50 border-orange-200'}`}>
+              <button
+                onClick={() => setShowLowStockDetails(!showLowStockDetails)}
+                className={`w-full px-6 py-4 flex items-center justify-between transition-colors rounded-xl ${isDark ? 'hover:bg-orange-900/30' : 'hover:bg-orange-100'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-800/50' : 'bg-orange-200'}`}>
+                    <AlertTriangle className="h-5 w-5 text-orange-700" />
+                  </div>
+                  <div className="text-left">
+                    <h4 className={`font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>Low Stock Alerts</h4>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{lowStockItems.length} items onder minimum voorraad</p>
+                  </div>
+                </div>
+                {showLowStockDetails ? (
+                  <ChevronUp className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+                ) : (
+                  <ChevronDown className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+                )}
+              </button>
+
+              {showLowStockDetails && (
+                <div className="px-6 pb-6">
+                  <div className={`rounded-lg border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-200'}`}>
+                    <table className={`min-w-full divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                      <thead className={isDark ? 'bg-gray-700' : 'bg-gray-50'}>
+                        <tr>
+                          <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Product
+                          </th>
+                          <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Huidige Voorraad
+                          </th>
+                          <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Minimum
+                          </th>
+                          <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Status
+                          </th>
+                          <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Waarde
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'}`}>
+                        {lowStockItems.slice(0, 10).map((item: any) => (
+                          <tr key={item.id} className={isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <Package className={`h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                                <div>
+                                  <div className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.name}</div>
+                                  <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.category || 'Algemeen'}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className="text-sm font-bold text-orange-600">{Math.floor(item.voorraad)} {item.unit}</span>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{item.minimum_voorraad} {item.unit}</span>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                                <TrendingDown className="h-3 w-3 mr-1" />
+                                Kritiek
+                              </span>
+                            </td>
+                            <td className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                              €{((item.prijs || 0) * item.voorraad).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {lowStockItems.length > 10 && (
+                      <div className={`px-4 py-3 border-t text-center ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          En nog {lowStockItems.length - 10} items meer...
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {lowStockItems.length === 0 && (
+            <div className={`rounded-xl border p-6 text-center ${isDark ? 'bg-green-900/20 border-green-700' : 'bg-green-50 border-green-200'}`}>
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+              <h4 className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-800'}`}>Alle voorraad op peil!</h4>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Er zijn geen items met lage voorraad</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Inventory Value Chart - New visualization */}
+      {inventoryItems.length > 0 && (
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Top 10 Producten op Waarde</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={inventoryItems
+              .map((item: any) => ({
+                name: item.name?.substring(0, 15) || 'Onbekend',
+                waarde: (item.prijs || 0) * item.voorraad,
+                voorraad: item.voorraad
+              }))
+              .sort((a: any, b: any) => b.waarde - a.waarde)
+              .slice(0, 10)
+            }>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+              <YAxis />
+              <Tooltip formatter={(value: number, name: string) => {
+                if (name === 'waarde') return `€${value.toFixed(2)}`;
+                return value;
+              }} />
+              <Legend />
+              <Bar dataKey="waarde" fill="#DC2626" name="Waarde (€)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

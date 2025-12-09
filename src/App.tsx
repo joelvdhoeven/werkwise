@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
 import Login from './pages/Login';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
+import FloatingTimerButton from './components/FloatingTimerButton';
+import OnboardingTour from './components/OnboardingTour';
 import Dashboard from './pages/Dashboard';
 import FinancieelDashboard from './pages/FinancieelDashboard';
+import VoorraadDashboard from './pages/VoorraadDashboard';
 import Urenregistratie from './pages/Urenregistratie';
 import MijnNotificaties from './pages/MijnNotificaties';
 import SpeciaalGereedschap from './pages/SpeciaalGereedschap';
@@ -20,9 +24,13 @@ import VoorraadbeheerAfboeken from './pages/VoorraadbeheerAfboeken';
 import FactuurInstellingen from './pages/FactuurInstellingen';
 import TicketOmgeving from './pages/TicketOmgeving';
 import TicketsOverzicht from './pages/TicketsOverzicht';
+import ModuleBeheer from './pages/ModuleBeheer';
+import VakantieAanvraag from './pages/VakantieAanvraag';
 
 function App() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -42,6 +50,12 @@ function App() {
         return (
           <ProtectedRoute permission="manage_settings">
             <FinancieelDashboard />
+          </ProtectedRoute>
+        );
+      case 'voorraad-dashboard':
+        return (
+          <ProtectedRoute permission="manage_settings">
+            <VoorraadDashboard />
           </ProtectedRoute>
         );
       case 'urenregistratie':
@@ -124,6 +138,18 @@ function App() {
             <TicketsOverzicht />
           </ProtectedRoute>
         );
+      case 'module-beheer':
+        return (
+          <ProtectedRoute permission="manage_settings">
+            <ModuleBeheer />
+          </ProtectedRoute>
+        );
+      case 'vakantie-aanvraag':
+        return (
+          <ProtectedRoute permission="view_dashboard">
+            <VakantieAanvraag />
+          </ProtectedRoute>
+        );
       default:
         return (
           <ProtectedRoute permission="view_dashboard">
@@ -134,7 +160,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className={`min-h-screen flex transition-colors duration-300 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
       <Sidebar
         activeSection={activeSection}
         setActiveSection={(section) => {
@@ -155,6 +181,13 @@ function App() {
           </div>
         </main>
       </div>
+      {/* Floating Timer - persists across page navigation */}
+      <FloatingTimerButton />
+      {/* Onboarding Tour - guides users through the app */}
+      <OnboardingTour
+        setActiveSection={setActiveSection}
+        activeSection={activeSection}
+      />
     </div>
   );
 }
